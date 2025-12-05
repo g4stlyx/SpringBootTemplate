@@ -1,0 +1,29 @@
+<!-- src/main/resources/templates/verification-email.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; 
+                 text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Email Doğrulama</h2>
+        </div>
+        <p>Sayın <span th:text="${name}"></span>,</p>
+        <p>g4stly.tr uygulamasına kayıt olduğunuz için teşekkür ederiz. Emailinizi lütfen aşağıdaki bağlantıya tıklayarak doğrulayınız:</p>
+        <p style="text-align: center;">
+            <a class="button" th:href="${verificationUrl}">Tıklayın</a>
+        </p>
+        <p>Çalışmazsa, aşağıdaki linki tarayıcınıza yapıştırarak da doğrulayabilirsiniz:</p>
+        <p th:text="${verificationUrl}"></p>
+        <p>Bağlantı 24 saat sonra kullanılamaz hale gelecektir.</p>
+        <p>İyi günler dileriz,<br>g4stly.tr</p>
+    </div>
+</body>
+</html>

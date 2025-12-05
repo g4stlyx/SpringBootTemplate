@@ -1,0 +1,72 @@
+{
+	"info": {
+		"_postman_id": "c65dde08-221a-48b2-bced-54d4a7eab392",
+		"name": "21. Admin DB Backup",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27783651"
+	},
+	"item": [
+		{
+			"name": "Manually Start DB Backup Process",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/database-backup/create",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"database-backup",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check DB Backup Health",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/database-backup/status",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"database-backup",
+						"status"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -1,0 +1,1254 @@
+{
+	"info": {
+		"_postman_id": "1bd134b7-bdab-4236-9664-2867929bfe01",
+		"name": "00. Auth - Client/Coach/Admin",
+		"description": "Authentication endpoints for coaching platform with Client, Coach, and Admin user types",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27783651"
+	},
+	"item": [
+		{
+			"name": "Client Registration & Auth",
+			"item": [
+				{
+					"name": "Register Client",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"client1\",\n    \"email\": \"client1@example.com\",\n    \"password\": \"SecurePass123\",\n    \"userType\": \"client\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"phone\": \"+1234567890\",\n    \"bio\": \"Looking to improve my fitness and health\",\n    \"occupation\": \"Software Engineer\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new client account. Email verification required before login."
+					},
+					"response": []
+				},
+				{
+					"name": "Login Client (with userType)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.success && responseJson.accessToken) {",
+									"        pm.environment.set('client_token', responseJson.accessToken);",
+									"        console.log('Client JWT Token Saved');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"client1\",\n    \"password\": \"SecurePass1234*\",\n    \"userType\": \"client\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as client with explicit userType parameter"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Client (auto-detect)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.success && responseJson.accessToken) {",
+									"        pm.environment.set('client_token', responseJson.accessToken);",
+									"        console.log('Client JWT Token Saved');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"client1\",\n    \"password\": \"SecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login without userType - system will search client -> coach -> admin"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Client with Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.success && responseJson.accessToken) {",
+									"        pm.environment.set('client_token', responseJson.accessToken);",
+									"        console.log('Client JWT Token Saved');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"client1@example.com\",\n    \"password\": \"SecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login using email instead of username"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Client Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"client1\",\n    \"password\": \"SecurePass123\",\n    \"userType\": \"client\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/verify-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"verify-password"
+							]
+						},
+						"description": "Verify client's current password (for password change operations)"
+					},
+					"response": []
+				}
+			],
+			"description": "Client registration, login, and authentication endpoints"
+		},
+		{
+			"name": "Coach Registration & Auth",
+			"item": [
+				{
+					"name": "Register Coach",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"coach1\",\n    \"email\": \"coach1@example.com\",\n    \"password\": \"CoachPass123\",\n    \"userType\": \"coach\",\n    \"firstName\": \"Sarah\",\n    \"lastName\": \"Smith\",\n    \"phone\": \"+1987654321\",\n    \"bio\": \"Certified fitness coach with 10 years of experience\",\n    \"occupation\": \"Fitness Coach\",\n    \"specializations\": [\"Strength Training\", \"Nutrition\", \"Weight Loss\"],\n    \"certifications\": [\"ACE Certified Personal Trainer\", \"Precision Nutrition Level 1\"],\n    \"yearsOfExperience\": 10,\n    \"hourlyRate\": 75.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new coach account. Requires email verification AND admin approval before full access."
+					},
+					"response": []
+				},
+				{
+					"name": "Login Coach (with userType)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.success && responseJson.accessToken) {",
+									"        pm.environment.set('coach_token', responseJson.accessToken);",
+									"        console.log('Coach JWT Token Saved');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"coach1\",\n    \"password\": \"CoachPass1234\",\n    \"userType\": \"coach\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as coach. Requires email verification and admin approval (isVerified flag)"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Coach (auto-detect)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.success && responseJson.accessToken) {",
+									"        pm.environment.set('coach_token', responseJson.accessToken);",
+									"        console.log('Coach JWT Token Saved');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"coach1\",\n    \"password\": \"CoachPass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login without userType - will be found in coach search"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Coach Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{coach_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"coach1\",\n    \"password\": \"CoachPass123\",\n    \"userType\": \"coach\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/verify-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"verify-password"
+							]
+						},
+						"description": "Verify coach's current password"
+					},
+					"response": []
+				}
+			],
+			"description": "Coach registration, login, and authentication endpoints"
+		},
+		{
+			"name": "Admin Auth",
+			"item": [
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.success && responseJson.accessToken) {",
+									"        pm.environment.set('admin_token', responseJson.accessToken);",
+									"        console.log('Admin JWT Token Saved');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"g4stly\",\n    \"password\": \"12345678\",\n    \"userType\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as admin. Admins cannot register via API - must be created manually.\n\n**If 2FA is enabled**, this returns HTTP 202 with:\n```json\n{\n    \"requiresTwoFactor\": true,\n    \"username\": \"g4stly\",\n    \"message\": \"Two-factor authentication required. Please enter your verification code.\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Admin with CAPTCHA",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.success && responseJson.accessToken) {",
+									"        pm.environment.set('admin_token', responseJson.accessToken);",
+									"        console.log('Admin JWT Token Saved');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"g4stly\",\n    \"password\": \"12345678\",\n    \"userType\": \"admin\",\n    \"captchaToken\": \"03AGdBq26PchOPZ7...\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as admin with reCAPTCHA token.\n\n**Note:** \n- Get the captchaToken from your frontend reCAPTCHA widget\n- Only required if `recaptcha.enabled=true` in application.properties\n- Token expires after 2 minutes"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Admin Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"g4stly\",\n    \"password\": \"12345678\",\n    \"userType\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/verify-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"verify-password"
+							]
+						},
+						"description": "Verify admin's current password"
+					},
+					"response": []
+				}
+			],
+			"description": "Admin authentication endpoints (no registration - admins created manually)"
+		},
+		{
+			"name": "2. Two-Factor Auth Management",
+			"item": [
+				{
+					"name": "Check 2FA Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/2fa/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"2fa",
+								"status"
+							]
+						},
+						"description": "Check if 2FA is enabled for the current admin.\n\n**Response:**\n```json\n{\n    \"enabled\": false\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Setup 2FA (Generate QR Code)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.secret) {",
+									"        pm.environment.set('twoFactorSecret', responseJson.secret);",
+									"        console.log('2FA Secret saved: ' + responseJson.secret);",
+									"    }",
+									"    if (responseJson.qrCodeUrl) {",
+									"        console.log('QR Code (base64 image) generated - display in browser or Postman Visualizer');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/2fa/setup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"2fa",
+								"setup"
+							]
+						},
+						"description": "Generate a new 2FA secret and QR code.\n\n**Steps:**\n1. Call this endpoint\n2. Copy the `qrCodeUrl` (base64 image) and display it in your frontend\n3. Scan with Google Authenticator, Authy, or similar app\n4. Use the 6-digit code in the next step to enable 2FA\n\n**Response:**\n```json\n{\n    \"secret\": \"JBSWY3DPEHPK3PXP\",\n    \"qrCodeUrl\": \"data:image/png;base64,iVBORw0KGgo...\",\n    \"manualEntryKey\": \"JBSWY3DPEHPK3PXP\"\n}\n```\n\n**Note:** QR code is a base64-encoded PNG image that can be displayed in HTML:\n```html\n<img src=\"data:image/png;base64,...\" />\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify and Enable 2FA",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/2fa/verify",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"2fa",
+								"verify"
+							]
+						},
+						"description": "Verify the 6-digit code from authenticator app and enable 2FA.\n\n**Steps:**\n1. Open your authenticator app\n2. Enter the 6-digit code shown\n3. Submit this request\n\n**Success Response:**\n```json\n{\n    \"success\": true,\n    \"message\": \"2FA has been enabled successfully\"\n}\n```\n\n**Error Response:**\n```json\n{\n    \"success\": false,\n    \"message\": \"Invalid verification code\"\n}\n```\n\n**Note:** Codes change every 30 seconds. Make sure to use the current code!"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete 2FA Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.success && responseJson.accessToken) {",
+									"        pm.environment.set('admin_token', responseJson.accessToken);",
+									"        console.log('Admin JWT Token Saved (after 2FA)');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"g4stly\",\n    \"code\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/2fa/verify-login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"2fa",
+								"verify-login"
+							]
+						},
+						"description": "Complete admin login by providing 2FA code.\n\n**Login Flow:**\n1. Login with username/password (receive HTTP 202 if 2FA enabled)\n2. Open your authenticator app\n3. Enter the 6-digit code here\n4. Submit to complete login and receive JWT token\n\n**Expected Response (200):**\n```json\n{\n    \"success\": true,\n    \"message\": \"Admin login successful\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"...\",\n    \"expiresIn\": 3600,\n    \"user\": {\n        \"id\": 1,\n        \"username\": \"g4stly\",\n        \"userType\": \"admin\",\n        \"level\": 0\n    }\n}\n```\n\n**Error Response (401):**\n```json\n{\n    \"success\": false,\n    \"message\": \"Invalid verification code\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Disable 2FA",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/2fa/disable",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"2fa",
+								"disable"
+							]
+						},
+						"description": "Disable 2FA for the current admin.\n\n**Security:** Requires verification code to ensure the request is from the legitimate admin.\n\n**Success Response:**\n```json\n{\n    \"success\": true,\n    \"message\": \"2FA has been disabled successfully\"\n}\n```\n\n**Error Response:**\n```json\n{\n    \"success\": false,\n    \"message\": \"Invalid verification code\"\n}\n```"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing Two-Factor Authentication settings for admin users.\n\n**Setup Flow:**\n1. Login as admin (get JWT token)\n2. Check 2FA Status\n3. Setup 2FA (get QR code)\n4. Scan QR code with authenticator app\n5. Verify and Enable 2FA with 6-digit code\n\n**Login Flow (when 2FA enabled):**\n1. Login with username/password → receive HTTP 202\n2. Complete 2FA Login with 6-digit code → receive JWT token"
+		},
+		{
+			"name": "Email Verification",
+			"item": [
+				{
+					"name": "Verify Email (Client/Coach)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/verify-email?token=8c36ed62-a80d-4cbc-8f63-55b8b2f53343",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"verify-email"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "8c36ed62-a80d-4cbc-8f63-55b8b2f53343",
+									"description": "Token received in verification email"
+								}
+							]
+						},
+						"description": "Verify email using token from verification email. Works for both clients and coaches."
+					},
+					"response": []
+				},
+				{
+					"name": "Resend Verification (Client)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"client1@example.com\",\n    \"userType\": \"client\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/resend-verification",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"resend-verification"
+							]
+						},
+						"description": "Resend verification email to client. Rate limited to prevent abuse."
+					},
+					"response": []
+				},
+				{
+					"name": "Resend Verification (Coach)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"coach1@example.com\",\n    \"userType\": \"coach\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/resend-verification",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"resend-verification"
+							]
+						},
+						"description": "Resend verification email to coach"
+					},
+					"response": []
+				},
+				{
+					"name": "Resend Verification (Auto-detect)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"coach1@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/resend-verification",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"resend-verification"
+							]
+						},
+						"description": "Resend verification without specifying userType - will search client -> coach"
+					},
+					"response": []
+				}
+			],
+			"description": "Email verification endpoints for clients and coaches"
+		},
+		{
+			"name": "Password Management",
+			"item": [
+				{
+					"name": "Forgot Password (Client)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"client1@example.com\",\n    \"userType\": \"client\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/forgot-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "Request password reset email for client"
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password (Coach)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"coach1@example.com\",\n    \"userType\": \"coach\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/forgot-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "Request password reset email for coach"
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin1@example.com\",\n    \"userType\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/forgot-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "Request password reset email for admin"
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password (Auto-detect)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"client1@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/forgot-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "Request password reset without specifying userType - will search client -> coach -> admin"
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"61197c39-e655-4ba3-8d55-cd4e7271076f\",\n    \"newPassword\": \"SecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/reset-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"reset-password"
+							]
+						},
+						"description": "Reset password using token from reset email. Works for all user types."
+					},
+					"response": []
+				}
+			],
+			"description": "Password reset and management endpoints"
+		},
+		{
+			"name": "Edge Cases & Testing",
+			"item": [
+				{
+					"name": "Register Invalid UserType",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"Test123\",\n    \"userType\": \"invalid\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Test: Should fail - only 'client' or 'coach' allowed"
+					},
+					"response": []
+				},
+				{
+					"name": "Register Admin (Should Fail)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admintest\",\n    \"email\": \"admintest@example.com\",\n    \"password\": \"Admin123\",\n    \"userType\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Test: Should fail - admins cannot register via API"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Before Email Verification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"client1\",\n    \"password\": \"SecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Test: Should fail - email verification required"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Coach Before Admin Approval",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"coach1\",\n    \"password\": \"CoachPass123\",\n    \"userType\": \"coach\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Test: Should fail if coach not approved by admin (isVerified = false)"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Wrong Password (5 times)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"client1\",\n    \"password\": \"WrongPassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Test: After 5 failed attempts, account locked for 15 minutes"
+					},
+					"response": []
+				},
+				{
+					"name": "Duplicate Username Test",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"client1\",\n    \"email\": \"different@example.com\",\n    \"password\": \"Pass123\",\n    \"userType\": \"client\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Test: Should fail - username already exists"
+					},
+					"response": []
+				},
+				{
+					"name": "Duplicate Email Test",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"differentuser\",\n    \"email\": \"client1@example.com\",\n    \"password\": \"Pass123\",\n    \"userType\": \"client\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Test: Should fail - email already exists"
+					},
+					"response": []
+				}
+			],
+			"description": "Edge cases and error scenarios for testing"
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/auth/health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"health"
+					]
+				},
+				"description": "Check if the authentication service is running"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8081",
+			"type": "string"
+		}
+	]
+}

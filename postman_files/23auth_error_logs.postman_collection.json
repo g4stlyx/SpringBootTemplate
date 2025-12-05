@@ -1,0 +1,240 @@
+{
+	"info": {
+		"_postman_id": "23auth-error-logs-test",
+		"name": "23. Auth Error Logs",
+		"description": "Authentication error logs endpoints - view and manage authentication/authorization errors (Admins only, Delete for Level 0 only)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{admin_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "1. Get All Auth Error Logs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/auth-error-logs?page=0&size=20&sortBy=createdAt&sortDirection=desc",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "auth-error-logs"],
+					"query": [
+						{
+							"key": "page",
+							"value": "0",
+							"description": "Page number (default: 0)"
+						},
+						{
+							"key": "size",
+							"value": "20",
+							"description": "Page size (default: 20)"
+						},
+						{
+							"key": "sortBy",
+							"value": "createdAt",
+							"description": "Sort field (default: createdAt)"
+						},
+						{
+							"key": "sortDirection",
+							"value": "desc",
+							"description": "Sort direction: asc or desc (default: desc)"
+						},
+						{
+							"key": "userId",
+							"value": "",
+							"description": "Filter by user ID",
+							"disabled": true
+						},
+						{
+							"key": "userType",
+							"value": "",
+							"description": "Filter by user type (admin, coach, client)",
+							"disabled": true
+						},
+						{
+							"key": "errorType",
+							"value": "",
+							"description": "Filter by error type (UNAUTHORIZED_401, FORBIDDEN_403, NOT_FOUND_404, BAD_REQUEST_400, INTERNAL_SERVER_ERROR_500, INVALID_TOKEN, ACCESS_DENIED)",
+							"disabled": true
+						},
+						{
+							"key": "ipAddress",
+							"value": "",
+							"description": "Filter by IP address",
+							"disabled": true
+						},
+						{
+							"key": "startDate",
+							"value": "",
+							"description": "Filter by start date (ISO format: 2024-01-01T00:00:00)",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Get all authentication error logs with pagination and optional filtering.\n\n**Access:** All Admins\n\n**Query Parameters:**\n- page (optional): Page number (default: 0)\n- size (optional): Page size (default: 20)\n- sortBy (optional): Sort field (default: createdAt)\n- sortDirection (optional): asc or desc (default: desc)\n- userId (optional): Filter by specific user ID\n- userType (optional): Filter by user type (admin, coach, client)\n- errorType (optional): Filter by error type\n- ipAddress (optional): Filter by IP address\n- startDate (optional): Filter logs after this date (ISO format)\n\n**Error Types:**\n- UNAUTHORIZED_401: Authentication required\n- FORBIDDEN_403: Insufficient permissions\n- NOT_FOUND_404: Resource not found\n- BAD_REQUEST_400: Bad request\n- INTERNAL_SERVER_ERROR_500: Server error\n- INVALID_TOKEN: Invalid or expired token\n- ACCESS_DENIED: Access denied"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get Auth Error Logs (Filtered by Error Type)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/auth-error-logs?errorType=UNAUTHORIZED_401&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "auth-error-logs"],
+					"query": [
+						{
+							"key": "errorType",
+							"value": "UNAUTHORIZED_401",
+							"description": "Filter by error type"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get auth error logs filtered by error type.\n\n**Access:** All Admins"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Get Auth Error Logs (Filtered by User Type)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/auth-error-logs?userType=client&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "auth-error-logs"],
+					"query": [
+						{
+							"key": "userType",
+							"value": "client",
+							"description": "Filter by user type"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get auth error logs filtered by user type (admin, coach, client).\n\n**Access:** All Admins"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get Auth Error Log by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/auth-error-logs/1",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "auth-error-logs", "1"]
+				},
+				"description": "Get a specific authentication error log entry by ID.\n\n**Access:** All Admins\n\n**Response:**\n- id: Log entry ID\n- errorType: Error type code\n- errorDescription: Human-readable error description\n- userId: ID of user (if identified)\n- userType: Type of user (admin, coach, client)\n- username: Username (if identified)\n- ipAddress: IP address of the request\n- userAgent: User agent of the request\n- endpoint: Requested endpoint\n- httpMethod: HTTP method used\n- errorMessage: Error message\n- attemptedAction: Description of attempted action\n- createdAt: Timestamp of the error"
+			},
+			"response": []
+		},
+		{
+			"name": "5. Get Auth Error Logs by User ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/auth-error-logs/user/1?page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "auth-error-logs", "user", "1"],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get authentication error logs for a specific user.\n\n**Access:** All Admins"
+			},
+			"response": []
+		},
+		{
+			"name": "6. Get Auth Error Logs by IP Address",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/auth-error-logs/ip/192.168.1.1?page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "auth-error-logs", "ip", "192.168.1.1"],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get authentication error logs for a specific IP address.\n\nUseful for detecting brute force attacks or suspicious activity from a particular source.\n\n**Access:** All Admins"
+			},
+			"response": []
+		},
+		{
+			"name": "7. Get Auth Error Statistics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/auth-error-logs/statistics",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "auth-error-logs", "statistics"]
+				},
+				"description": "Get authentication error statistics and trends.\n\n**Access:** All Admins\n\n**Response:**\n- totalErrors: Total error count\n- unauthorized401Count: 401 error count\n- forbidden403Count: 403 error count\n- notFound404Count: 404 error count\n- badRequest400Count: 400 error count\n- internalServerError500Count: 500 error count\n- invalidTokenCount: Invalid token error count\n- accessDeniedCount: Access denied error count\n- errorsByType: Map of error types to counts\n- dailyStatistics: Map of dates to error counts (last 30 days)"
+			},
+			"response": []
+		},
+		{
+			"name": "8. Delete Auth Error Log (Level 0 Only)",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/auth-error-logs/1",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "auth-error-logs", "1"]
+				},
+				"description": "Delete an authentication error log entry.\n\n**Access:** Level 0 Super Admins only\n\n**Note:** This is a permanent deletion. Use with caution for audit compliance."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080"
+		}
+	]
+}

@@ -1,0 +1,787 @@
+{
+	"info": {
+		"_postman_id": "11image-upload-collection",
+		"name": "11. Image Upload (R2)",
+		"description": "Image upload, update, and delete endpoints for profile images and book covers using Cloudflare R2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Client Profile Image",
+			"item": [
+				{
+					"name": "Upload Profile Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "image", "profile"]
+						},
+						"description": "Upload profile image for client. Max 5MB, formats: JPG, PNG, WEBP"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile Image",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "oldImageUrl",
+									"value": "{{client_profile_image_url}}",
+									"type": "text",
+									"description": "Optional: URL of old image to delete"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "image", "profile"]
+						},
+						"description": "Update profile image for client. Deletes old image if URL provided."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Profile Image",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/image/profile?imageUrl={{client_profile_image_url}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "image", "profile"],
+							"query": [
+								{
+									"key": "imageUrl",
+									"value": "{{client_profile_image_url}}",
+									"description": "URL of image to delete"
+								}
+							]
+						},
+						"description": "Delete profile image for client"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Coach Profile Image",
+			"item": [
+				{
+					"name": "Upload Profile Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{coach_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "image", "profile"]
+						},
+						"description": "Upload profile image for coach. Max 5MB, formats: JPG, PNG, WEBP"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile Image",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{coach_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "oldImageUrl",
+									"value": "{{coach_profile_image_url}}",
+									"type": "text",
+									"description": "Optional: URL of old image to delete"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "image", "profile"]
+						},
+						"description": "Update profile image for coach. Deletes old image if URL provided."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Profile Image",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{coach_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/image/profile?imageUrl={{coach_profile_image_url}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "image", "profile"],
+							"query": [
+								{
+									"key": "imageUrl",
+									"value": "{{coach_profile_image_url}}",
+									"description": "URL of image to delete"
+								}
+							]
+						},
+						"description": "Delete profile image for coach"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin Profile Image",
+			"item": [
+				{
+					"name": "Upload Profile Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "profile"]
+						},
+						"description": "Upload profile image for admin. Max 5MB, formats: JPG, PNG, WEBP"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile Image",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "oldImageUrl",
+									"value": "{{admin_profile_image_url}}",
+									"type": "text",
+									"description": "Optional: URL of old image to delete"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "profile"]
+						},
+						"description": "Update profile image for admin. Deletes old image if URL provided."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Profile Image",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/profile?imageUrl={{admin_profile_image_url}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "profile"],
+							"query": [
+								{
+									"key": "imageUrl",
+									"value": "{{admin_profile_image_url}}",
+									"description": "URL of image to delete"
+								}
+							]
+						},
+						"description": "Delete profile image for admin"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Book Cover Images",
+			"item": [
+				{
+					"name": "Upload Book Cover",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/book-cover/{{book_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "book-cover", "{{book_id}}"]
+						},
+						"description": "Upload book cover image. Admin only. Max 5MB, formats: JPG, PNG, WEBP"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Book Cover",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "oldImageUrl",
+									"value": "{{book_cover_image_url}}",
+									"type": "text",
+									"description": "Optional: URL of old cover to delete"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/book-cover/{{book_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "book-cover", "{{book_id}}"]
+						},
+						"description": "Update book cover image. Deletes old cover if URL provided."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Book Cover",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/book-cover?imageUrl={{book_cover_image_url}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "book-cover"],
+							"query": [
+								{
+									"key": "imageUrl",
+									"value": "{{book_cover_image_url}}",
+									"description": "URL of book cover to delete"
+								}
+							]
+						},
+						"description": "Delete book cover image"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Example Scenarios",
+			"item": [
+				{
+					"name": "Client - Upload Avatar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.imageUrl) {",
+									"        pm.environment.set('client_profile_image_url', jsonData.imageUrl);",
+									"        pm.test('Image URL saved to environment', function() {",
+									"            pm.expect(jsonData.imageUrl).to.include('profiles/client');",
+									"        });",
+									"    }",
+									"}",
+									"",
+									"pm.test('Status code is 200', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success=true', function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test('Response contains imageUrl', function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('imageUrl');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "Upload a profile picture (avatar.jpg)",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "image", "profile"]
+						},
+						"description": "Example: Client uploads avatar image"
+					},
+					"response": []
+				},
+				{
+					"name": "Coach - Update Profile Photo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.imageUrl) {",
+									"        pm.environment.set('coach_profile_image_url', jsonData.imageUrl);",
+									"    }",
+									"}",
+									"",
+									"pm.test('Old image deleted and new uploaded', function() {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('güncellendi');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{coach_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "New profile photo",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "oldImageUrl",
+									"value": "{{coach_profile_image_url}}",
+									"description": "Previous photo URL",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "image", "profile"]
+						},
+						"description": "Example: Coach updates profile photo (deletes old, uploads new)"
+					},
+					"response": []
+				},
+				{
+					"name": "Admin - Upload Book Cover for 'Atomic Habits'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.imageUrl) {",
+									"        pm.environment.set('book_cover_image_url', jsonData.imageUrl);",
+									"        pm.test('Book cover URL saved', function() {",
+									"            pm.expect(jsonData.imageUrl).to.include('books/');",
+									"        });",
+									"    }",
+									"}",
+									"",
+									"pm.test('Book cover uploaded successfully', function() {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('Kitap kapağı');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Set a sample book_id if not exists",
+									"if (!pm.environment.get('book_id')) {",
+									"    pm.environment.set('book_id', '1');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "atomic-habits-cover.jpg",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/book-cover/{{book_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "book-cover", "{{book_id}}"]
+						},
+						"description": "Example: Admin uploads book cover for Atomic Habits"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Negative Tests",
+			"item": [
+				{
+					"name": "Upload Without Token (401)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns 401 Unauthorized', function() {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "image", "profile"]
+						},
+						"description": "Negative test: Upload without authorization token"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Empty File (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns 400 Bad Request', function() {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('Error message mentions empty file', function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('boş');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "image", "profile"]
+						},
+						"description": "Negative test: Upload without file"
+					},
+					"response": []
+				},
+				{
+					"name": "Client Tries to Upload Book Cover (403)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns 403 Forbidden', function() {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}",
+								"type": "text",
+								"description": "Client token (not admin)"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/book-cover/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "book-cover", "1"]
+						},
+						"description": "Negative test: Client tries to access admin endpoint"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Non-existent Image (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Returns error response', function() {",
+									"    pm.response.to.not.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/profile?imageUrl=https://invalid-url.com/image.jpg",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "profile"],
+							"query": [
+								{
+									"key": "imageUrl",
+									"value": "https://invalid-url.com/image.jpg",
+									"description": "Invalid URL"
+								}
+							]
+						},
+						"description": "Negative test: Delete image with invalid URL"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default base_url if not exists",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8080');",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}

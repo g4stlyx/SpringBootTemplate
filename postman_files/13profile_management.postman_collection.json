@@ -1,0 +1,1326 @@
+{
+	"info": {
+		"_postman_id": "13profile-mgmt-001",
+		"name": "13. Profile Management",
+		"description": "Profile management endpoints for coaches, clients and admins - view, update, change password, and public profiles",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Coach Profile",
+			"item": [
+				{
+					"name": "Get Own Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has profile data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('username');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"    pm.expect(jsonData).to.have.property('firstName');",
+									"    pm.expect(jsonData).to.have.property('lastName');",
+									"    pm.expect(jsonData).to.have.property('isVerified');",
+									"    pm.expect(jsonData).to.have.property('emailVerified');",
+									"});",
+									"",
+									"pm.test(\"Coach-specific fields exist\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('specializations');",
+									"    pm.expect(jsonData).to.have.property('certifications');",
+									"    pm.expect(jsonData).to.have.property('yearsOfExperience');",
+									"    pm.expect(jsonData).to.have.property('hourlyRate');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{coach_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "profile"]
+						},
+						"description": "Get coach's own complete profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Profile updated successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('updatedAt');",
+									"});",
+									"",
+									"pm.test(\"Updated fields are reflected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var requestData = JSON.parse(pm.request.body.raw);",
+									"    ",
+									"    if (requestData.bio) {",
+									"        pm.expect(jsonData.bio).to.eql(requestData.bio);",
+									"    }",
+									"    if (requestData.hourlyRate) {",
+									"        pm.expect(jsonData.hourlyRate).to.eql(requestData.hourlyRate);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{coach_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+90 555 123 4567\",\n  \"bio\": \"Professional life coach with extensive experience in career and executive coaching. Helping professionals achieve their goals for over 10 years.\",\n  \"specializations\": [\n    \"Career Coaching\",\n    \"Executive Coaching\",\n    \"Leadership Development\"\n  ],\n  \"certifications\": [\n    \"ICF-ACC\",\n    \"NLP Practitioner\",\n    \"Emotional Intelligence Coach\"\n  ],\n  \"yearsOfExperience\": 11,\n  \"hourlyRate\": 175.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "profile"]
+						},
+						"description": "Update coach's profile information (all fields optional)"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Profile Picture",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Profile picture uploaded\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('imageUrl');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{coach_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "image", "profile"]
+						},
+						"description": "Upload coach's profile picture (multipart file upload)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile Picture",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Profile picture updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('imageUrl');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{coach_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								},
+								{
+									"key": "oldImageUrl",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "image", "profile"]
+						},
+						"description": "Update coach's profile picture (multipart file upload, optionally provide oldImageUrl to delete the previous image)"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Password changed successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('başarıyla');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{coach_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"currentPassword123\",\n  \"newPassword\": \"newSecurePassword456\",\n  \"confirmPassword\": \"newSecurePassword456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/profile/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "profile", "change-password"]
+						},
+						"description": "Change coach's password"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password - Wrong Current Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about wrong password\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('şifre');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{coach_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"wrongPassword\",\n  \"newPassword\": \"newSecurePassword456\",\n  \"confirmPassword\": \"newSecurePassword456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/profile/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "profile", "change-password"]
+						},
+						"description": "Test error handling for wrong current password"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password - Passwords Don't Match",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about password mismatch\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('eşleşmiyor');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{coach_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"currentPassword123\",\n  \"newPassword\": \"newSecurePassword456\",\n  \"confirmPassword\": \"differentPassword789\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/profile/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "profile", "change-password"]
+						},
+						"description": "Test error handling for password mismatch"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Public Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Public profile data returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('firstName');",
+									"    pm.expect(jsonData).to.have.property('lastName');",
+									"    pm.expect(jsonData).to.have.property('bio');",
+									"    pm.expect(jsonData).to.have.property('activeClientCount');",
+									"    pm.expect(jsonData).to.have.property('memberSince');",
+									"});",
+									"",
+									"pm.test(\"Sensitive fields not exposed\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.not.have.property('email');",
+									"    pm.expect(jsonData).to.not.have.property('username');",
+									"    pm.expect(jsonData).to.not.have.property('phone');",
+									"});",
+									"",
+									"pm.test(\"Active client count is valid\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.activeClientCount).to.be.a('number');",
+									"    pm.expect(jsonData.activeClientCount).to.be.at.least(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/profile/public/{{coach_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "profile", "public", "{{coach_id}}"]
+						},
+						"description": "Get coach's public profile (as clients see it) - includes active client count"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Public Profile - Coach Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Error message in Turkish\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('coach bulunamadı');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/profile/public/99999",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "profile", "public", "99999"]
+						},
+						"description": "Test error handling for non-existent coach"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for coach profile management"
+		},
+		{
+			"name": "Client Profile",
+			"item": [
+				{
+					"name": "Get Own Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has profile data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('username');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"    pm.expect(jsonData).to.have.property('firstName');",
+									"    pm.expect(jsonData).to.have.property('lastName');",
+									"    pm.expect(jsonData).to.have.property('emailVerified');",
+									"    pm.expect(jsonData).to.have.property('onboardingCompleted');",
+									"});",
+									"",
+									"pm.test(\"Client-specific fields exist\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('dateOfBirth');",
+									"    pm.expect(jsonData).to.have.property('occupation');",
+									"    pm.expect(jsonData).to.have.property('lastLoginAt');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "profile"]
+						},
+						"description": "Get client's own complete profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Profile updated successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('updatedAt');",
+									"});",
+									"",
+									"pm.test(\"Updated fields are reflected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var requestData = JSON.parse(pm.request.body.raw);",
+									"    ",
+									"    if (requestData.bio) {",
+									"        pm.expect(jsonData.bio).to.eql(requestData.bio);",
+									"    }",
+									"    if (requestData.occupation) {",
+									"        pm.expect(jsonData.occupation).to.eql(requestData.occupation);",
+									"    }",
+									"    if (requestData.dateOfBirth) {",
+									"        pm.expect(jsonData.dateOfBirth).to.eql(requestData.dateOfBirth);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+90 555 987 6543\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"bio\": \"Software engineer looking to improve career and personal growth through professional coaching.\",\n  \"occupation\": \"Senior Software Engineer\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "profile"]
+						},
+						"description": "Update client's profile information (all fields optional)"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Profile Picture",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Profile picture uploaded\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('imageUrl');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "image", "profile"]
+						},
+						"description": "Upload client's profile picture (multipart file upload)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile Picture",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Profile picture updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('imageUrl');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								},
+								{
+									"key": "oldImageUrl",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "image", "profile"]
+						},
+						"description": "Update client's profile picture (multipart file upload, optionally provide oldImageUrl to delete the previous image)"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Password changed successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('başarıyla');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"currentPassword123\",\n  \"newPassword\": \"newSecurePassword456\",\n  \"confirmPassword\": \"newSecurePassword456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/profile/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "profile", "change-password"]
+						},
+						"description": "Change client's password"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password - Wrong Current Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about wrong password\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('şifre');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"wrongPassword\",\n  \"newPassword\": \"newSecurePassword456\",\n  \"confirmPassword\": \"newSecurePassword456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/profile/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "profile", "change-password"]
+						},
+						"description": "Test error handling for wrong current password"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile - Invalid Date Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about date format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('tarih formatı');",
+									"    pm.expect(jsonData.message).to.include('yyyy-MM-dd');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dateOfBirth\": \"15/05/1990\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/client/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "client", "profile"]
+						},
+						"description": "Test date validation - should fail with wrong format"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for client profile management"
+		},
+		{
+			"name": "Admin Profile",
+			"item": [
+				{
+					"name": "Get Own Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has profile data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('username');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"    pm.expect(jsonData).to.have.property('firstName');",
+									"    pm.expect(jsonData).to.have.property('lastName');",
+									"    pm.expect(jsonData).to.have.property('level');",
+									"    pm.expect(jsonData).to.have.property('permissions');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "profile"]
+						},
+						"description": "Get admin's own complete profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Profile updated successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('updatedAt');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"User\",\n  \"email\": \"admin@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "profile"]
+						},
+						"description": "Update admin's profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Profile Picture",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Profile picture uploaded\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('imageUrl');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "profile"]
+						},
+						"description": "Upload admin's profile picture (multipart file upload)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile Picture",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Profile picture updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('imageUrl');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								},
+								{
+									"key": "oldImageUrl",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/image/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "image", "profile"]
+						},
+						"description": "Update admin's profile picture (multipart file upload, optionally provide oldImageUrl to delete the previous image)"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Password changed successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('successfully');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"currentPassword123\",\n  \"newPassword\": \"newSecurePassword456\",\n  \"confirmPassword\": \"newSecurePassword456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/profile/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "profile", "change-password"]
+						},
+						"description": "Change admin's password"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password - Wrong Current Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about wrong password\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('password');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"wrongPassword\",\n  \"newPassword\": \"newSecurePassword456\",\n  \"confirmPassword\": \"newSecurePassword456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/profile/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "profile", "change-password"]
+						},
+						"description": "Test error handling for wrong current password"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for admin profile management"
+		},
+		{
+			"name": "Integration Tests",
+			"item": [
+				{
+					"name": "Coach Updates and Client Views",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// This test requires both coach and client tokens to be set",
+									"// Step 1: Update coach profile",
+									"// Step 2: Client views updated public profile"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Public profile reflects coach updates\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('firstName');",
+									"    pm.expect(jsonData).to.have.property('bio');",
+									"    pm.expect(jsonData).to.have.property('hourlyRate');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/coach/profile/public/{{coach_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "coach", "profile", "public", "{{coach_id}}"]
+						},
+						"description": "Integration test: Coach updates profile, client views public profile"
+					},
+					"response": []
+				}
+			],
+			"description": "End-to-end integration tests"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "coach_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "client_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "coach_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}

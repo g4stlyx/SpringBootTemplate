@@ -1,0 +1,187 @@
+{
+	"info": {
+		"_postman_id": "21admin-activity-logs-test",
+		"name": "22. Admin Activity Logs",
+		"description": "Admin activity logs endpoints - view admin actions and system events (Level 0 Super Admins only)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{admin_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "1. Get All Activity Logs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/activity-logs?page=0&size=20&sortBy=createdAt&sortDirection=desc",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "activity-logs"],
+					"query": [
+						{
+							"key": "page",
+							"value": "0",
+							"description": "Page number (default: 0)"
+						},
+						{
+							"key": "size",
+							"value": "20",
+							"description": "Page size (default: 20)"
+						},
+						{
+							"key": "sortBy",
+							"value": "createdAt",
+							"description": "Sort field (default: createdAt)"
+						},
+						{
+							"key": "sortDirection",
+							"value": "desc",
+							"description": "Sort direction: asc or desc (default: desc)"
+						},
+						{
+							"key": "adminId",
+							"value": "",
+							"description": "Filter by admin ID",
+							"disabled": true
+						},
+						{
+							"key": "action",
+							"value": "",
+							"description": "Filter by action (READ, CREATE, UPDATE, DELETE)",
+							"disabled": true
+						},
+						{
+							"key": "resourceType",
+							"value": "",
+							"description": "Filter by resource type (e.g., Admin, Coach, Client, Goal, etc.)",
+							"disabled": true
+						},
+						{
+							"key": "startDate",
+							"value": "",
+							"description": "Filter by start date (ISO format: 2024-01-01T00:00:00)",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Get all admin activity logs with pagination and optional filtering.\n\n**Access:** Level 0 Super Admins only\n\n**Query Parameters:**\n- page (optional): Page number (default: 0)\n- size (optional): Page size (default: 20)\n- sortBy (optional): Sort field (default: createdAt)\n- sortDirection (optional): asc or desc (default: desc)\n- adminId (optional): Filter by specific admin ID\n- action (optional): Filter by action type (READ, CREATE, UPDATE, DELETE)\n- resourceType (optional): Filter by resource type\n- startDate (optional): Filter logs after this date (ISO format)\n\n**Response:**\n- logs: Array of activity log entries\n- currentPage, totalPages, totalElements, pageSize\n- hasNext, hasPrevious"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get All Activity Logs (Filtered by Admin)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/activity-logs?adminId=1&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "activity-logs"],
+					"query": [
+						{
+							"key": "adminId",
+							"value": "1",
+							"description": "Filter by admin ID"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get activity logs filtered by a specific admin.\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Get All Activity Logs (Filtered by Action)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/activity-logs?action=DELETE&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "activity-logs"],
+					"query": [
+						{
+							"key": "action",
+							"value": "DELETE",
+							"description": "Filter by action type"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get activity logs filtered by action type.\n\nPossible action values:\n- READ\n- CREATE\n- UPDATE\n- DELETE\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get All Activity Logs (Filtered by Resource Type)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/activity-logs?resourceType=Coach&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "activity-logs"],
+					"query": [
+						{
+							"key": "resourceType",
+							"value": "Coach",
+							"description": "Filter by resource type"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get activity logs filtered by resource type.\n\nPossible resource types:\n- Admin\n- Coach\n- Client\n- Connection\n- Goal\n- BookUp\n- EQAssessment\n- DriveDynamics\n- LifeWheel\n- PasswordResetToken\n- VerificationToken\n- AdminActivityLog\n- etc.\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "5. Get Activity Log by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/activity-logs/1",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "activity-logs", "1"]
+				},
+				"description": "Get a specific activity log entry by ID.\n\n**Access:** Level 0 Super Admins only\n\n**Response:**\n- id: Log entry ID\n- adminId: ID of admin who performed the action\n- adminUsername: Username of the admin\n- adminEmail: Email of the admin\n- action: Action type (READ, CREATE, UPDATE, DELETE)\n- resourceType: Type of resource affected\n- resourceId: ID of the affected resource\n- details: JSON string with additional action details\n- ipAddress: IP address of the request\n- userAgent: User agent of the request\n- createdAt: Timestamp of the action"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080"
+		}
+	]
+}

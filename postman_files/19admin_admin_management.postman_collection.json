@@ -1,0 +1,667 @@
+{
+	"info": {
+		"_postman_id": "19admin-admin-mgmt-001",
+		"name": "19. Admin Management",
+		"description": "Admin panel endpoints for managing admins - create, update, activate, deactivate, password reset, and unlock operations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Get All Admins",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has pagination structure\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('admins');",
+							"    pm.expect(jsonData).to.have.property('currentPage');",
+							"    pm.expect(jsonData).to.have.property('totalPages');",
+							"    pm.expect(jsonData).to.have.property('totalElements');",
+							"    pm.expect(jsonData).to.have.property('pageSize');",
+							"});",
+							"",
+							"pm.test(\"Admins array exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.admins).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Admin items have required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.admins.length > 0) {",
+							"        var admin = jsonData.admins[0];",
+							"        pm.expect(admin).to.have.property('id');",
+							"        pm.expect(admin).to.have.property('username');",
+							"        pm.expect(admin).to.have.property('email');",
+							"        pm.expect(admin).to.have.property('level');",
+							"        pm.expect(admin).to.have.property('isActive');",
+							"        ",
+							"        // Save admin ID for other tests",
+							"        pm.environment.set('test_admin_id', admin.id);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins?page=0&size=10&sortBy=createdAt&sortDirection=desc",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins"],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						},
+						{
+							"key": "sortBy",
+							"value": "createdAt"
+						},
+						{
+							"key": "sortDirection",
+							"value": "desc"
+						}
+					]
+				},
+				"description": "Get paginated list of all admins (filtered by permission). Super admins see all admins, regular admins see only moderators."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get Admin by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has admin profile\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData).to.have.property('username');",
+							"    pm.expect(jsonData).to.have.property('email');",
+							"    pm.expect(jsonData).to.have.property('level');",
+							"});",
+							"",
+							"pm.test(\"Admin has required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('firstName');",
+							"    pm.expect(jsonData).to.have.property('lastName');",
+							"    pm.expect(jsonData).to.have.property('isActive');",
+							"    pm.expect(jsonData).to.have.property('permissions');",
+							"    pm.expect(jsonData).to.have.property('createdAt');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins/{{test_admin_id}}",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins", "{{test_admin_id}}"]
+				},
+				"description": "Get detailed information about a specific admin by ID"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Create New Admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Admin created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData).to.have.property('username');",
+							"    pm.expect(jsonData).to.have.property('email');",
+							"    pm.expect(jsonData).to.have.property('level');",
+							"    ",
+							"    // Save created admin ID for subsequent tests",
+							"    pm.environment.set('created_admin_id', jsonData.id);",
+							"});",
+							"",
+							"pm.test(\"Admin has correct level\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.level).to.be.oneOf([1, 2]);",
+							"});",
+							"",
+							"pm.test(\"Admin is active by default\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.isActive).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"newadmin\",\n    \"email\": \"newadmin@example.com\",\n    \"password\": \"SecurePass123!\",\n    \"firstName\": \"New\",\n    \"lastName\": \"Admin\",\n    \"level\": 2,\n    \"permissions\": [\"MANAGE_COACHES\", \"MANAGE_CLIENTS\", \"VIEW_ANALYTICS\"],\n    \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins"]
+				},
+				"description": "Create a new admin account. Level 1 = Admin, Level 2 = Moderator. Super admins can create admins, admins can create moderators only."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Update Admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Admin updated successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData).to.have.property('username');",
+							"    pm.expect(jsonData).to.have.property('email');",
+							"});",
+							"",
+							"pm.test(\"Updated fields are correct\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.firstName).to.equal('Updated');",
+							"    pm.expect(jsonData.lastName).to.equal('Admin');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"updatedadmin@example.com\",\n    \"firstName\": \"Updated\",\n    \"lastName\": \"Admin\",\n    \"level\": 2,\n    \"permissions\": [\"MANAGE_COACHES\", \"MANAGE_CLIENTS\", \"VIEW_ANALYTICS\", \"MANAGE_CONTENT\"],\n    \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins/{{created_admin_id}}",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins", "{{created_admin_id}}"]
+				},
+				"description": "Update an existing admin's information. Can update email, name, level, permissions, and active status."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Deactivate Admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Admin deactivated successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData.isActive).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins/{{created_admin_id}}/deactivate",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins", "{{created_admin_id}}", "deactivate"]
+				},
+				"description": "Deactivate an admin account. Deactivated admins cannot log in."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Activate Admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Admin activated successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData.isActive).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins/{{created_admin_id}}/activate",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins", "{{created_admin_id}}", "activate"]
+				},
+				"description": "Activate a previously deactivated admin account."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Reset Admin Password",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Password reset successful\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.message).to.equal('Admin password reset successfully');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"newPassword\": \"NewSecurePass456!\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins/{{created_admin_id}}/reset-password",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins", "{{created_admin_id}}", "reset-password"]
+				},
+				"description": "Reset an admin's password. Requires minimum 8 characters."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Unlock Admin Account",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Admin account unlocked\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData).to.have.property('username');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins/{{created_admin_id}}/unlock",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins", "{{created_admin_id}}", "unlock"]
+				},
+				"description": "Unlock an admin account that was locked due to failed login attempts."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Delete Admin (Soft Delete)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Admin deleted successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.message).to.equal('Admin deactivated successfully');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins/{{created_admin_id}}",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins", "{{created_admin_id}}"]
+				},
+				"description": "Soft delete an admin account. This deactivates the admin rather than permanently deleting them."
+			},
+			"response": []
+		},
+		{
+			"name": "Error: Get Non-existent Admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Error message indicates admin not found\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins/999999",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins", "999999"]
+				},
+				"description": "Test error handling when requesting a non-existent admin"
+			},
+			"response": []
+		},
+		{
+			"name": "Error: Create Admin with Invalid Data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Validation error returned\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"\",\n    \"email\": \"invalid-email\",\n    \"password\": \"short\",\n    \"level\": 5\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins"]
+				},
+				"description": "Test validation errors when creating admin with invalid data"
+			},
+			"response": []
+		},
+		{
+			"name": "Error: Unauthorized Access",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401 or 403\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/admins",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "admins"]
+				},
+				"description": "Test that unauthorized requests are rejected"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Ensure base_url is set",
+					"if (!pm.environment.get('base_url')) {",
+					"    pm.environment.set('base_url', 'http://localhost:8080');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Log response time for performance monitoring",
+					"console.log('Response time: ' + pm.response.responseTime + 'ms');"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "test_admin_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "created_admin_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
