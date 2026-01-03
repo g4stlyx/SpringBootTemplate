@@ -17,6 +17,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/admin/image")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("hasRole('ADMIN') and @adminLevelAuthorizationService.isLevel0Or1Or2()")
 public class AdminImageController {
 
     private final ImageUploadService imageUploadService;
@@ -27,7 +28,6 @@ public class AdminImageController {
      * Upload profile image for admin
      */
     @PostMapping("/profile")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> uploadProfileImage(
             @RequestParam("file") MultipartFile file,
             @RequestHeader("Authorization") String token) {
@@ -62,7 +62,6 @@ public class AdminImageController {
      * Update profile image for admin
      */
     @PutMapping("/profile")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateProfileImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "oldImageUrl", required = false) String oldImageUrl,
@@ -98,7 +97,6 @@ public class AdminImageController {
      * Delete profile image for admin
      */
     @DeleteMapping("/profile")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteProfileImage(@RequestParam("imageUrl") String imageUrl) {
         try {
             imageUploadService.deleteImage(imageUrl);
@@ -120,7 +118,6 @@ public class AdminImageController {
      * Upload book cover image
      */
     @PostMapping("/book-cover/{bookId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> uploadBookCover(
             @PathVariable Long bookId,
             @RequestParam("file") MultipartFile file) {
@@ -150,7 +147,6 @@ public class AdminImageController {
      * Update book cover image
      */
     @PutMapping("/book-cover/{bookId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateBookCover(
             @PathVariable Long bookId,
             @RequestParam("file") MultipartFile file,
@@ -181,7 +177,6 @@ public class AdminImageController {
      * Delete book cover image
      */
     @DeleteMapping("/book-cover")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteBookCover(@RequestParam("imageUrl") String imageUrl) {
         try {
             imageUploadService.deleteImage(imageUrl);

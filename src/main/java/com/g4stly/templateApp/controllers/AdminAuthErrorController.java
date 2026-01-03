@@ -26,7 +26,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/admin/auth-error-logs")
 @Slf4j
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN') and @adminLevelAuthorizationService.isLevel0()")
 public class AdminAuthErrorController {
     
     @Autowired

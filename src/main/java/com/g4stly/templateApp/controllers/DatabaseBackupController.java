@@ -11,7 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin/database-backup")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN') and @adminLevelAuthorizationService.isLevel0()")
 public class DatabaseBackupController {
 
     @Autowired

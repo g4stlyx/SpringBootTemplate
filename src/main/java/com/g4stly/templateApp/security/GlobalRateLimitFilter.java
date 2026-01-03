@@ -37,7 +37,7 @@ public class GlobalRateLimitFilter extends OncePerRequestFilter {
             log.warn("Global rate limit exceeded for IP: {}, URI: {}", clientIp, request.getRequestURI());
             response.setStatus(429); // Too Many Requests
             response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Too many requests. Please try again later.\",\"message\":\"Rate limit exceeded: 20 requests per minute\"}");
+            response.getWriter().write("{\"error\":\"Too many requests. Please try again later.\",\"message\":\"Rate limit exceeded: 30 requests per minute\"}");
             return;
         }
         

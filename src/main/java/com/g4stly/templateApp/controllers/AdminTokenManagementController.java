@@ -20,6 +20,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/admin/tokens")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("hasRole('ADMIN') and @adminLevelAuthorizationService.isLevel0()")
 public class AdminTokenManagementController {
     
     private final AdminTokenManagementService tokenManagementService;
@@ -31,7 +32,6 @@ public class AdminTokenManagementController {
      * Only Level 0 (Super Admin) can access
      */
     @GetMapping("/password-reset")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllPasswordResetTokens(
             @RequestHeader("Authorization") String token,
             @RequestParam(required = false) String userType,
@@ -78,7 +78,6 @@ public class AdminTokenManagementController {
      * Only Level 0 (Super Admin) can access
      */
     @GetMapping("/password-reset/{tokenId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getPasswordResetTokenById(
             @RequestHeader("Authorization") String token,
             @PathVariable Long tokenId,
@@ -124,7 +123,6 @@ public class AdminTokenManagementController {
      * Only Level 0 (Super Admin) can access
      */
     @DeleteMapping("/password-reset/{tokenId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deletePasswordResetToken(
             @RequestHeader("Authorization") String token,
             @PathVariable Long tokenId,
@@ -170,7 +168,6 @@ public class AdminTokenManagementController {
      * Only Level 0 (Super Admin) can access
      */
     @GetMapping("/verification")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllVerificationTokens(
             @RequestHeader("Authorization") String token,
             @RequestParam(required = false) String userType,
@@ -217,7 +214,6 @@ public class AdminTokenManagementController {
      * Only Level 0 (Super Admin) can access
      */
     @GetMapping("/verification/{tokenId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getVerificationTokenById(
             @RequestHeader("Authorization") String token,
             @PathVariable Long tokenId,
@@ -263,7 +259,6 @@ public class AdminTokenManagementController {
      * Only Level 0 (Super Admin) can access
      */
     @DeleteMapping("/verification/{tokenId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteVerificationToken(
             @RequestHeader("Authorization") String token,
             @PathVariable Long tokenId,

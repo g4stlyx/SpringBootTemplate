@@ -25,6 +25,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/admin/activity-logs")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("hasRole('ADMIN') and @adminLevelAuthorizationService.isLevel0()")
 public class AdminActivityLogController {
     
     private final AdminActivityLogService activityLogService;
@@ -48,7 +49,6 @@ public class AdminActivityLogController {
      * @return Paginated list of activity logs
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllActivityLogs(
             @RequestHeader("Authorization") String token,
             @RequestParam(required = false) Long adminId,
@@ -104,7 +104,6 @@ public class AdminActivityLogController {
      * @return Activity log details
      */
     @GetMapping("/{logId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getActivityLogById(
             @RequestHeader("Authorization") String token,
             @PathVariable Long logId,
