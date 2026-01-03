@@ -42,21 +42,23 @@ public class GlobalExceptionHandler {
         
         log.error("Path not found: {} {}", request.getMethod(), request.getRequestURI());
         
-        // Log 404 error
-        UserInfo userInfo = extractUserInfo(request);
-        try {
-            authErrorLogService.log404(
-                userInfo.userId,
-                userInfo.userType,
-                userInfo.username,
-                getClientIP(request),
-                request.getHeader("User-Agent"),
-                request.getRequestURI(),
-                request.getMethod(),
-                "Path not found"
-            );
-        } catch (Exception e) {
-            log.error("Failed to log 404 error: {}", e.getMessage());
+        // Log 404 error (skip bot scanner requests)
+        if (!isBotScannerRequest(request)) {
+            UserInfo userInfo = extractUserInfo(request);
+            try {
+                authErrorLogService.log404(
+                    userInfo.userId,
+                    userInfo.userType,
+                    userInfo.username,
+                    getClientIP(request),
+                    request.getHeader("User-Agent"),
+                    request.getRequestURI(),
+                    request.getMethod(),
+                    "Path not found"
+                );
+            } catch (Exception e) {
+                log.error("Failed to log 404 error: {}", e.getMessage());
+            }
         }
         
         ErrorResponse errorResponse = new ErrorResponse(
@@ -80,21 +82,23 @@ public class GlobalExceptionHandler {
         
         log.error("Resource not found: {}", ex.getMessage());
         
-        // Log 404 error
-        UserInfo userInfo = extractUserInfo(request);
-        try {
-            authErrorLogService.log404(
-                userInfo.userId,
-                userInfo.userType,
-                userInfo.username,
-                getClientIP(request),
-                request.getHeader("User-Agent"),
-                request.getRequestURI(),
-                request.getMethod(),
-                ex.getMessage()
-            );
-        } catch (Exception e) {
-            log.error("Failed to log 404 error: {}", e.getMessage());
+        // Log 404 error (skip bot scanner requests)
+        if (!isBotScannerRequest(request)) {
+            UserInfo userInfo = extractUserInfo(request);
+            try {
+                authErrorLogService.log404(
+                    userInfo.userId,
+                    userInfo.userType,
+                    userInfo.username,
+                    getClientIP(request),
+                    request.getHeader("User-Agent"),
+                    request.getRequestURI(),
+                    request.getMethod(),
+                    ex.getMessage()
+                );
+            } catch (Exception e) {
+                log.error("Failed to log 404 error: {}", e.getMessage());
+            }
         }
         
         ErrorResponse errorResponse = new ErrorResponse(
@@ -118,22 +122,24 @@ public class GlobalExceptionHandler {
         
         log.error("Unauthorized/Forbidden access: {}", ex.getMessage());
         
-        // Log 403 error
-        UserInfo userInfo = extractUserInfo(request);
-        try {
-            authErrorLogService.log403(
-                userInfo.userId,
-                userInfo.userType,
-                userInfo.username,
-                getClientIP(request),
-                request.getHeader("User-Agent"),
-                request.getRequestURI(),
-                request.getMethod(),
-                ex.getMessage(),
-                "Access to protected resource"
-            );
-        } catch (Exception e) {
-            log.error("Failed to log 403 error: {}", e.getMessage());
+        // Log 403 error (skip bot scanner requests)
+        if (!isBotScannerRequest(request)) {
+            UserInfo userInfo = extractUserInfo(request);
+            try {
+                authErrorLogService.log403(
+                    userInfo.userId,
+                    userInfo.userType,
+                    userInfo.username,
+                    getClientIP(request),
+                    request.getHeader("User-Agent"),
+                    request.getRequestURI(),
+                    request.getMethod(),
+                    ex.getMessage(),
+                    "Access to protected resource"
+                );
+            } catch (Exception e) {
+                log.error("Failed to log 403 error: {}", e.getMessage());
+            }
         }
         
         ErrorResponse errorResponse = new ErrorResponse(
@@ -149,7 +155,7 @@ public class GlobalExceptionHandler {
     
     /**
      * Handle Spring Security Access Denied Exception (403)
-     */
+    */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(
             AccessDeniedException ex,
@@ -157,21 +163,23 @@ public class GlobalExceptionHandler {
         
         log.error("Access denied: {}", ex.getMessage());
         
-        // Log 403 error
-        UserInfo userInfo = extractUserInfo(request);
-        try {
-            authErrorLogService.logAccessDenied(
-                userInfo.userId,
-                userInfo.userType,
-                userInfo.username,
-                getClientIP(request),
-                request.getHeader("User-Agent"),
-                request.getRequestURI(),
-                request.getMethod(),
-                ex.getMessage()
-            );
-        } catch (Exception e) {
-            log.error("Failed to log access denied error: {}", e.getMessage());
+        // Log 403 error (skip bot scanner requests)
+        if (!isBotScannerRequest(request)) {
+            UserInfo userInfo = extractUserInfo(request);
+            try {
+                authErrorLogService.logAccessDenied(
+                    userInfo.userId,
+                    userInfo.userType,
+                    userInfo.username,
+                    getClientIP(request),
+                    request.getHeader("User-Agent"),
+                    request.getRequestURI(),
+                    request.getMethod(),
+                    ex.getMessage()
+                );
+            } catch (Exception e) {
+                log.error("Failed to log access denied error: {}", e.getMessage());
+            }
         }
         
         ErrorResponse errorResponse = new ErrorResponse(
@@ -195,17 +203,19 @@ public class GlobalExceptionHandler {
         
         log.error("Authentication error: {}", ex.getMessage());
         
-        // Log 401 error
-        try {
-            authErrorLogService.log401(
-                getClientIP(request),
-                request.getHeader("User-Agent"),
-                request.getRequestURI(),
-                request.getMethod(),
-                ex.getMessage()
-            );
-        } catch (Exception e) {
-            log.error("Failed to log 401 error: {}", e.getMessage());
+        // Log 401 error (skip bot scanner requests)
+        if (!isBotScannerRequest(request)) {
+            try {
+                authErrorLogService.log401(
+                    getClientIP(request),
+                    request.getHeader("User-Agent"),
+                    request.getRequestURI(),
+                    request.getMethod(),
+                    ex.getMessage()
+                );
+            } catch (Exception e) {
+                log.error("Failed to log 401 error: {}", e.getMessage());
+            }
         }
         
         ErrorResponse errorResponse = new ErrorResponse(
@@ -401,4 +411,31 @@ public class GlobalExceptionHandler {
         String userType;
         String username;
     }
+
+    /**
+     * Check if request is from a bot scanner (common vulnerability probes)
+    */
+    private boolean isBotScannerRequest(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        
+        // Filter out dot files and config files commonly probed by bots
+        if (uri.contains("/.")) {
+            return true;
+        }
+        
+        // Common bot scanner patterns
+        String lowerUri = uri.toLowerCase();
+        return lowerUri.contains("wp-includes") ||
+               lowerUri.contains("wp-content") ||
+               lowerUri.contains("/wordpress/") ||
+               lowerUri.contains("/wp/") ||
+               lowerUri.endsWith("xmlrpc.php") ||
+               lowerUri.endsWith(".xml") ||
+               lowerUri.endsWith(".yml") ||
+               lowerUri.endsWith(".yaml") ||
+               lowerUri.endsWith("web.config") ||
+               lowerUri.contains("/.git/");
+    }
+
+    
 }

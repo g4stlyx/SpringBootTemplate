@@ -31,17 +31,19 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
         
         logger.error("Unauthorized error: {}", authException.getMessage());
         
-        // Log 401 error
-        try {
-            authErrorLogService.log401(
-                getClientIP(request),
-                request.getHeader("User-Agent"),
-                request.getRequestURI(),
-                request.getMethod(),
-                authException.getMessage()
-            );
-        } catch (Exception e) {
-            logger.error("Failed to log 401 error: {}", e.getMessage());
+        // Log 401 error (skip bot scanner requests)
+        if (!isBotScannerRequest(request)) {
+            try {
+                authErrorLogService.log401(
+                    getClientIP(request),
+                    request.getHeader("User-Agent"),
+                    request.getRequestURI(),
+                    request.getMethod(),
+                    authException.getMessage()
+                );
+            } catch (Exception e) {
+                logger.error("Failed to log 401 error: {}", e.getMessage());
+            }
         }
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -65,4 +67,30 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
         }
         return xfHeader.split(",")[0];
     }
+
+    /**
+     * Check if request is from a bot scanner (common vulnerability probes)
+     */
+    private boolean isBotScannerRequest(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        
+        // Filter out dot files and config files commonly probed by bots
+        if (uri.contains("/.")) {
+            return true;
+        }
+        
+        // Common bot scanner patterns
+        String lowerUri = uri.toLowerCase();
+        return lowerUri.contains("wp-includes") ||
+               lowerUri.contains("wp-content") ||
+               lowerUri.contains("/wordpress/") ||
+               lowerUri.contains("/wp/") ||
+               lowerUri.endsWith("xmlrpc.php") ||
+               lowerUri.endsWith(".xml") ||
+               lowerUri.endsWith(".yml") ||
+               lowerUri.endsWith(".yaml") ||
+               lowerUri.endsWith("web.config") ||
+               lowerUri.contains("/.git/");
+    }
+
 }
