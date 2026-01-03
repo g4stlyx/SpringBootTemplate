@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.config;
+package com.g4stly.templateApp.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -14,9 +14,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
-import  com.g4stly.templateApp.security.CustomAccessDeniedHandler;
-import  com.g4stly.templateApp.security.JwtAuthEntryPoint;
-import  com.g4stly.templateApp.security.JwtAuthFilter;
+import com.g4stly.templateApp.security.CustomAccessDeniedHandler;
+import com.g4stly.templateApp.security.GlobalRateLimitFilter;
+import com.g4stly.templateApp.security.JwtAuthEntryPoint;
+import com.g4stly.templateApp.security.JwtAuthFilter;
 
 import jakarta.servlet.DispatcherType;
 
@@ -36,6 +37,9 @@ public class SecurityConfig {
 
     @Autowired
     private org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
+     
+    @Autowired
+    private GlobalRateLimitFilter globalRateLimitFilter;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -94,6 +98,7 @@ public class SecurityConfig {
                         // All other requests need authentication
                         .anyRequest().authenticated())
 
+                .addFilterBefore(globalRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

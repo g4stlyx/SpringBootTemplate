@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.security;
+package com.g4stly.templateApp.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.g4stly.templateApp.services.AuthErrorLogService;

@@ -6,6 +6,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RateLimitConfig {
 
+    @Value("${app.rate-limit.global.requests}")
+    private int globalRequests;
+
+    @Value("${app.rate-limit.global.window}")
+    private long globalWindow;
+
     @Value("${app.rate-limit.api.calls}")
     private int apiCalls;
 
@@ -31,6 +37,8 @@ public class RateLimitConfig {
     private long emailVerificationWindow;
 
     // Getters for configuration values
+    public int getGlobalRequests() { return globalRequests; }
+    public long getGlobalWindow() { return globalWindow; }
     public int getApiCalls() { return apiCalls; }
     public long getApiWindow() { return apiWindow; }
     public int getChatRequests() { return chatRequests; }

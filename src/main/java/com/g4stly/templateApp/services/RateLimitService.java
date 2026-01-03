@@ -132,4 +132,13 @@ public class RateLimitService {
             return -1; // Error or no expiration
         }
     }
+
+    /**
+     * Check if global rate limit is exceeded for an IP address
+     * Default: 30 requests per minute
+     */
+    public boolean isGlobalRateLimitExceeded(String ipAddress) {
+        String key = "global_rate_limit:" + ipAddress;
+        return isRateLimitExceeded(key, rateLimitConfig.getGlobalRequests(), rateLimitConfig.getGlobalWindow());
+    }
 }

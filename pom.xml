@@ -27,7 +27,8 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>21</java.version>
+		<!-- TODO: Upgrade Java version to (at least) 21-->
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
