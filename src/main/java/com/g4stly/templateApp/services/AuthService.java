@@ -57,6 +57,9 @@ public class AuthService {
     @Autowired
     private RateLimitService rateLimitService;
     
+    @Autowired
+    private UserActivityLogger userActivityLogger;
+    
     /**
      * Register a new user (clients or coaches can register via API, admins cannot)
      */
@@ -141,6 +144,9 @@ public class AuthService {
         emailService.sendVerificationEmail(client.getEmail(), verificationToken.getToken(), 
             client.getFirstName() != null ? client.getFirstName() : client.getUsername());
         
+        // Log successful registration
+        userActivityLogger.logRegister(client.getId(), "client", true, null, httpRequest);
+        
         // Do NOT generate tokens - client must verify email first
         return AuthResponse.builder()
             .success(true)
@@ -207,6 +213,9 @@ public class AuthService {
         // Send verification email
         emailService.sendVerificationEmail(coach.getEmail(), verificationToken.getToken(), 
             coach.getFirstName() != null ? coach.getFirstName() : coach.getUsername());
+        
+        // Log successful registration
+        userActivityLogger.logRegister(coach.getId(), "coach", true, null, httpRequest);
         
         // Do NOT generate tokens - coach must verify email first (and wait for admin approval)
         return AuthResponse.builder()
@@ -357,6 +366,9 @@ public class AuthService {
             
             clientRepository.save(client);
             
+            // Log failed login attempt
+            userActivityLogger.logLoginFailure(client.getId(), "client", "Invalid password", httpRequest);
+            
             return AuthResponse.builder()
                 .success(false)
                 .message("Invalid credentials")
@@ -368,6 +380,9 @@ public class AuthService {
         client.setLockedUntil(null);
         client.setLastLoginAt(LocalDateTime.now());
         clientRepository.save(client);
+        
+        // Log successful login
+        userActivityLogger.logLoginSuccess(client.getId(), "client", httpRequest);
         
         // Generate tokens
         String accessToken = jwtUtils.generateToken(client.getUsername(), client.getId(), "client", null);
@@ -441,6 +456,9 @@ public class AuthService {
             
             coachRepository.save(coach);
             
+            // Log failed login attempt
+            userActivityLogger.logLoginFailure(coach.getId(), "coach", "Invalid password", httpRequest);
+            
             return AuthResponse.builder()
                 .success(false)
                 .message("Invalid credentials")
@@ -452,6 +470,9 @@ public class AuthService {
         coach.setLockedUntil(null);
         coach.setLastLoginAt(LocalDateTime.now());
         coachRepository.save(coach);
+        
+        // Log successful login
+        userActivityLogger.logLoginSuccess(coach.getId(), "coach", httpRequest);
         
         // Generate tokens
         String accessToken = jwtUtils.generateToken(coach.getUsername(), coach.getId(), "coach", null);
@@ -697,6 +718,11 @@ public class AuthService {
         PasswordResetToken resetToken = new PasswordResetToken(userId, userType, clientIp);
         passwordResetTokenRepository.save(resetToken);
         
+        // Log password reset request (only for client/coach, not admin)
+        if ("client".equals(userType) || "coach".equals(userType)) {
+            userActivityLogger.logPasswordResetRequest(userId, userType, null);
+        }
+        
         // Send reset email
         emailService.sendPasswordResetEmail(email, resetToken.getToken(), 
             getUserNameByEmailAndType(email, userType));
@@ -741,6 +767,8 @@ public class AuthService {
                     client.setLoginAttempts(0); // Reset login attempts
                     client.setLockedUntil(null); // Unlock account
                     clientRepository.save(client);
+                    // Log password reset (no httpRequest available here)
+                    userActivityLogger.logPasswordResetComplete(client.getId(), "client", true, httpRequest);
                 }
             } else if ("coach".equals(resetToken.getUserType())) {
                 Optional<Coach> coachOpt = coachRepository.findById(resetToken.getUserId());
@@ -751,6 +779,8 @@ public class AuthService {
                     coach.setLoginAttempts(0); // Reset login attempts
                     coach.setLockedUntil(null); // Unlock account
                     coachRepository.save(coach);
+                    // Log password reset (no httpRequest available here)
+                    userActivityLogger.logPasswordResetComplete(coach.getId(), "coach", true, httpRequest);
                 }
             } else if ("admin".equals(resetToken.getUserType())) {
                 Optional<Admin> adminOpt = adminRepository.findById(resetToken.getUserId());
@@ -761,6 +791,7 @@ public class AuthService {
                     admin.setLoginAttempts(0); // Reset login attempts
                     admin.setLockedUntil(null); // Unlock account
                     adminRepository.save(admin);
+                    // Note: Admin password resets are not logged in user activity logs (admin activities are separate)
                 }
             }
             
@@ -802,6 +833,8 @@ public class AuthService {
                     Client client = clientOpt.get();
                     client.setEmailVerified(true);
                     clientRepository.save(client);
+                    // Log email verification (no httpRequest available here)
+                    userActivityLogger.logEmailVerification(client.getId(), "client", true, null);
                 }
             } else if ("coach".equals(verificationToken.getUserType())) {
                 Optional<Coach> coachOpt = coachRepository.findById(verificationToken.getUserId());
@@ -809,6 +842,8 @@ public class AuthService {
                     Coach coach = coachOpt.get();
                     coach.setEmailVerified(true);
                     coachRepository.save(coach);
+                    // Log email verification (no httpRequest available here)
+                    userActivityLogger.logEmailVerification(coach.getId(), "coach", true, null);
                 }
             }
             

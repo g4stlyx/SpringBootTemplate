@@ -1,0 +1,469 @@
+{
+	"info": {
+		"_postman_id": "25user-activity-logs-test",
+		"name": "25. User Activity Logs",
+		"description": "User activity logs endpoints - view user (Client/Coach) actions and system events (Level 0 Super Admins only)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{admin_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "1. Get All User Activity Logs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?page=0&size=20&sortBy=createdAt&sortDirection=desc",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs"],
+					"query": [
+						{
+							"key": "page",
+							"value": "0",
+							"description": "Page number (default: 0)"
+						},
+						{
+							"key": "size",
+							"value": "20",
+							"description": "Page size (default: 20)"
+						},
+						{
+							"key": "sortBy",
+							"value": "createdAt",
+							"description": "Sort field (default: createdAt)"
+						},
+						{
+							"key": "sortDirection",
+							"value": "desc",
+							"description": "Sort direction: asc or desc (default: desc)"
+						},
+						{
+							"key": "userId",
+							"value": "",
+							"description": "Filter by user ID",
+							"disabled": true
+						},
+						{
+							"key": "userType",
+							"value": "",
+							"description": "Filter by user type (client/coach)",
+							"disabled": true
+						},
+						{
+							"key": "action",
+							"value": "",
+							"description": "Filter by action (LOGIN, REGISTER, LOGOUT, PASSWORD_RESET_REQUEST, etc.)",
+							"disabled": true
+						},
+						{
+							"key": "resourceType",
+							"value": "",
+							"description": "Filter by resource type (e.g., Authentication, Security, Profile, etc.)",
+							"disabled": true
+						},
+						{
+							"key": "success",
+							"value": "",
+							"description": "Filter by success status (true/false)",
+							"disabled": true
+						},
+						{
+							"key": "startDate",
+							"value": "",
+							"description": "Filter by start date (ISO format: 2024-01-01T00:00:00)",
+							"disabled": true
+						},
+						{
+							"key": "endDate",
+							"value": "",
+							"description": "Filter by end date (ISO format: 2024-01-31T23:59:59)",
+							"disabled": true
+						},
+						{
+							"key": "ipAddress",
+							"value": "",
+							"description": "Filter by IP address",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Get all user activity logs with pagination and optional filtering.\n\n**Access:** Level 0 Super Admins only\n\n**Query Parameters:**\n- page (optional): Page number (default: 0)\n- size (optional): Page size (default: 20)\n- sortBy (optional): Sort field (default: createdAt)\n- sortDirection (optional): asc or desc (default: desc)\n- userId (optional): Filter by specific user ID\n- userType (optional): Filter by user type (client/coach)\n- action (optional): Filter by action type (LOGIN, REGISTER, LOGOUT, etc.)\n- resourceType (optional): Filter by resource type\n- success (optional): Filter by success status (true/false)\n- startDate (optional): Filter logs after this date (ISO format)\n- endDate (optional): Filter logs before this date (ISO format)\n- ipAddress (optional): Filter by IP address\n\n**Response:**\n- logs: Array of activity log entries\n- currentPage, totalPages, totalElements, pageSize\n- hasNext, hasPrevious"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get User Activity Logs (Filter by User Type - Clients)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?userType=client&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs"],
+					"query": [
+						{
+							"key": "userType",
+							"value": "client",
+							"description": "Filter by user type"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get activity logs filtered by user type (clients only).\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Get User Activity Logs (Filter by User Type - Coaches)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?userType=coach&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs"],
+					"query": [
+						{
+							"key": "userType",
+							"value": "coach",
+							"description": "Filter by user type"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get activity logs filtered by user type (coaches only).\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get User Activity Logs (Filter by Action - Login)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?action=LOGIN&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs"],
+					"query": [
+						{
+							"key": "action",
+							"value": "LOGIN",
+							"description": "Filter by action type"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get activity logs filtered by action type (login events).\n\nPossible action values:\n- LOGIN\n- LOGOUT\n- REGISTER\n- PASSWORD_RESET_REQUEST\n- PASSWORD_RESET_COMPLETE\n- PASSWORD_CHANGE\n- EMAIL_VERIFICATION\n- VERIFICATION_EMAIL_RESENT\n- PROFILE_UPDATE\n- PROFILE_PICTURE_UPLOAD\n- PROFILE_PICTURE_DELETE\n- ACCOUNT_DEACTIVATED\n- ACCOUNT_REACTIVATED\n- SESSION_REFRESH\n- READ, CREATE, UPDATE, DELETE\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "5. Get User Activity Logs (Filter by Action - Register)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?action=REGISTER&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs"],
+					"query": [
+						{
+							"key": "action",
+							"value": "REGISTER",
+							"description": "Filter by action type"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get activity logs filtered by action type (registration events).\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "6. Get User Activity Logs (Failed Actions Only)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?success=false&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs"],
+					"query": [
+						{
+							"key": "success",
+							"value": "false",
+							"description": "Filter by success status"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get activity logs filtered by success status (failed actions only).\n\nUseful for security monitoring - finding failed login attempts, etc.\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "7. Get User Activity Logs (Filter by Date Range)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs"],
+					"query": [
+						{
+							"key": "startDate",
+							"value": "2024-01-01T00:00:00",
+							"description": "Start date (ISO format)"
+						},
+						{
+							"key": "endDate",
+							"value": "2024-12-31T23:59:59",
+							"description": "End date (ISO format)"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get activity logs filtered by date range.\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "8. Get User Activity Logs (Filter by IP Address)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?ipAddress=192.168.1.100&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs"],
+					"query": [
+						{
+							"key": "ipAddress",
+							"value": "192.168.1.100",
+							"description": "Filter by IP address"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get activity logs filtered by IP address.\n\nUseful for investigating suspicious activity from a specific IP.\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "9. Get User Activity Log by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs/1",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs", "1"]
+				},
+				"description": "Get a specific user activity log entry by ID.\n\n**Access:** Level 0 Super Admins only\n\n**Response:**\n- id: Log entry ID\n- userId: ID of the user who performed the action\n- userType: Type of user (client/coach)\n- username: Username of the user\n- email: Email of the user\n- action: Action type (LOGIN, REGISTER, etc.)\n- resourceType: Type of resource affected\n- resourceId: ID of the affected resource\n- details: JSON string with additional action details\n- ipAddress: IP address of the request\n- userAgent: User agent of the request\n- success: Whether the action was successful\n- failureReason: Reason for failure if unsuccessful\n- createdAt: Timestamp of the action"
+			},
+			"response": []
+		},
+		{
+			"name": "10. Get Activity Logs for Specific User (Client)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs/user/1?userType=client&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs", "user", "1"],
+					"query": [
+						{
+							"key": "userType",
+							"value": "client",
+							"description": "User type (client/coach)"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get all activity logs for a specific client user.\n\n**Access:** Level 0 Super Admins only\n\n**URL Parameters:**\n- userId: The ID of the user whose logs to retrieve\n\n**Query Parameters:**\n- userType: User type (client/coach) - default: client"
+			},
+			"response": []
+		},
+		{
+			"name": "11. Get Activity Logs for Specific User (Coach)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs/user/1?userType=coach&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs", "user", "1"],
+					"query": [
+						{
+							"key": "userType",
+							"value": "coach",
+							"description": "User type (client/coach)"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get all activity logs for a specific coach user.\n\n**Access:** Level 0 Super Admins only\n\n**URL Parameters:**\n- userId: The ID of the user whose logs to retrieve\n\n**Query Parameters:**\n- userType: User type (client/coach) - default: client"
+			},
+			"response": []
+		},
+		{
+			"name": "12. Get Activity Statistics (Default - Last 30 Days)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs/statistics",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs", "statistics"]
+				},
+				"description": "Get user activity statistics for the last 30 days.\n\n**Access:** Level 0 Super Admins only\n\n**Response:**\n- totalLogins: Number of login events\n- totalRegistrations: Number of new registrations\n- totalPasswordResets: Number of password resets completed\n- totalProfileUpdates: Number of profile updates\n- successfulActions: Total successful actions\n- failedActions: Total failed actions\n- periodStart: Start of the statistics period\n- periodEnd: End of the statistics period"
+			},
+			"response": []
+		},
+		{
+			"name": "13. Get Activity Statistics (Custom Date Range)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs/statistics?since=2024-01-01T00:00:00",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs", "statistics"],
+					"query": [
+						{
+							"key": "since",
+							"value": "2024-01-01T00:00:00",
+							"description": "Start date for statistics (ISO format)"
+						}
+					]
+				},
+				"description": "Get user activity statistics from a specific date.\n\n**Access:** Level 0 Super Admins only\n\n**Query Parameters:**\n- since (optional): Start date for statistics (ISO format). Defaults to 30 days ago if not specified."
+			},
+			"response": []
+		},
+		{
+			"name": "14. Combined Filters Example",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?userType=client&action=LOGIN&success=false&startDate=2024-01-01T00:00:00&page=0&size=50",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "user-activity-logs"],
+					"query": [
+						{
+							"key": "userType",
+							"value": "client",
+							"description": "Filter by user type"
+						},
+						{
+							"key": "action",
+							"value": "LOGIN",
+							"description": "Filter by action"
+						},
+						{
+							"key": "success",
+							"value": "false",
+							"description": "Filter by success status"
+						},
+						{
+							"key": "startDate",
+							"value": "2024-01-01T00:00:00",
+							"description": "Filter by start date"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "50"
+						}
+					]
+				},
+				"description": "Example of combining multiple filters to find failed client login attempts since a specific date.\n\nUseful for security auditing and detecting brute force attacks.\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080"
+		}
+	]
+}
