@@ -1,0 +1,333 @@
+{
+	"info": {
+		"_postman_id": "24sensitive-access-logs-test",
+		"name": "24. Sensitive Access Logs",
+		"description": "Sensitive endpoint access logs endpoints - view and manage access logs for critical endpoints (Level 0 Super Admins only)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{admin_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "1. Get All Sensitive Access Logs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs?page=0&size=20&sortBy=createdAt&sortDirection=desc",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs"],
+					"query": [
+						{
+							"key": "page",
+							"value": "0",
+							"description": "Page number (default: 0)"
+						},
+						{
+							"key": "size",
+							"value": "20",
+							"description": "Page size (default: 20)"
+						},
+						{
+							"key": "sortBy",
+							"value": "createdAt",
+							"description": "Sort field (default: createdAt)"
+						},
+						{
+							"key": "sortDirection",
+							"value": "desc",
+							"description": "Sort direction: asc or desc (default: desc)"
+						},
+						{
+							"key": "userId",
+							"value": "",
+							"description": "Filter by user ID",
+							"disabled": true
+						},
+						{
+							"key": "userType",
+							"value": "",
+							"description": "Filter by user type (admin, coach, client)",
+							"disabled": true
+						},
+						{
+							"key": "severity",
+							"value": "",
+							"description": "Filter by severity (LOW, MEDIUM, HIGH, CRITICAL)",
+							"disabled": true
+						},
+						{
+							"key": "category",
+							"value": "",
+							"description": "Filter by endpoint category (DATABASE_BACKUP, ADMIN_MANAGEMENT, TOKEN_MANAGEMENT, 2FA_SETTINGS, ACTIVITY_LOGS, ERROR_LOGS, SUSPICIOUS_FILE_ACCESS, SUSPICIOUS_PATH_PROBE)",
+							"disabled": true
+						},
+						{
+							"key": "ipAddress",
+							"value": "",
+							"description": "Filter by IP address",
+							"disabled": true
+						},
+						{
+							"key": "startDate",
+							"value": "",
+							"description": "Filter by start date (ISO format: 2024-01-01T00:00:00)",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Get all sensitive endpoint access logs with pagination and optional filtering.\n\n**Access:** Level 0 Super Admins only\n\n**Query Parameters:**\n- page (optional): Page number (default: 0)\n- size (optional): Page size (default: 20)\n- sortBy (optional): Sort field (default: createdAt)\n- sortDirection (optional): asc or desc (default: desc)\n- userId (optional): Filter by specific user ID\n- userType (optional): Filter by user type (admin, coach, client)\n- severity (optional): Filter by severity level\n- category (optional): Filter by endpoint category\n- ipAddress (optional): Filter by IP address\n- startDate (optional): Filter logs after this date (ISO format)\n\n**Severity Levels:**\n- LOW: Informational - routine access\n- MEDIUM: Requires attention - sensitive data access\n- HIGH: Immediate review required - admin operations (triggers email)\n- CRITICAL: Security alert - database/backup/suspicious file access (triggers email)\n\n**Admin Categories:**\n- DATABASE_BACKUP: Database backup operations (CRITICAL)\n- ADMIN_MANAGEMENT: Admin management operations (HIGH)\n- TOKEN_MANAGEMENT: Token management operations (HIGH)\n- 2FA_SETTINGS: 2FA settings operations (MEDIUM)\n- ACTIVITY_LOGS: Activity log access (MEDIUM)\n- ERROR_LOGS: Error log access (MEDIUM)\n\n**Security Categories (Suspicious Access):**\n- SUSPICIOUS_FILE_ACCESS: Access to .env, .git, config, credentials, etc. (CRITICAL/HIGH)\n- SUSPICIOUS_PATH_PROBE: Access to common attack paths like /phpmyadmin, /shell, etc. (CRITICAL/HIGH)"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get Sensitive Access Logs (Filtered by Severity)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs?severity=CRITICAL&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs"],
+					"query": [
+						{
+							"key": "severity",
+							"value": "CRITICAL",
+							"description": "Filter by severity level"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get sensitive access logs filtered by severity level.\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Get Sensitive Access Logs (Filtered by Category)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs?category=DATABASE_BACKUP&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs"],
+					"query": [
+						{
+							"key": "category",
+							"value": "DATABASE_BACKUP",
+							"description": "Filter by endpoint category"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get sensitive access logs filtered by endpoint category.\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get Sensitive Access Logs (Filtered by User Type)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs?userType=admin&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs"],
+					"query": [
+						{
+							"key": "userType",
+							"value": "admin",
+							"description": "Filter by user type"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get sensitive access logs filtered by user type (admin, coach, client).\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "4a. Get Suspicious File Access Logs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs?category=SUSPICIOUS_FILE_ACCESS&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs"],
+					"query": [
+						{
+							"key": "category",
+							"value": "SUSPICIOUS_FILE_ACCESS",
+							"description": "Filter by suspicious file access category"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get logs of successful access to suspicious/sensitive files like .env, .git, config files, credentials, etc.\n\nThis is a CRITICAL security category - if any entries appear here, it indicates potential security breach.\n\n**Access:** Level 0 Super Admins only\n\n**Monitored Files:**\n- .env, .env.local, .env.production\n- .git/, .git/config\n- application.properties, application.yml\n- .aws/credentials, SSH keys\n- .sql, .db, .sqlite files\n- .bak, .backup files\n- secrets, password, api_key files"
+			},
+			"response": []
+		},
+		{
+			"name": "4b. Get Suspicious Path Probe Logs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs?category=SUSPICIOUS_PATH_PROBE&page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs"],
+					"query": [
+						{
+							"key": "category",
+							"value": "SUSPICIOUS_PATH_PROBE",
+							"description": "Filter by suspicious path probe category"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get logs of successful access to commonly probed attack paths.\n\nIndicates potential security reconnaissance if entries appear here.\n\n**Access:** Level 0 Super Admins only\n\n**Monitored Paths:**\n- /phpmyadmin, /adminer\n- /wp-admin, /wp-login\n- /actuator/* (except health)\n- /debug, /trace, /console\n- /shell, /cmd, /exec"
+			},
+			"response": []
+		},
+		{
+			"name": "5. Get Sensitive Access Log by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs/1",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs", "1"]
+				},
+				"description": "Get a specific sensitive access log entry by ID.\n\n**Access:** Level 0 Super Admins only\n\n**Response:**\n- id: Log entry ID\n- severity: Severity level code\n- severityDescription: Human-readable severity description\n- userId: ID of user who accessed the endpoint\n- userType: Type of user (admin, coach, client)\n- username: Username of the accessor\n- ipAddress: IP address of the request\n- userAgent: User agent of the request\n- endpoint: Accessed endpoint\n- httpMethod: HTTP method used\n- endpointCategory: Category of the endpoint\n- description: Description of the access\n- responseStatus: HTTP response status code\n- emailAlertSent: Whether email alert was sent\n- createdAt: Timestamp of the access"
+			},
+			"response": []
+		},
+		{
+			"name": "6. Get Sensitive Access Logs by User ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs/user/1?page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs", "user", "1"],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get sensitive access logs for a specific user.\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "7. Get Sensitive Access Logs by IP Address",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs/ip/192.168.1.1?page=0&size=20",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs", "ip", "192.168.1.1"],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Get sensitive access logs for a specific IP address.\n\nUseful for detecting suspicious activity from a particular source.\n\n**Access:** Level 0 Super Admins only"
+			},
+			"response": []
+		},
+		{
+			"name": "8. Get Sensitive Access Statistics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs/statistics",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs", "statistics"]
+				},
+				"description": "Get sensitive access statistics and trends.\n\n**Access:** Level 0 Super Admins only\n\n**Response:**\n- totalAccessLogs: Total access log count\n- criticalCount: CRITICAL severity count\n- highCount: HIGH severity count\n- mediumCount: MEDIUM severity count\n- lowCount: LOW severity count\n- emailAlertsSent: Total email alerts sent (HIGH + CRITICAL)\n- accessBySeverity: Map of severity levels to counts\n- accessByCategory: Map of endpoint categories to counts\n- dailyStatistics: Map of dates to access counts (last 30 days)"
+			},
+			"response": []
+		},
+		{
+			"name": "9. Delete Sensitive Access Log (Level 0 Only)",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs/1",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "sensitive-access-logs", "1"]
+				},
+				"description": "Delete a sensitive access log entry.\n\n**Access:** Level 0 Super Admins only\n\n**Note:** This is a permanent deletion. Use with caution for audit compliance."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080"
+		}
+	]
+}

@@ -18,6 +18,7 @@ import com.g4stly.templateApp.security.CustomAccessDeniedHandler;
 import com.g4stly.templateApp.security.GlobalRateLimitFilter;
 import com.g4stly.templateApp.security.JwtAuthEntryPoint;
 import com.g4stly.templateApp.security.JwtAuthFilter;
+import com.g4stly.templateApp.security.SensitiveEndpointAccessFilter;
 
 import jakarta.servlet.DispatcherType;
 
@@ -40,6 +41,9 @@ public class SecurityConfig {
      
     @Autowired
     private GlobalRateLimitFilter globalRateLimitFilter;
+    
+    @Autowired
+    private SensitiveEndpointAccessFilter sensitiveEndpointAccessFilter;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -99,7 +103,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
 
                 .addFilterBefore(globalRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(sensitiveEndpointAccessFilter, JwtAuthFilter.class);
 
         return http.build();
     }
