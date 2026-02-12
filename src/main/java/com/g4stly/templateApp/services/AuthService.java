@@ -14,6 +14,7 @@ import com.g4stly.templateApp.repos.VerificationTokenRepository;
 import com.g4stly.templateApp.security.JwtUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.g4stly.templateApp.models.RefreshToken;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,9 @@ public class AuthService {
     
     @Autowired
     private UserActivityLogger userActivityLogger;
+
+    @Autowired
+    private RefreshTokenService refreshTokenService;
     
     /**
      * Register a new user (clients or coaches can register via API, admins cannot)
@@ -384,15 +388,20 @@ public class AuthService {
         // Log successful login
         userActivityLogger.logLoginSuccess(client.getId(), "client", httpRequest);
         
-        // Generate tokens
+        // Generate access token
         String accessToken = jwtUtils.generateToken(client.getUsername(), client.getId(), "client", null);
-        String refreshToken = jwtUtils.generateRefreshToken(client.getUsername());
+        
+        // Create and save refresh token in database
+        RefreshToken refreshTokenEntity = refreshTokenService.createRefreshToken(
+            client.getId(), "client", httpRequest);
+        
+        log.info("Returning refresh token: {}...", refreshTokenEntity.getToken().substring(0, 8));
         
         return AuthResponse.builder()
             .success(true)
             .message("Login successful")
             .accessToken(accessToken)
-            .refreshToken(refreshToken)
+            .refreshToken(refreshTokenEntity.getToken())
             .expiresIn(jwtUtils.getAccessTokenExpiration())
             .user(AuthResponse.UserInfo.builder()
                 .id(client.getId())
@@ -474,15 +483,20 @@ public class AuthService {
         // Log successful login
         userActivityLogger.logLoginSuccess(coach.getId(), "coach", httpRequest);
         
-        // Generate tokens
+        // Generate access token
         String accessToken = jwtUtils.generateToken(coach.getUsername(), coach.getId(), "coach", null);
-        String refreshToken = jwtUtils.generateRefreshToken(coach.getUsername());
+        
+        // Create and save refresh token in database
+        com.g4stly.templateApp.models.RefreshToken refreshTokenEntity = refreshTokenService.createRefreshToken(
+            coach.getId(), "coach", httpRequest);
+        
+        log.info("Returning refresh token: {}...", refreshTokenEntity.getToken().substring(0, 8));
         
         return AuthResponse.builder()
             .success(true)
             .message("Login successful")
             .accessToken(accessToken)
-            .refreshToken(refreshToken)
+            .refreshToken(refreshTokenEntity.getToken())
             .expiresIn(jwtUtils.getAccessTokenExpiration())
             .user(AuthResponse.UserInfo.builder()
                 .id(coach.getId())
@@ -559,15 +573,20 @@ public class AuthService {
         admin.setLastLoginAt(LocalDateTime.now());
         adminRepository.save(admin);
         
-        // Generate tokens with admin level
+        // Generate access token with admin level
         String accessToken = jwtUtils.generateToken(admin.getUsername(), admin.getId(), "admin", admin.getLevel());
-        String refreshToken = jwtUtils.generateRefreshToken(admin.getUsername());
+        
+        // Create and save refresh token in database
+        com.g4stly.templateApp.models.RefreshToken refreshTokenEntity = refreshTokenService.createRefreshToken(
+            admin.getId(), "admin", httpRequest);
+        
+        log.info("Returning refresh token: {}...", refreshTokenEntity.getToken().substring(0, 8));
         
         return AuthResponse.builder()
             .success(true)
             .message("Admin login successful")
             .accessToken(accessToken)
-            .refreshToken(refreshToken)
+            .refreshToken(refreshTokenEntity.getToken())
             .expiresIn(jwtUtils.getAccessTokenExpiration())
             .user(AuthResponse.UserInfo.builder()
                 .id(admin.getId())

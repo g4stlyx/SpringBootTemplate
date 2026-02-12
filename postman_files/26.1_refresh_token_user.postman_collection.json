@@ -1,0 +1,252 @@
+{
+	"info": {
+		"_postman_id": "refresh-token-user-endpoints",
+		"name": "26.1. Refresh Token - User Endpoints",
+		"description": "User-facing endpoints for refresh token operations (refresh, logout, logout-all)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Refresh Access Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/refresh",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "auth", "refresh"]
+				},
+				"description": "Exchanges a valid refresh token for a new access token and refresh token.\n\n**For Web Clients**: Refresh token is sent automatically via HttpOnly cookie. Request body can be empty.\n\n**For Mobile Clients**: Include refresh token in request body.\n\n**Token Rotation**: Old refresh token is automatically revoked, new one is issued.\n\n**Response**: Returns new access token and refresh token (for mobile)."
+			},
+			"response": [
+				{
+					"name": "Success - New Tokens",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"550e8400-e29b-41d4-a716-446655440000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/refresh",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "refresh"]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1Ni...\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 900,\n  \"refreshToken\": \"660e8400-e29b-41d4-a716-446655440001\"\n}"
+				},
+				{
+					"name": "Error - Invalid Token",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"invalid-token\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/refresh",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "refresh"]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"error\": \"Invalid or expired refresh token. Please login again.\"\n}"
+				}
+			]
+		},
+		{
+			"name": "2. Logout (Current Device)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/logout",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "auth", "logout"]
+				},
+				"description": "Revokes the current refresh token and logs out from current device.\n\n**For Web Clients**: Refresh token sent automatically via cookie. Clears HttpOnly cookie.\n\n**For Mobile Clients**: Include refresh token in request body.\n\n**Action**: Revokes the refresh token from database."
+			},
+			"response": [
+				{
+					"name": "Success - Logged Out",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"550e8400-e29b-41d4-a716-446655440000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/logout",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "logout"]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"message\": \"Logged out successfully\",\n  \"success\": true\n}"
+				}
+			]
+		},
+		{
+			"name": "3. Logout from All Devices",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/logout-all",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "auth", "logout-all"]
+				},
+				"description": "Revokes ALL refresh tokens for the authenticated user.\n\n**Authentication Required**: Must include valid access token in Authorization header.\n\n**Action**: Revokes all refresh tokens for this user from all devices.\n\n**Use Case**: User wants to logout from all devices (e.g., lost phone, security concern)."
+			},
+			"response": [
+				{
+					"name": "Success - All Devices Logged Out",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/logout-all",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "logout-all"]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"message\": \"Logged out from all devices successfully\",\n  \"revokedTokens\": 3,\n  \"success\": true\n}"
+				},
+				{
+					"name": "Error - Unauthorized",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/logout-all",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "logout-all"]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"error\": \"Authentication required\"\n}"
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

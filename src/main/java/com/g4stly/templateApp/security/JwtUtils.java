@@ -109,6 +109,11 @@ public class JwtUtils {
         return jwtConfig.getRefreshExpirationInSeconds();
     }
     
+    public Long getRefreshTokenExpirationDays() {
+        // Convert milliseconds to days
+        return jwtConfig.getRefreshExpiration() / (1000 * 60 * 60 * 24);
+    }
+    
     public boolean validateToken(String token) {
         try {
             Jwts.parser()

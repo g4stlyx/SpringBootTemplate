@@ -5,8 +5,11 @@ import  com.g4stly.templateApp.dto.two_factor.TwoFactorSetupResponse;
 import  com.g4stly.templateApp.dto.two_factor.TwoFactorVerifyRequest;
 import  com.g4stly.templateApp.dto.auth.AuthResponse;
 import  com.g4stly.templateApp.models.Admin;
+import  com.g4stly.templateApp.models.RefreshToken;
 import  com.g4stly.templateApp.security.JwtUtils;
+import  com.g4stly.templateApp.services.RefreshTokenService;
 import  com.g4stly.templateApp.services.TwoFactorAuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +35,9 @@ public class TwoFactorAuthController {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private RefreshTokenService refreshTokenService;
 
     /**
      * Setup/Generate 2FA secret and QR code for an admin.
@@ -142,7 +148,7 @@ public class TwoFactorAuthController {
      * @return AuthResponse with JWT tokens on success
      */
     @PostMapping("/verify-login")
-    public ResponseEntity<?> verifyLogin(@Valid @RequestBody TwoFactorLoginRequest request) {
+    public ResponseEntity<?> verifyLogin(@Valid @RequestBody TwoFactorLoginRequest request, HttpServletRequest httpRequest) {
         log.info("2FA login verification for username: {}", request.getUsername());
         
         try {
@@ -162,15 +168,20 @@ public class TwoFactorAuthController {
             // Update last login
             admin.setLastLoginAt(LocalDateTime.now());
             
-            // Generate tokens with admin level
+            // Generate access token with admin level
             String accessToken = jwtUtils.generateToken(admin.getUsername(), admin.getId(), "admin", admin.getLevel());
-            String refreshToken = jwtUtils.generateRefreshToken(admin.getUsername());
+            
+            // Create and save refresh token in database
+            RefreshToken refreshTokenEntity = refreshTokenService.createRefreshToken(
+                admin.getId(), "admin", httpRequest);
+            
+            log.info("Returning refresh token: {}...", refreshTokenEntity.getToken().substring(0, 8));
             
             AuthResponse authResponse = AuthResponse.builder()
                 .success(true)
                 .message("Admin login successful")
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
+                .refreshToken(refreshTokenEntity.getToken())
                 .expiresIn(jwtUtils.getAccessTokenExpiration())
                 .user(AuthResponse.UserInfo.builder()
                     .id(admin.getId())

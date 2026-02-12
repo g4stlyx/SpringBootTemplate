@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.models;
+package com.g4stly.templateApp.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
