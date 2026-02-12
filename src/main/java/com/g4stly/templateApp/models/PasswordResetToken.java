@@ -5,7 +5,14 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "password_reset_tokens")
+@Table(name = "password_reset_tokens", indexes = {
+    @Index(name = "idx_password_reset_token", columnList = "token"),
+    @Index(name = "idx_password_reset_user", columnList = "user_id, user_type"),
+    @Index(name = "idx_password_reset_user_type", columnList = "user_type"),
+    @Index(name = "idx_password_reset_expiry_date", columnList = "expiry_date"),
+    @Index(name = "idx_password_reset_created_date", columnList = "created_date"),
+    @Index(name = "idx_password_reset_requesting_ip", columnList = "requesting_ip")
+})
 @Data
 public class PasswordResetToken {
     @Id

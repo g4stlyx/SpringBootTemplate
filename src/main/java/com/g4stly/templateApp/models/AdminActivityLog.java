@@ -11,7 +11,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "admin_activity_log")
+@Table(name = "admin_activity_log", indexes = {
+    @Index(name = "idx_admin_activity_admin_id", columnList = "admin_id"),
+    @Index(name = "idx_admin_activity_action", columnList = "action"),
+    @Index(name = "idx_admin_activity_resource_type", columnList = "resource_type"),
+    @Index(name = "idx_admin_activity_created_at", columnList = "created_at"),
+    @Index(name = "idx_admin_activity_admin_date", columnList = "admin_id, created_at")
+})
 public class AdminActivityLog {
     
     @Id

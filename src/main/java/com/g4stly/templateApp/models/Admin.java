@@ -13,7 +13,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "admins")
+@Table(name = "admins", indexes = {
+    @Index(name = "idx_admin_email", columnList = "email"),
+    @Index(name = "idx_admin_username", columnList = "username"),
+    @Index(name = "idx_admin_level", columnList = "level"),
+    @Index(name = "idx_admin_is_active", columnList = "is_active"),
+    @Index(name = "idx_admin_level_active", columnList = "level, is_active"),
+    @Index(name = "idx_admin_created_by", columnList = "created_by")
+})
 public class Admin {
     
     @Id

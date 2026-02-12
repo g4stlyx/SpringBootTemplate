@@ -5,7 +5,13 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "verification_tokens")
+@Table(name = "verification_tokens", indexes = {
+    @Index(name = "idx_verification_token", columnList = "token"),
+    @Index(name = "idx_verification_user", columnList = "user_id, user_type"),
+    @Index(name = "idx_verification_user_type", columnList = "user_type"),
+    @Index(name = "idx_verification_expiry_date", columnList = "expiry_date"),
+    @Index(name = "idx_verification_created_date", columnList = "created_date")
+})
 @Data
 public class VerificationToken {
     @Id
