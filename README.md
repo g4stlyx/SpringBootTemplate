@@ -454,6 +454,15 @@ Uses Argon2id (winner of the Password Hashing Competition) with:
 - Refresh tokens for seamless re-authentication
 - Claims include: userId, userType, adminLevel
 
+### File Upload Security
+- **Magic byte validation** - Verifies actual file content, not just headers
+- **Defense against Content-Type spoofing** - Prevents malicious file uploads
+- **Double validation** - Checks both file extension and file signature
+- Blocks: web shells, executables, polyglot files, malware
+- Allowed formats: JPEG, PNG, GIF, BMP, WebP (validated by magic bytes)
+- Maximum file size: 5MB
+- See [27FILE_UPLOAD_SECURITY.md](docs/27FILE_UPLOAD_SECURITY.md) for details
+
 ### Rate Limiting
 - Login attempts: 5 per 15 minutes per IP
 - API calls: 100 per minute per user

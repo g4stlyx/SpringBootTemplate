@@ -21,13 +21,31 @@ Complete image upload, update, and delete system using Cloudflare R2 storage. Su
 - ✅ Upload book cover images
 - ✅ Update images (delete old, upload new)
 - ✅ Delete images
+- ✅ **Magic byte validation (security hardening)**
 - ✅ Image validation (type, size)
 - ✅ Unique filename generation
 
+**Security Features:**
+- **Magic Byte Detection:** Validates actual file content by reading file signatures, not just headers
+- **Defense Against Spoofing:** Prevents Content-Type header manipulation attacks
+- **Double Validation:** Checks both file extension AND magic bytes
+- **Prevents Malicious Uploads:** Blocks disguised executables, web shells, and other malware
+
 **Validation Rules:**
-- **Allowed formats:** JPG, JPEG, PNG, WEBP
+- **Allowed formats:** JPG, JPEG, PNG, GIF, BMP, WEBP
 - **Max file size:** 5MB
 - **File naming:** `{type}_{userType}_{id}_{uuid}.{ext}`
+- **Validation method:** 
+  1. File extension check (secondary)
+  2. Magic byte signature verification (primary security check)
+
+**Magic Byte Signatures Checked:**
+- JPEG: `FF D8 FF`
+- PNG: `89 50 4E 47 0D 0A 1A 0A`
+- GIF87a: `47 49 46 38 37 61`
+- GIF89a: `47 49 46 38 39 61`
+- BMP: `42 4D`
+- WebP: `52 49 46 46` + `57 45 42 50` (at offset 8)
 
 **Storage Structure:**
 ```
