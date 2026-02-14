@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -66,15 +67,15 @@ public interface UserActivityLogRepository extends JpaRepository<UserActivityLog
     
     // Find by IP address
     Page<UserActivityLog> findByIpAddressOrderByCreatedAtDesc(String ipAddress, Pageable pageable);
-    
-    // Delete old logs (for cleanup)
-    @Query("DELETE FROM UserActivityLog ual WHERE ual.createdAt < :beforeDate")
-    void deleteByCreatedAtBefore(@Param("beforeDate") LocalDateTime beforeDate);
-    
+      
     // Count by action
     @Query("SELECT COUNT(ual) FROM UserActivityLog ual WHERE ual.action = :action AND ual.createdAt >= :since")
     long countByActionSince(@Param("action") String action, @Param("since") LocalDateTime since);
     
     // Count by success status
     long countBySuccessAndCreatedAtAfter(boolean success, LocalDateTime date);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM UserActivityLog u WHERE u.createdAt < :before")
+    int deleteByCreatedAtBefore(@Param("before") LocalDateTime before);
 }
