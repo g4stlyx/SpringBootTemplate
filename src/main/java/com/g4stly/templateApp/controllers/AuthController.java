@@ -20,7 +20,6 @@ import  com.g4stly.templateApp.dto.auth.RegisterRequest;
 import  com.g4stly.templateApp.dto.auth.ResendVerificationRequest;
 import  com.g4stly.templateApp.dto.auth.ResetPasswordRequest;
 import  com.g4stly.templateApp.dto.auth.UserSessionDTO;
-import  com.g4stly.templateApp.dto.auth.VerifyPasswordRequest;
 import  com.g4stly.templateApp.dto.two_factor.TwoFactorRequiredResponse;
 import  com.g4stly.templateApp.services.AuthService;
 import  com.g4stly.templateApp.services.CaptchaService;
@@ -116,38 +115,13 @@ public class AuthController {
                 "Two-factor authentication required. Please enter your verification code.",
                 request.getUsername(),
                 true,
-                null // No temp token needed - we verify by username
+                response.getTwoFactorChallengeToken() // Pass the challenge token from AuthResponse
             );
             return ResponseEntity.status(202).body(twoFactorResponse);
         } else {
             log.warn("Login failed for username: {} - {}", request.getUsername(), response.getMessage());
             return ResponseEntity.status(401).body(response);
         }
-    }
-
-    /**
-     * Verify password for password change operations
-     */
-    @PostMapping("/verify-password")
-    public ResponseEntity<Map<String, Object>> verifyPassword(
-            @Valid @RequestBody VerifyPasswordRequest request,
-            HttpServletRequest httpRequest) {
-
-        log.info("Password verification attempt for username: {}", request.getUsername());
-
-        boolean isValid = authService.verifyPassword(request, httpRequest);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("valid", isValid);
-        response.put("message", isValid ? "Password is valid" : "Password is invalid");
-
-        if (isValid) {
-            log.info("Password verification successful for username: {}", request.getUsername());
-        } else {
-            log.warn("Password verification failed for username: {}", request.getUsername());
-        }
-
-        return ResponseEntity.ok(response);
     }
 
     /**

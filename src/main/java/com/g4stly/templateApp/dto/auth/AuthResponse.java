@@ -21,6 +21,7 @@ public class AuthResponse {
     private String message;
     private boolean success;
     private boolean requiresTwoFactor; // Indicates 2FA is required for admin login
+    private String twoFactorChallengeToken; // Challenge token to validate 2FA submission
     
     @Data
     @NoArgsConstructor

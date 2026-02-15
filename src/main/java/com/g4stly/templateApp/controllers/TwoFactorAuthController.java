@@ -143,8 +143,9 @@ public class TwoFactorAuthController {
     /**
      * Complete 2FA login - verify code and return full auth response.
      * This endpoint is public (no JWT required) as it's part of the login flow.
+     * SECURITY: Requires a valid challenge token issued during password verification.
      * 
-     * @param request Request containing username and 6-digit code
+     * @param request Request containing username, 6-digit code, and challenge token
      * @return AuthResponse with JWT tokens on success
      */
     @PostMapping("/verify-login")
@@ -152,13 +153,17 @@ public class TwoFactorAuthController {
         log.info("2FA login verification for username: {}", request.getUsername());
         
         try {
-            boolean isValid = twoFactorAuthService.verifyCodeByUsername(request.getUsername(), request.getCode());
+            boolean isValid = twoFactorAuthService.verifyCodeByUsername(
+                request.getUsername(), 
+                request.getCode(),
+                request.getChallengeToken()
+            );
             
             if (!isValid) {
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
-                errorResponse.put("message", "Invalid verification code");
-                log.warn("Invalid 2FA code for username: {}", request.getUsername());
+                errorResponse.put("message", "Invalid verification code or challenge token. Please try logging in again.");
+                log.warn("Invalid 2FA code or challenge token for username: {}", request.getUsername());
                 return ResponseEntity.status(401).body(errorResponse);
             }
             

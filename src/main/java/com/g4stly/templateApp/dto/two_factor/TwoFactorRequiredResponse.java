@@ -9,5 +9,5 @@ public class TwoFactorRequiredResponse {
     private String message;
     private String username;
     private boolean requiresTwoFactor;
-    private String tempToken; // Temporary token to validate 2FA submission
+    private String twoFactorChallengeToken; // Challenge token to validate 2FA submission
 }

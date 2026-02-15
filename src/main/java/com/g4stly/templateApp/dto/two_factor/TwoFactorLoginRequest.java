@@ -12,4 +12,7 @@ public class TwoFactorLoginRequest {
     @NotBlank(message = "Verification code is required")
     @Pattern(regexp = "^[0-9]{6}$", message = "Verification code must be 6 digits")
     private String code;
+
+    @NotBlank(message = "Challenge token is required")
+    private String challengeToken;
 }

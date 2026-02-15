@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
@@ -140,12 +141,13 @@ public class TwoFactorAuthService {
     }
 
     /**
-     * Verify TOTP code for login by username
+     * Verify TOTP code for login by username with challenge token validation
      * @param username The admin's username
      * @param code The 6-digit verification code
-     * @return true if code is valid
+     * @param challengeToken The challenge token issued during password verification
+     * @return true if both challenge token and code are valid
      */
-    public boolean verifyCodeByUsername(String username, String code) {
+    public boolean verifyCodeByUsername(String username, String code, String challengeToken) {
         Admin admin = adminRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
 
@@ -153,14 +155,78 @@ public class TwoFactorAuthService {
             throw new IllegalStateException("2FA is not enabled for this admin");
         }
 
+        // Validate challenge token FIRST
+        if (!validateChallengeToken(admin, challengeToken)) {
+            return false;
+        }
+
+        // Validate 2FA code
         int numericCode;
         try {
             numericCode = Integer.parseInt(code);
         } catch (NumberFormatException e) {
+            // Increment failed attempts
+            admin.setTwoFactorChallengeAttempts(admin.getTwoFactorChallengeAttempts() + 1);
+            adminRepository.save(admin);
             return false;
         }
 
-        return googleAuthenticator.authorize(admin.getTwoFactorSecret(), numericCode);
+        boolean isValidCode = googleAuthenticator.authorize(admin.getTwoFactorSecret(), numericCode);
+        
+        if (isValidCode) {
+            // Clear challenge token on successful verification
+            admin.setTwoFactorChallengeToken(null);
+            admin.setTwoFactorChallengeExpiresAt(null);
+            admin.setTwoFactorChallengeAttempts(0);
+            adminRepository.save(admin);
+        } else {
+            // Increment failed attempts
+            admin.setTwoFactorChallengeAttempts(admin.getTwoFactorChallengeAttempts() + 1);
+            
+            // Invalidate challenge token after 5 failed attempts
+            if (admin.getTwoFactorChallengeAttempts() >= 5) {
+                admin.setTwoFactorChallengeToken(null);
+                admin.setTwoFactorChallengeExpiresAt(null);
+            }
+            adminRepository.save(admin);
+        }
+
+        return isValidCode;
+    }
+
+    /**
+     * Validate a 2FA challenge token
+     * @param admin The admin entity
+     * @param challengeToken The challenge token to validate
+     * @return true if token is valid and not expired
+     */
+    private boolean validateChallengeToken(Admin admin, String challengeToken) {
+        // Check if challenge token exists
+        if (admin.getTwoFactorChallengeToken() == null || challengeToken == null) {
+            return false;
+        }
+
+        // Check if token matches
+        if (!admin.getTwoFactorChallengeToken().equals(challengeToken)) {
+            return false;
+        }
+
+        // Check if token is expired
+        if (admin.getTwoFactorChallengeExpiresAt() == null || 
+            admin.getTwoFactorChallengeExpiresAt().isBefore(LocalDateTime.now())) {
+            // Clear expired token
+            admin.setTwoFactorChallengeToken(null);
+            admin.setTwoFactorChallengeExpiresAt(null);
+            adminRepository.save(admin);
+            return false;
+        }
+
+        // Check if too many failed attempts
+        if (admin.getTwoFactorChallengeAttempts() >= 5) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

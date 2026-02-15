@@ -402,6 +402,12 @@
 									"        pm.environment.set('admin_token', responseJson.accessToken);",
 									"        console.log('Admin JWT Token Saved');",
 									"    }",
+									"} else if (pm.response.code === 202) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.twoFactorChallengeToken) {",
+									"        pm.environment.set('twoFactorChallengeToken', responseJson.twoFactorChallengeToken);",
+									"        console.log('2FA Challenge Token Saved: ' + responseJson.twoFactorChallengeToken.substring(0, 16) + '...');",
+									"    }",
 									"}"
 								],
 								"type": "text/javascript",
@@ -434,7 +440,7 @@
 								"login"
 							]
 						},
-						"description": "Login as admin. Admins cannot register via API - must be created manually.\n\n**If 2FA is enabled**, this returns HTTP 202 with:\n```json\n{\n    \"requiresTwoFactor\": true,\n    \"username\": \"g4stly\",\n    \"message\": \"Two-factor authentication required. Please enter your verification code.\"\n}\n```"
+						"description": "Login as admin. Admins cannot register via API - must be created manually.\n\n**If 2FA is enabled**, this returns HTTP 202 with:\n```json\n{\n    \"requiresTwoFactor\": true,\n    \"twoFactorChallengeToken\": \"a1b2c3d4e5f6...\",\n    \"username\": \"g4stly\",\n    \"message\": \"Two-factor authentication required. Please enter your verification code.\"\n}\n```\n\n**The challenge token** is automatically saved to Postman environment variable `twoFactorChallengeToken` for use in the next step."
 					},
 					"response": []
 				},
@@ -450,6 +456,12 @@
 									"    if (responseJson.success && responseJson.accessToken) {",
 									"        pm.environment.set('admin_token', responseJson.accessToken);",
 									"        console.log('Admin JWT Token Saved');",
+									"    }",
+									"} else if (pm.response.code === 202) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.twoFactorChallengeToken) {",
+									"        pm.environment.set('twoFactorChallengeToken', responseJson.twoFactorChallengeToken);",
+									"        console.log('2FA Challenge Token Saved: ' + responseJson.twoFactorChallengeToken.substring(0, 16) + '...');",
 									"    }",
 									"}"
 								],
@@ -667,7 +679,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"g4stly\",\n    \"code\": \"123456\"\n}"
+							"raw": "{\n    \"username\": \"g4stly\",\n    \"code\": \"123456\",\n    \"challengeToken\": \"{{twoFactorChallengeToken}}\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/v1/admin/2fa/verify-login",
@@ -682,7 +694,7 @@
 								"verify-login"
 							]
 						},
-						"description": "Complete admin login by providing 2FA code.\n\n**Login Flow:**\n1. Login with username/password (receive HTTP 202 if 2FA enabled)\n2. Open your authenticator app\n3. Enter the 6-digit code here\n4. Submit to complete login and receive JWT token\n\n**Expected Response (200):**\n```json\n{\n    \"success\": true,\n    \"message\": \"Admin login successful\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"...\",\n    \"expiresIn\": 3600,\n    \"user\": {\n        \"id\": 1,\n        \"username\": \"g4stly\",\n        \"userType\": \"admin\",\n        \"level\": 0\n    }\n}\n```\n\n**Error Response (401):**\n```json\n{\n    \"success\": false,\n    \"message\": \"Invalid verification code\"\n}\n```"
+						"description": "Complete admin login by providing 2FA code and challenge token.\n\n**Login Flow:**\n1. Login with username/password (receive HTTP 202 if 2FA enabled)\n2. Challenge token is automatically saved to `{{twoFactorChallengeToken}}`\n3. Open your authenticator app\n4. Enter the 6-digit code here\n5. Submit to complete login and receive JWT token\n\n**Security:** The challenge token proves you successfully provided valid credentials in step 1. Without it, no one can complete 2FA with just a username and code.\n\n**Challenge Token Properties:**\n- 64 characters (high entropy)\n- Valid for 5 minutes\n- Invalidated after 3 failed attempts\n- Cleared after successful login\n\n**Expected Response (200):**\n```json\n{\n    \"success\": true,\n    \"message\": \"Admin login successful\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"...\",\n    \"expiresIn\": 3600,\n    \"user\": {\n        \"id\": 1,\n        \"username\": \"g4stly\",\n        \"userType\": \"admin\",\n        \"level\": 0\n    }\n}\n```\n\n**Error Response (401):**\n```json\n{\n    \"success\": false,\n    \"message\": \"Invalid verification code or challenge token. Please try logging in again.\"\n}\n```"
 					},
 					"response": []
 				},

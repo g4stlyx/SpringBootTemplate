@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -84,6 +83,20 @@ public class Admin {
 
     @Column(name = "two_factor_secret")
     private String twoFactorSecret;
+
+    /**
+     * Short-lived challenge token issued after successful password verification.
+     * Required to complete the 2FA login step — prevents skipping the password step.
+     */
+    @JsonIgnore
+    @Column(name = "two_factor_challenge_token", length = 64)
+    private String twoFactorChallengeToken;
+
+    @Column(name = "two_factor_challenge_expires_at")
+    private LocalDateTime twoFactorChallengeExpiresAt;
+
+    @Column(name = "two_factor_challenge_attempts")
+    private Integer twoFactorChallengeAttempts = 0;
     
     @PrePersist
     protected void onCreate() {

@@ -553,14 +553,27 @@ public class AuthService {
         // Reset login attempts on successful password
         admin.setLoginAttempts(0);
         admin.setLockedUntil(null);
-        adminRepository.save(admin);
         
         // Check if 2FA is enabled - if so, don't complete login yet
         if (Boolean.TRUE.equals(admin.getTwoFactorEnabled())) {
             log.info("2FA required for admin: {}", admin.getUsername());
+            
+            // Generate a secure challenge token (32 bytes = 64 hex chars)
+            String challengeToken = java.util.UUID.randomUUID().toString().replace("-", "") + 
+                                    java.util.UUID.randomUUID().toString().replace("-", "");
+            
+            // Store challenge token with 5-minute expiration
+            admin.setTwoFactorChallengeToken(challengeToken);
+            admin.setTwoFactorChallengeExpiresAt(LocalDateTime.now().plusMinutes(5));
+            admin.setTwoFactorChallengeAttempts(0);
+            adminRepository.save(admin);
+            
+            log.info("Generated 2FA challenge token for admin: {} (expires in 5 minutes)", admin.getUsername());
+            
             return AuthResponse.builder()
                 .success(false) // Not fully authenticated yet
                 .requiresTwoFactor(true)
+                .twoFactorChallengeToken(challengeToken)
                 .message("Two-factor authentication required")
                 .user(AuthResponse.UserInfo.builder()
                     .username(admin.getUsername())
@@ -568,6 +581,8 @@ public class AuthService {
                     .build())
                 .build();
         }
+        
+        adminRepository.save(admin);
         
         // No 2FA - complete login
         admin.setLastLoginAt(LocalDateTime.now());
