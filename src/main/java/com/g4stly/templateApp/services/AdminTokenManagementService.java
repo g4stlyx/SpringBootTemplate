@@ -28,12 +28,24 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AdminTokenManagementService {
+    
+    // Whitelist of allowed sort fields to prevent sort field injection
+    private static final Set<String> ALLOWED_PASSWORD_RESET_SORT_FIELDS = Set.of(
+        "id", "token", "userId", "userType", "expiryDate", 
+        "createdDate", "attemptCount", "requestingIp"
+    );
+    
+    private static final Set<String> ALLOWED_VERIFICATION_SORT_FIELDS = Set.of(
+        "id", "token", "userId", "userType", "expiryDate", 
+        "createdDate", "usedDate", "used"
+    );
     
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final VerificationTokenRepository verificationTokenRepository;
@@ -58,9 +70,12 @@ public class AdminTokenManagementService {
             Long adminId,
             HttpServletRequest httpRequest
     ) {
+        // Validate and sanitize sort field to prevent injection
+        String validatedSortBy = validatePasswordResetSortField(sortBy, "createdDate");
+        
         Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? 
                 Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, validatedSortBy));
         
         Page<PasswordResetToken> tokenPage;
         
@@ -149,9 +164,12 @@ public class AdminTokenManagementService {
             Long adminId,
             HttpServletRequest httpRequest
     ) {
+        // Validate and sanitize sort field to prevent injection
+        String validatedSortBy = validateVerificationSortField(sortBy, "createdDate");
+        
         Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? 
                 Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, validatedSortBy));
         
         Page<VerificationToken> tokenPage;
         
@@ -398,5 +416,39 @@ public class AdminTokenManagementService {
                 .createdDate(token.getCreatedDate())
                 .expired(token.isExpired())
                 .build();
+    }
+    
+    /**
+     * Validate password reset token sort field against whitelist to prevent sort field injection attacks.
+     * Returns the validated field if allowed, otherwise returns the default.
+     */
+    private String validatePasswordResetSortField(String sortBy, String defaultField) {
+        if (sortBy == null || sortBy.isEmpty()) {
+            return defaultField;
+        }
+        
+        if (!ALLOWED_PASSWORD_RESET_SORT_FIELDS.contains(sortBy)) {
+            log.warn("Invalid password reset sort field attempted: '{}'. Using default: '{}'", sortBy, defaultField);
+            return defaultField;
+        }
+        
+        return sortBy;
+    }
+    
+    /**
+     * Validate verification token sort field against whitelist to prevent sort field injection attacks.
+     * Returns the validated field if allowed, otherwise returns the default.
+     */
+    private String validateVerificationSortField(String sortBy, String defaultField) {
+        if (sortBy == null || sortBy.isEmpty()) {
+            return defaultField;
+        }
+        
+        if (!ALLOWED_VERIFICATION_SORT_FIELDS.contains(sortBy)) {
+            log.warn("Invalid verification sort field attempted: '{}'. Using default: '{}'", sortBy, defaultField);
+            return defaultField;
+        }
+        
+        return sortBy;
     }
 }

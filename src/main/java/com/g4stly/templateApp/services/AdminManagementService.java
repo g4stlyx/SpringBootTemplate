@@ -13,6 +13,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+
+import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -27,6 +29,12 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AdminManagementService {
+    
+    // Whitelist of allowed sort fields to prevent sort field injection
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+        "id", "username", "email", "firstName", "lastName", 
+        "level", "isActive", "createdAt", "updatedAt", "lastLoginAt"
+    );
     
     @Autowired
     private AdminRepository adminRepository;
@@ -121,10 +129,13 @@ public class AdminManagementService {
         Admin requestingAdmin = adminRepository.findById(requestingAdminId)
             .orElseThrow(() -> new ResourceNotFoundException("Admin not found with ID: " + requestingAdminId));
         
+        // Validate and sanitize sort field to prevent injection
+        String validatedSortBy = validateSortField(sortBy, "createdAt");
+        
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? 
             Sort.Direction.DESC : Sort.Direction.ASC;
         
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, validatedSortBy));
         Page<Admin> adminPage;
         
         // Super admin sees all admins
@@ -498,5 +509,22 @@ public class AdminManagementService {
             .updatedAt(admin.getUpdatedAt())
             .lastLoginAt(admin.getLastLoginAt())
             .build();
+    }
+    
+    /**
+     * Validate sort field against whitelist to prevent sort field injection attacks.
+     * Returns the validated field if allowed, otherwise returns the default.
+     */
+    private String validateSortField(String sortBy, String defaultField) {
+        if (sortBy == null || sortBy.isEmpty()) {
+            return defaultField;
+        }
+        
+        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            log.warn("Invalid sort field attempted: '{}'. Using default: '{}'", sortBy, defaultField);
+            return defaultField;
+        }
+        
+        return sortBy;
     }
 }

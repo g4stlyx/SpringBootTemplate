@@ -297,14 +297,29 @@ public class ImageUploadService {
     }
 
     /**
-     * Extract key from public URL
+     * Extract key from public URL with path traversal protection.
+     * Sanitizes and validates the extracted key to prevent directory traversal attacks.
      */
     private String extractKeyFromUrl(String url) {
         String domain = r2Config.getPublicDomain();
-        if (url.startsWith(domain)) {
-            return url.substring(domain.length() + 1); // +1 for the slash
+        if (!url.startsWith(domain)) {
+            throw new IllegalArgumentException("URL geçersiz: domain eşleşmiyor");
         }
-        throw new IllegalArgumentException("URL geçersiz");
+        
+        String key = url.substring(domain.length() + 1); // +1 for the slash
+        
+        // Sanitize: remove path traversal sequences
+        key = key.replaceAll("\\.\\./", "").replaceAll("\\.\\.\\\\", "");
+        
+        // Validate key format (should match expected patterns)
+        // Valid patterns: profiles/{userType}/* or books/*
+        if (!key.matches("^profiles/(client|coach|admin)/[^/]+$") && 
+            !key.matches("^books/[^/]+$")) {
+            log.warn("Invalid key format rejected: {}", key);
+            throw new IllegalArgumentException("URL geçersiz: format uygun değil");
+        }
+        
+        return key;
     }
 
     /**
