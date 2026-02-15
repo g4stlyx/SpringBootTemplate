@@ -1,7 +1,9 @@
 package com.g4stly.templateApp.controllers;
 
 import com.g4stly.templateApp.dto.refresh_token.RefreshTokenRequest;
+import com.g4stly.templateApp.models.Admin;
 import com.g4stly.templateApp.models.RefreshToken;
+import com.g4stly.templateApp.repos.AdminRepository;
 import com.g4stly.templateApp.security.JwtUtils;
 import com.g4stly.templateApp.services.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
@@ -34,6 +36,9 @@ public class RefreshTokenController {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private AdminRepository adminRepository;
+
     @Value("${app.refresh-token.cookie-name:refreshToken}")
     private String cookieName;
 
@@ -42,6 +47,9 @@ public class RefreshTokenController {
 
     @Value("${app.refresh-token.use-cookies:true}")
     private boolean useCookies;
+
+    @Value("${app.refresh-token.cookie-secure:false}")
+    private boolean cookieSecure;
 
     /**
      * Refresh access token using refresh token.
@@ -82,13 +90,30 @@ public class RefreshTokenController {
             // Rotate refresh token (revoke old, create new)
             RefreshToken newRefreshToken = refreshTokenService.rotateRefreshToken(oldRefreshToken, httpRequest);
 
-            // Generate new access token
+            // Generate new access token with admin level if applicable
             String username = resolveUsername(oldRefreshToken.getUserId(), oldRefreshToken.getUserType());
-            String accessToken = jwtUtils.generateToken(
-                    username, 
-                    oldRefreshToken.getUserId(), 
-                    oldRefreshToken.getUserType()
-            );
+            String accessToken;
+            
+            if ("admin".equals(oldRefreshToken.getUserType())) {
+                // Fetch admin level from database
+                Integer adminLevel = adminRepository.findById(oldRefreshToken.getUserId())
+                        .map(Admin::getLevel)
+                        .orElse(null);
+                
+                accessToken = jwtUtils.generateToken(
+                        username, 
+                        oldRefreshToken.getUserId(), 
+                        oldRefreshToken.getUserType(),
+                        adminLevel
+                );
+                log.debug("Generated access token with admin level: {}", adminLevel);
+            } else {
+                accessToken = jwtUtils.generateToken(
+                        username, 
+                        oldRefreshToken.getUserId(), 
+                        oldRefreshToken.getUserType()
+                );
+            }
 
             // Set new refresh token in cookie if using cookies
             if (useCookies) {
@@ -234,7 +259,7 @@ public class RefreshTokenController {
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         Cookie cookie = new Cookie(cookieName, refreshToken);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // Set to true in production with HTTPS
+        cookie.setSecure(cookieSecure);
         cookie.setPath("/");
         cookie.setMaxAge(cookieMaxAge);
         response.addCookie(cookie);
@@ -246,7 +271,7 @@ public class RefreshTokenController {
     private void clearRefreshTokenCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie(cookieName, null);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // Set to true in production with HTTPS
+        cookie.setSecure(cookieSecure);
         cookie.setPath("/");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
