@@ -110,16 +110,30 @@ public class DatabaseBackupService {
 
     /**
      * Extracts database name from JDBC URL
+     * Handles timezone parameters like Europe/Istanbul correctly
      */
     private String extractDatabaseName(String jdbcUrl) {
         // Extract from URL like: jdbc:mysql://host:port/dbname?params
         try {
-            String[] parts = jdbcUrl.split("/");
-            String dbPart = parts[parts.length - 1];
+            // Remove the jdbc:mysql:// prefix
+            String withoutPrefix = jdbcUrl.replaceFirst("jdbc:mysql://", "");
+            
+            // Split by / with limit of 2 to avoid splitting timezone values like Europe/Istanbul
+            String[] parts = withoutPrefix.split("/", 2);
+            
+            if (parts.length < 2) {
+                logger.warn("Could not extract database name from URL: {}", jdbcUrl);
+                return "app"; // fallback
+            }
+            
+            // Get the part after host:port/
+            String dbPart = parts[1];
+            
             // Remove query parameters if present
             if (dbPart.contains("?")) {
                 dbPart = dbPart.split("\\?")[0];
             }
+            
             return dbPart;
         } catch (Exception e) {
             logger.warn("Could not extract database name from URL: {}", jdbcUrl);
@@ -153,7 +167,8 @@ public class DatabaseBackupService {
             // Set environment to avoid password warning
             processBuilder.environment().put("MYSQL_PWD", databasePassword);
 
-            logger.info("Creating database backup: {}", backupFilePath);
+            logger.info("Creating database backup for database '{}' from {}:{} to file: {}", 
+                       databaseName, host, port, backupFilePath);
 
             Process process = processBuilder.start();
             boolean finished = process.waitFor(5, TimeUnit.MINUTES); // 5 minute timeout
