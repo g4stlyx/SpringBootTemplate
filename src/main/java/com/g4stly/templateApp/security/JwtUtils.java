@@ -116,10 +116,19 @@ public class JwtUtils {
     
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
+            Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
+                .requireIssuer(jwtConfig.getIssuer())
                 .build()
-                .parseSignedClaims(token);
+                .parseSignedClaims(token)
+                .getPayload();
+            
+            // Explicit expiration check
+            Date expiration = claims.getExpiration();
+            if (expiration != null && expiration.before(new Date())) {
+                return false;
+            }
+            
             return true;
         } catch (Exception e) {
             return false;

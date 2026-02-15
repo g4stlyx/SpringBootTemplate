@@ -47,13 +47,13 @@ String accessToken = jwtUtils.generateToken(
 **Impact:** Admins lose their level after token refresh, breaking level-based authorization  
 **Fix:** Fetch admin level from database and include it in token generation
 
-### 4. **Missing Resource Ownership Validation**
+### ✅ 4. **Missing Resource Ownership Validation**
 
-**A. Book Cover Endpoints** (`AdminImageController.java:120, 149, 179`)
+**✅ A. Book Cover Endpoints** (`AdminImageController.java:120, 149, 179`)
 - No validation that book exists
 - No validation that admin has permission to manage the book
 
-**B. Profile Image Deletion** (`AdminImageController.java:99`)
+**✅ B. Profile Image Deletion** (`AdminImageController.java:99`)
 ```java
 @DeleteMapping("/profile")
 public ResponseEntity<?> deleteProfileImage(@RequestParam("imageUrl") String imageUrl) {
@@ -69,7 +69,7 @@ public ResponseEntity<?> deleteProfileImage(@RequestParam("imageUrl") String ima
 
 ### 5. **Missing Authorization Checks**
 
-**A. Admin Profile Access** (`AdminProfileController.java:44`)
+**✅ A. Admin Profile Access** (`AdminProfileController.java:44`)
 ```java
 @GetMapping("/{adminId}")
 public ResponseEntity<AdminProfileDTO> getAdminProfileById(
@@ -80,10 +80,10 @@ public ResponseEntity<AdminProfileDTO> getAdminProfileById(
 
 **Impact:** Lower-level admins can view higher-level admin profiles (information disclosure)
 
-**B. Admin Profile Update** (`AdminProfileService.java:40-73`)
+**✅ B. Admin Profile Update** (`AdminProfileService.java:40-73`)
 - No verification that caller can update the target admin
 
-### 6. **Missing JWT Issuer Validation**
+### ✅ 6. **Missing JWT Issuer Validation**
 **Location:** `JwtUtils.java:117-127`
 
 The token validation doesn't check the issuer:

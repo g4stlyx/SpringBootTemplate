@@ -38,22 +38,6 @@ public class AdminProfileController {
     }
     
     /**
-     * Get any admin's profile by ID (for super admins and higher level admins)
-     * GET /api/v1/admin/profile/{adminId}
-     */
-    @GetMapping("/{adminId}")
-    public ResponseEntity<AdminProfileDTO> getAdminProfileById(
-            @PathVariable Long adminId,
-            Authentication authentication) {
-        
-        Long requestingAdminId = (Long) authentication.getDetails();
-        log.info("Admin {} fetching profile of admin {}", requestingAdminId, adminId);
-        
-        AdminProfileDTO profile = adminProfileService.getAdminProfile(adminId);
-        return ResponseEntity.ok(profile);
-    }
-    
-    /**
      * Update current admin's profile
      * PUT /api/v1/admin/profile
      */

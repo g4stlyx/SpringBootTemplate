@@ -182,6 +182,35 @@ public class AdminProfileService {
     }
     
     /**
+     * Verify that the admin owns the profile image URL
+     */
+    public boolean verifyProfileImageOwnership(Long adminId, String imageUrl) {
+        log.debug("Verifying profile image ownership for admin ID: {} and URL: {}", adminId, imageUrl);
+        
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return false;
+        }
+        
+        Admin admin = adminRepository.findById(adminId)
+            .orElseThrow(() -> new ResourceNotFoundException("Admin not found with ID: " + adminId));
+        
+        String adminProfilePicture = admin.getProfilePicture();
+        
+        if (adminProfilePicture == null || adminProfilePicture.isEmpty()) {
+            log.warn("Admin {} attempted to delete image but has no profile picture set", adminId);
+            return false;
+        }
+        
+        boolean isOwner = adminProfilePicture.equals(imageUrl);
+        
+        if (!isOwner) {
+            log.warn("Admin {} attempted to delete image that doesn't belong to them: {}", adminId, imageUrl);
+        }
+        
+        return isOwner;
+    }
+    
+    /**
      * Map Admin entity to AdminProfileDTO
      */
     private AdminProfileDTO mapToDTO(Admin admin) {

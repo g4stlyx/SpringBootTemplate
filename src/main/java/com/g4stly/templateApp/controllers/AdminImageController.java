@@ -97,9 +97,25 @@ public class AdminImageController {
      * Delete profile image for admin
      */
     @DeleteMapping("/profile")
-    public ResponseEntity<?> deleteProfileImage(@RequestParam("imageUrl") String imageUrl) {
+    public ResponseEntity<?> deleteProfileImage(
+            @RequestParam("imageUrl") String imageUrl,
+            @RequestHeader("Authorization") String token) {
         try {
+            Long adminId = jwtUtils.extractUserId(token.substring(7)).longValue();
+            
+            // Verify ownership - admin can only delete their own profile image
+            if (!adminProfileService.verifyProfileImageOwnership(adminId, imageUrl)) {
+                log.warn("Admin {} attempted to delete profile image they don't own: {}", adminId, imageUrl);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                        "success", false,
+                        "message", "Bu profil resmini silme yetkiniz yok"
+                ));
+            }
+            
             imageUploadService.deleteImage(imageUrl);
+            
+            // Clear profile picture from database
+            adminProfileService.updateProfilePicture(adminId, null);
             
             return ResponseEntity.ok(Map.of(
                     "success", true,
