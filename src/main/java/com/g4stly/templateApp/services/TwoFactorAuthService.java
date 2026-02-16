@@ -141,14 +141,14 @@ public class TwoFactorAuthService {
     }
 
     /**
-     * Verify TOTP code for login by username with challenge token validation
-     * @param username The admin's username
+     * Verify TOTP code for login by username or email with challenge token validation
+     * @param username The admin's username or email
      * @param code The 6-digit verification code
      * @param challengeToken The challenge token issued during password verification
      * @return true if both challenge token and code are valid
      */
     public boolean verifyCodeByUsername(String username, String code, String challengeToken) {
-        Admin admin = adminRepository.findByUsername(username)
+        Admin admin = adminRepository.findByUsernameOrEmail(username, username)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
 
         if (!Boolean.TRUE.equals(admin.getTwoFactorEnabled()) || admin.getTwoFactorSecret() == null) {
@@ -261,22 +261,22 @@ public class TwoFactorAuthService {
 
     /**
      * Check if 2FA is enabled for an admin by username
-     * @param username The admin's username
+     * @param username The admin's username or email
      * @return true if 2FA is enabled
      */
     public boolean isTwoFactorEnabledByUsername(String username) {
-        Admin admin = adminRepository.findByUsername(username)
+        Admin admin = adminRepository.findByUsernameOrEmail(username, username)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
         return Boolean.TRUE.equals(admin.getTwoFactorEnabled());
     }
 
     /**
      * Get admin by username (for 2FA login flow)
-     * @param username The admin's username
+     * @param username The admin's username or email
      * @return Admin entity
      */
     public Admin getAdminByUsername(String username) {
-        return adminRepository.findByUsername(username)
+        return adminRepository.findByUsernameOrEmail(username, username)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
     }
 
