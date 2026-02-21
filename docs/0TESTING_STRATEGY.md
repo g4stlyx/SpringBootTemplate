@@ -177,6 +177,6 @@ Sequence for testing a new feature:
 ## Current Status
 
 - [x] Repository tests — all repos with custom queries
-- [ ] Service tests — AuthService, RefreshTokenService, PasswordService, TwoFactorAuthService, RateLimitService
+- [x] Service tests — AuthService, RefreshTokenService, PasswordService, TwoFactorAuthService, RateLimitService
 - [ ] Controller tests — AuthController, RefreshTokenController
 - [ ] Integration tests — Full auth flow

@@ -6,6 +6,6 @@
 * [ ] unit/integration tests (junit, maybe integration tests)
     * [x] docs and plan for the implementation
     * [x] repo testing
-    * [ ] service testing (bussiness logic)
+    * [x] service testing (bussiness logic)
     * [ ] controller testing
     * [ ] Integration tests (Full auth flow)
