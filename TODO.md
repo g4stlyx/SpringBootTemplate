@@ -7,5 +7,5 @@
     * [x] docs and plan for the implementation
     * [x] repo testing
     * [x] service testing (bussiness logic)
-    * [ ] controller testing
+    * [x] controller testing
     * [ ] Integration tests (Full auth flow)
