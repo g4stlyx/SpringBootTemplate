@@ -179,4 +179,4 @@ Sequence for testing a new feature:
 - [x] Repository tests — all repos with custom queries
 - [x] Service tests — AuthService, RefreshTokenService, PasswordService, TwoFactorAuthService, RateLimitService
 - [x] Controller tests — AuthController, RefreshTokenController
-- [ ] Integration tests — Full auth flow
+- [x] Integration tests — Full auth flow
