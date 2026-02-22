@@ -9,3 +9,4 @@
     * [x] service testing (bussiness logic)
     * [x] controller testing
     * [x] Integration tests (Full auth flow)
+* [x] Java version is set to 21 from 17.
