@@ -1,6 +1,6 @@
 package com.g4stly.templateApp.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.g4stly.templateApp.models.UserActivityLog;
 import com.g4stly.templateApp.repos.UserActivityLogRepository;
 import jakarta.servlet.http.HttpServletRequest;

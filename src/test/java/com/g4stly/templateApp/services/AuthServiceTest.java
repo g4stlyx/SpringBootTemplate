@@ -1,6 +1,6 @@
 package com.g4stly.templateApp.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.g4stly.templateApp.dto.auth.LoginRequest;
 import com.g4stly.templateApp.dto.auth.RegisterRequest;
 import com.g4stly.templateApp.dto.auth.AuthResponse;

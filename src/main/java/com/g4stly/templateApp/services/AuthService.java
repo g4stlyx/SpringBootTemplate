@@ -12,8 +12,9 @@ import com.g4stly.templateApp.repos.CoachRepository;
 import com.g4stly.templateApp.repos.PasswordResetTokenRepository;
 import com.g4stly.templateApp.repos.VerificationTokenRepository;
 import com.g4stly.templateApp.security.JwtUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.JsonNodeException;
+
 import com.g4stly.templateApp.models.RefreshToken;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -197,7 +198,7 @@ public class AuthService {
             if (request.getCertifications() != null && !request.getCertifications().isEmpty()) {
                 coach.setCertifications(objectMapper.writeValueAsString(request.getCertifications()));
             }
-        } catch (JsonProcessingException e) {
+        } catch (JsonNodeException e) {
             log.error("Failed to convert lists to JSON", e);
             throw new RuntimeException("Failed to process coach data");
         }
