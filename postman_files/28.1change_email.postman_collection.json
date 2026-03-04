@@ -1,0 +1,101 @@
+{
+  "info": {
+    "name": "28.1 - Change Email (User Profile)",
+    "description": "Two-step email change flow: initiate from authenticated user, confirm via verification link.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "access_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Initiate Email Change",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/profile/change-email",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "profile", "change-email"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currentPassword\": \"My$ecretPass1\",\n  \"newEmail\": \"newaddress@example.com\"\n}"
+        },
+        "description": "Validates the current password, sets pendingEmail, sends a verification link to the new address.\n\nExpected: 200 OK\n{\n  \"success\": true,\n  \"message\": \"Verification email sent to ...\"\n}"
+      }
+    },
+    {
+      "name": "Initiate Email Change — Wrong Password (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/profile/change-email",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "profile", "change-email"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currentPassword\": \"WrongPassword!\",\n  \"newEmail\": \"newaddress@example.com\"\n}"
+        },
+        "description": "Expected: 400 Bad Request — current password is incorrect"
+      }
+    },
+    {
+      "name": "Initiate Email Change — Same Email (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/profile/change-email",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "profile", "change-email"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currentPassword\": \"My$ecretPass1\",\n  \"newEmail\": \"current@example.com\"\n}"
+        },
+        "description": "Expected: 400 Bad Request — new email must differ from current"
+      }
+    },
+    {
+      "name": "Confirm Email Change (click verification link)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/verify-email-change?token=REPLACE_WITH_TOKEN",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "verify-email-change"],
+          "query": [{ "key": "token", "value": "REPLACE_WITH_TOKEN" }]
+        },
+        "description": "Public endpoint — token from the verification email.\nSets user.email = pendingEmail, emailVerified = true, deletes the token.\n\nExpected: 200 OK\n{\n  \"success\": true,\n  \"message\": \"Email address updated successfully.\"\n}"
+      }
+    },
+    {
+      "name": "Confirm Email Change — Expired / Invalid Token (400)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/verify-email-change?token=invalid-token-uuid",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "verify-email-change"],
+          "query": [{ "key": "token", "value": "invalid-token-uuid" }]
+        },
+        "description": "Expected: 400 Bad Request — token not found or expired"
+      }
+    }
+  ]
+}

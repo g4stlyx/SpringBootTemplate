@@ -15,4 +15,5 @@
 * [x] user profile endpoints (get,update profile; change password; deactivate account)
     * [x] `DELETE /api/v1/profile` — let a user soft-delete their own account (set `active = false`); admins can hard-delete but users have no self-closure option
     * [x] Account reactivation grace period (30-day) — auto-reactivate on login within grace period, permanent closure + PII anonymization after expiry via AccountCleanupScheduledService
-* [ ] admin user management (level 0 & 1)
+    * [x] change email feature. set email_verified 0, send a verification email to the new email. ask for password in request before email update this. create a unit test for this.
+* [x] admin user management (level 0 & 1)

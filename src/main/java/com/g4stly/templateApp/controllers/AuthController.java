@@ -246,4 +246,20 @@ public class AuthController {
         
         return ResponseEntity.ok(session);
     }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // GET /api/v1/auth/verify-email-change?token=xxx
+    // Public — called when the user clicks the link in their email-change email.
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Confirms a pending email change.
+     * The token is the one-time code sent to the user's new email address.
+     * No authentication is required; the token itself is the proof of ownership.
+     */
+    @GetMapping("/verify-email-change")
+    public ResponseEntity<java.util.Map<String, Object>> verifyEmailChange(
+            @RequestParam String token) {
+        return ResponseEntity.ok(authService.verifyEmailChange(token));
+    }
 }

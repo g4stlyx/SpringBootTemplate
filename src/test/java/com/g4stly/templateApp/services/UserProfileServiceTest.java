@@ -1,6 +1,7 @@
 package com.g4stly.templateApp.services;
 
 import com.g4stly.templateApp.dto.profile.ChangePasswordRequest;
+import com.g4stly.templateApp.dto.user.ChangeEmailRequest;
 import com.g4stly.templateApp.dto.user.DeactivateAccountRequest;
 import com.g4stly.templateApp.dto.user.UpdateUserProfileRequest;
 import com.g4stly.templateApp.dto.user.UserProfileDTO;
@@ -10,6 +11,7 @@ import com.g4stly.templateApp.models.User;
 import com.g4stly.templateApp.models.enums.UserType;
 import com.g4stly.templateApp.repos.AdminRepository;
 import com.g4stly.templateApp.repos.UserRepository;
+import com.g4stly.templateApp.repos.VerificationTokenRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,8 @@ class UserProfileServiceTest {
     @Mock private AdminRepository adminRepository;
     @Mock private PasswordService passwordService;
     @Mock private RefreshTokenService refreshTokenService;
+    @Mock private VerificationTokenRepository verificationTokenRepository;
+    @Mock private EmailService emailService;
 
     @InjectMocks
     private UserProfileService userProfileService;
@@ -52,6 +56,7 @@ class UserProfileServiceTest {
         activeUser.setEmailVerified(true);
         activeUser.setPasswordHash("hash");
         activeUser.setSalt("salt");
+        activeUser.setAdminDeactivated(false);
         activeUser.setUserType(UserType.WAITER);
         activeUser.setLoginAttempts(0);
         activeUser.setCreatedAt(LocalDateTime.now());
@@ -241,5 +246,71 @@ class UserProfileServiceTest {
         UserProfileDTO dto = userProfileService.updateProfilePicture(1L, url);
 
         assertThat(dto.getProfilePicture()).isEqualTo(url);
+    }
+
+    // ─── requestEmailChange ──────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("requestEmailChange → throws when current password wrong")
+    void requestEmailChange_wrongPassword_throws() {
+        ChangeEmailRequest req = new ChangeEmailRequest("WrongPass!", "new@example.com");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(activeUser));
+        when(passwordService.verifyPassword("WrongPass!", "salt", "hash")).thenReturn(false);
+
+        assertThatThrownBy(() -> userProfileService.requestEmailChange(1L, req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Current password is incorrect");
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("requestEmailChange → throws when new email same as current")
+    void requestEmailChange_sameEmail_throws() {
+        ChangeEmailRequest req = new ChangeEmailRequest("CorrectPass1!", "user@test.com");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(activeUser));
+        when(passwordService.verifyPassword("CorrectPass1!", "salt", "hash")).thenReturn(true);
+
+        assertThatThrownBy(() -> userProfileService.requestEmailChange(1L, req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("different from the current email");
+    }
+
+    @Test
+    @DisplayName("requestEmailChange → throws when new email already in use")
+    void requestEmailChange_emailTaken_throws() {
+        ChangeEmailRequest req = new ChangeEmailRequest("CorrectPass1!", "taken@example.com");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(activeUser));
+        when(passwordService.verifyPassword("CorrectPass1!", "salt", "hash")).thenReturn(true);
+        when(userRepository.existsByEmail("taken@example.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> userProfileService.requestEmailChange(1L, req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("already in use");
+    }
+
+    @Test
+    @DisplayName("requestEmailChange → success: sets pendingEmail, saves token, sends email")
+    void requestEmailChange_success_setsPendingEmailAndSendsEmail() {
+        ChangeEmailRequest req = new ChangeEmailRequest("CorrectPass1!", "new@example.com");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(activeUser));
+        when(passwordService.verifyPassword("CorrectPass1!", "salt", "hash")).thenReturn(true);
+        when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
+        when(adminRepository.existsByEmail("new@example.com")).thenReturn(false);
+        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(verificationTokenRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        userProfileService.requestEmailChange(1L, req);
+
+        verify(userRepository).save(argThat(u ->
+                "new@example.com".equals(u.getPendingEmail())));
+        verify(verificationTokenRepository).save(argThat(t ->
+                "email_change".equals(t.getRole()) && t.getUserId().equals(1L)));
+        verify(emailService).sendEmailChangeVerificationEmail(
+                eq("new@example.com"), anyString(), anyString());
     }
 }

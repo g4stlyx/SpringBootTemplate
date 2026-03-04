@@ -60,7 +60,7 @@ class AccountCleanupScheduledServiceTest {
     @Test
     @DisplayName("anonymiseExpiredAccounts → does nothing when no expired accounts exist")
     void anonymiseExpiredAccounts_noExpiredAccounts_doesNothing() {
-        when(userRepository.findByIsActiveFalseAndDeactivatedAtBefore(any()))
+        when(userRepository.findByIsActiveFalseAndAdminDeactivatedFalseAndDeactivatedAtBefore(any()))
                 .thenReturn(Collections.emptyList());
 
         accountCleanupScheduledService.anonymiseExpiredAccounts();
@@ -78,7 +78,7 @@ class AccountCleanupScheduledServiceTest {
         String profilePicUrl = "https://cdn.example.com/users/1/profile.jpg";
         User user = buildExpiredUser(1L, profilePicUrl);
 
-        when(userRepository.findByIsActiveFalseAndDeactivatedAtBefore(any()))
+        when(userRepository.findByIsActiveFalseAndAdminDeactivatedFalseAndDeactivatedAtBefore(any()))
                 .thenReturn(List.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -112,7 +112,7 @@ class AccountCleanupScheduledServiceTest {
     void anonymiseExpiredAccounts_noProfilePicture_skipsImageDeletion() {
         User user = buildExpiredUser(2L, null);
 
-        when(userRepository.findByIsActiveFalseAndDeactivatedAtBefore(any()))
+        when(userRepository.findByIsActiveFalseAndAdminDeactivatedFalseAndDeactivatedAtBefore(any()))
                 .thenReturn(List.of(user));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -129,7 +129,7 @@ class AccountCleanupScheduledServiceTest {
     void anonymiseExpiredAccounts_imageDeletionFails_continuesDatabaseAnonymisation() {
         User user = buildExpiredUser(3L, "https://cdn.example.com/users/3/profile.jpg");
 
-        when(userRepository.findByIsActiveFalseAndDeactivatedAtBefore(any()))
+        when(userRepository.findByIsActiveFalseAndAdminDeactivatedFalseAndDeactivatedAtBefore(any()))
                 .thenReturn(List.of(user));
         doThrow(new RuntimeException("R2 connection timeout"))
                 .when(imageUploadService).deleteImage(any());
@@ -151,7 +151,7 @@ class AccountCleanupScheduledServiceTest {
         User user1 = buildExpiredUser(10L, null);
         User user2 = buildExpiredUser(11L, null);
 
-        when(userRepository.findByIsActiveFalseAndDeactivatedAtBefore(any()))
+        when(userRepository.findByIsActiveFalseAndAdminDeactivatedFalseAndDeactivatedAtBefore(any()))
                 .thenReturn(List.of(user1, user2));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 

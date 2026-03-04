@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -182,6 +183,10 @@ public class AuthService {
         // Handle inactive accounts with grace-period reactivation
         boolean reactivated = false;
         if (!user.getIsActive()) {
+            // Admin-deactivated accounts can never self-reactivate via login
+            if (Boolean.TRUE.equals(user.getAdminDeactivated())) {
+                return errorResponse("Account has been suspended. Please contact support.");
+            }
             boolean withinGracePeriod = user.getDeactivatedAt() != null
                     && user.getDeactivatedAt().isAfter(LocalDateTime.now().minusDays(30));
             if (!withinGracePeriod) {
@@ -580,6 +585,62 @@ public class AuthService {
             log.error("Error getting user session from token", e);
             return null;
         }
+    }
+
+    // ==================== Email Change Verification ====================
+
+    /**
+     * Completes an in-progress email change by verifying the one-time token that was
+     * sent to the user's new email address.
+     *
+     * On success:
+     * 1. The user's email is updated to the pending email.
+     * 2. The pending email field is cleared.
+     * 3. emailVerified is set to true.
+     * 4. The verification token is deleted.
+     */
+    @Transactional
+    public Map<String, Object> verifyEmailChange(String token) {
+        VerificationToken vt = verificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new com.g4stly.templateApp.exception.BadRequestException("Invalid or expired email change token"));
+
+        if (!"email_change".equals(vt.getRole())) {
+            throw new com.g4stly.templateApp.exception.BadRequestException("Invalid token type");
+        }
+
+        if (vt.isExpired()) {
+            verificationTokenRepository.delete(vt);
+            throw new com.g4stly.templateApp.exception.BadRequestException("Email change token has expired. Please request a new one.");
+        }
+
+        User user = userRepository.findById(vt.getUserId())
+                .orElseThrow(() -> new com.g4stly.templateApp.exception.ResourceNotFoundException(
+                        "User not found with ID: " + vt.getUserId()));
+
+        if (user.getPendingEmail() == null || user.getPendingEmail().isBlank()) {
+            verificationTokenRepository.delete(vt);
+            throw new com.g4stly.templateApp.exception.BadRequestException("No pending email change found for this account");
+        }
+
+        String newEmail = user.getPendingEmail();
+
+        // Final uniqueness guard (race condition safety)
+        if (userRepository.existsByEmail(newEmail) || adminRepository.existsByEmail(newEmail)) {
+            user.setPendingEmail(null);
+            userRepository.save(user);
+            verificationTokenRepository.delete(vt);
+            throw new com.g4stly.templateApp.exception.BadRequestException("This email address is already in use");
+        }
+
+        user.setEmail(newEmail);
+        user.setPendingEmail(null);
+        user.setEmailVerified(true);
+        userRepository.save(user);
+
+        verificationTokenRepository.delete(vt);
+        log.info("Email change verified for userId={} → new email={}", user.getId(), newEmail);
+
+        return Map.of("success", true, "message", "Email address updated successfully.");
     }
 
     // ==================== Helpers ====================

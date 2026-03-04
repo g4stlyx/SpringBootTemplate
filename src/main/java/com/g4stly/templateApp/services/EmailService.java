@@ -127,6 +127,37 @@ public class EmailService {
     }
 
     /**
+     * Sends a verification email to the user's NEW email address so they can confirm
+     * the change.  Until they click the link the change is not applied.
+     */
+    @Async("emailExecutor")
+    public void sendEmailChangeVerificationEmail(String newEmail, String token, String name) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(newEmail);
+            helper.setSubject("E-posta Adresinizi Doğrulayın");
+
+            String verificationUrl = frontendUrl + "/verify-email-change?token=" + token;
+
+            Context context = new Context();
+            context.setVariable("name", name);
+            context.setVariable("newEmail", newEmail);
+            context.setVariable("verificationUrl", verificationUrl);
+
+            String htmlContent = templateEngine.process("email-change-verification", context);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+            log.info("Email change verification email sent to {}", newEmail);
+        } catch (MessagingException e) {
+            log.error("Failed to send email change verification email to {}: {}", newEmail, e.getMessage(), e);
+        }
+    }
+
+    /**
      * Sends a system notification email to the administrator
      * This is used for automated alerts and monitoring notifications
      *

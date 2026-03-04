@@ -1,6 +1,7 @@
 package com.g4stly.templateApp.controllers;
 
 import com.g4stly.templateApp.dto.profile.ChangePasswordRequest;
+import com.g4stly.templateApp.dto.user.ChangeEmailRequest;
 import com.g4stly.templateApp.dto.user.DeactivateAccountRequest;
 import com.g4stly.templateApp.dto.user.UpdateUserProfileRequest;
 import com.g4stly.templateApp.dto.user.UserProfileDTO;
@@ -66,6 +67,30 @@ public class UserProfileController {
         Long userId = (Long) authentication.getDetails();
         userProfileService.changePassword(userId, request);
         return ResponseEntity.ok(Map.of("success", true, "message", "Password changed successfully"));
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // POST /api/v1/profile/change-email
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Initiates an email change.
+     *
+     * Requires current-password confirmation.  A verification link is sent to
+     * the new address; the email is only updated once that link is clicked via
+     * {@code GET /api/v1/auth/verify-email-change?token=…}.
+     */
+    @PostMapping("/change-email")
+    public ResponseEntity<Map<String, Object>> changeEmail(
+            @Valid @RequestBody ChangeEmailRequest request,
+            Authentication authentication) {
+
+        Long userId = (Long) authentication.getDetails();
+        userProfileService.requestEmailChange(userId, request);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Verification email sent to " + request.getNewEmail()
+                        + ". Please click the link to confirm the change."));
     }
 
     // ──────────────────────────────────────────────────────────────────────────

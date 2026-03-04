@@ -79,6 +79,7 @@ public class SecurityConfig {
 
                         // TODO: public endpoints, check them well
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/verify-email-change").permitAll()
                         .requestMatchers("/api/v1/admin/2fa/verify-login").permitAll() // 2FA login completion
                         .requestMatchers("/api/v1/health/**").permitAll()
 
@@ -97,6 +98,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,    "/api/v1/profile").hasRole("USER")
                         .requestMatchers(HttpMethod.PUT,    "/api/v1/profile").hasRole("USER")
                         .requestMatchers(HttpMethod.POST,   "/api/v1/profile/change-password").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST,   "/api/v1/profile/change-email").hasRole("USER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/profile").hasRole("USER")
                         .requestMatchers(HttpMethod.POST,   "/api/v1/profile/image").hasRole("USER")
                         .requestMatchers(HttpMethod.PUT,    "/api/v1/profile/image").hasRole("USER")

@@ -48,7 +48,8 @@ public class AccountCleanupScheduledService {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(gracePeriodDays);
         log.info("Starting account cleanup. Anonymising accounts deactivated before {}", cutoff);
 
-        List<User> expired = userRepository.findByIsActiveFalseAndDeactivatedAtBefore(cutoff);
+        // Only process self-deactivated accounts; admin-deactivated ones are excluded intentionally.
+        List<User> expired = userRepository.findByIsActiveFalseAndAdminDeactivatedFalseAndDeactivatedAtBefore(cutoff);
 
         if (expired.isEmpty()) {
             log.info("Account cleanup: no expired accounts found.");

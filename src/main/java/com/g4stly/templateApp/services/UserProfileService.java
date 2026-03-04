@@ -1,14 +1,17 @@
 package com.g4stly.templateApp.services;
 
 import com.g4stly.templateApp.dto.profile.ChangePasswordRequest;
+import com.g4stly.templateApp.dto.user.ChangeEmailRequest;
 import com.g4stly.templateApp.dto.user.DeactivateAccountRequest;
 import com.g4stly.templateApp.dto.user.UpdateUserProfileRequest;
 import com.g4stly.templateApp.dto.user.UserProfileDTO;
 import com.g4stly.templateApp.exception.BadRequestException;
 import com.g4stly.templateApp.exception.ResourceNotFoundException;
 import com.g4stly.templateApp.models.User;
+import com.g4stly.templateApp.models.VerificationToken;
 import com.g4stly.templateApp.repos.AdminRepository;
 import com.g4stly.templateApp.repos.UserRepository;
+import com.g4stly.templateApp.repos.VerificationTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,8 @@ public class UserProfileService {
     private final AdminRepository adminRepository;
     private final PasswordService passwordService;
     private final RefreshTokenService refreshTokenService;
+    private final VerificationTokenRepository verificationTokenRepository;
+    private final EmailService emailService;
 
     // ==================== GET ====================
 
@@ -121,6 +126,53 @@ public class UserProfileService {
         // Revoke all sessions immediately
         int revoked = refreshTokenService.revokeAllUserTokens(userId, "user");
         log.info("Account deactivated for userId={}; {} refresh tokens revoked", userId, revoked);
+    }
+
+    // ==================== CHANGE EMAIL ====================
+
+    /**
+     * Initiates an email change request.
+     *
+     * Security:
+     *  1. Current password is required to authorise the change.
+     *  2. Uniqueness is checked cross-table (users + admins).
+     *  3. The new email is NOT applied immediately — a VerificationToken with
+     *     role "email_change" is created and sent to the new address.
+     *  4. Only after the user clicks the link in that email is the change applied
+     *     (via {@code AuthService#verifyEmailChange}).
+     */
+    @Transactional
+    public void requestEmailChange(Long userId, ChangeEmailRequest request) {
+        User user = findActiveUserById(userId);
+
+        if (!passwordService.verifyPassword(request.getCurrentPassword(), user.getSalt(), user.getPasswordHash())) {
+            throw new BadRequestException("Current password is incorrect");
+        }
+
+        String newEmail = request.getNewEmail().trim().toLowerCase(Locale.ROOT);
+
+        if (newEmail.equals(user.getEmail().toLowerCase(Locale.ROOT))) {
+            throw new BadRequestException("New email must be different from the current email");
+        }
+
+        if (userRepository.existsByEmail(newEmail) || adminRepository.existsByEmail(newEmail)) {
+            throw new BadRequestException("This email address is already in use");
+        }
+
+        // Store the pending email on the user and create / replace the token
+        user.setPendingEmail(newEmail);
+        userRepository.save(user);
+
+        // Delete any existing email_change token for this user to prevent duplicates
+        verificationTokenRepository.deleteByUserIdAndRole(userId, "email_change");
+
+        VerificationToken token = new VerificationToken(userId, "email_change");
+        verificationTokenRepository.save(token);
+
+        String displayName = user.getFirstName() != null ? user.getFirstName() : user.getUsername();
+        emailService.sendEmailChangeVerificationEmail(newEmail, token.getToken(), displayName);
+
+        log.info("Email change requested for userId={} → pendingEmail={}", userId, newEmail);
     }
 
     // ==================== PROFILE PICTURE ====================

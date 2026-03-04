@@ -96,6 +96,23 @@ public class User {
     @Column(name = "deactivated_at")
     private LocalDateTime deactivatedAt;
 
+    /**
+     * True when an admin has deactivated this account.
+     * Admin-deactivated accounts:
+     *  - Cannot be reactivated via the grace-period login flow.
+     *  - Are excluded from the nightly PII-anonymisation cleanup job.
+     *  - Can only be reactivated by an admin via the admin management API.
+     */
+    @Column(name = "admin_deactivated", nullable = false)
+    private Boolean adminDeactivated = false;
+
+    /**
+     * Holds the new, unverified email address while the user's email-change request
+     * is pending verification.  Null when no change is in progress.
+     */
+    @Column(name = "pending_email", length = 255)
+    private String pendingEmail;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

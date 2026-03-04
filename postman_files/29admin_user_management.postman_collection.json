@@ -1,0 +1,355 @@
+{
+  "info": {
+    "name": "30 - Admin User Management",
+    "description": "Admin-side user management endpoints. Requires ROLE_ADMIN with level 0 or 1.\n\nBase: /api/v1/admin/users",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "admin_token", "value": "" },
+    { "key": "user_id", "value": "10" }
+  ],
+  "item": [
+    {
+      "name": "List Users",
+      "item": [
+        {
+          "name": "GET All Users (defaults)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users?page=0&size=20&sortBy=createdAt&sortDirection=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sortBy", "value": "createdAt" },
+                { "key": "sortDirection", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Users — search by username/email",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users?search=john&page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"],
+              "query": [
+                { "key": "search", "value": "john" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Users — filter by isActive=false",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users?isActive=false&page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"],
+              "query": [
+                { "key": "isActive", "value": "false" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Users — filter by userType",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users?userType=WAITER&page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"],
+              "query": [
+                { "key": "userType", "value": "WAITER" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Users — invalid userType (400)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users?userType=INVALID_TYPE",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"],
+              "query": [{ "key": "userType", "value": "INVALID_TYPE" }]
+            },
+            "description": "Expected: 400 Bad Request — Invalid userType value"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Single User",
+      "item": [
+        {
+          "name": "GET User by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "GET User by ID — not found (404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/99999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "99999"]
+            },
+            "description": "Expected: 404 Not Found"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create User",
+      "item": [
+        {
+          "name": "POST Create User (with email verification)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Password1!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+905001234567\",\n  \"bio\": \"Staff member\",\n  \"userType\": \"WAITER\",\n  \"isActive\": true,\n  \"skipEmailVerification\": false\n}"
+            },
+            "description": "Creates user, sends verification email.\nExpected: 201 Created"
+          }
+        },
+        {
+          "name": "POST Create User (skip email verification)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"preactivated\",\n  \"email\": \"preactivated@example.com\",\n  \"password\": \"Password1!\",\n  \"userType\": \"WAITER\",\n  \"skipEmailVerification\": true\n}"
+            },
+            "description": "Creates user with emailVerified=true, no verification email sent.\nExpected: 201 Created"
+          }
+        },
+        {
+          "name": "POST Create User — duplicate username (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"existinguser\",\n  \"email\": \"unique@example.com\",\n  \"password\": \"Password1!\",\n  \"userType\": \"WAITER\"\n}"
+            },
+            "description": "Expected: 400 Bad Request — Username already exists"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update User",
+      "item": [
+        {
+          "name": "PUT Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+905009876543\",\n  \"bio\": \"Updated bio\"\n}"
+            },
+            "description": "Partial update — only provided fields are applied.\nExpected: 200 OK"
+          }
+        },
+        {
+          "name": "PUT Update User — change email (resets emailVerified)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newemail@example.com\"\n}"
+            },
+            "description": "When admin changes email, emailVerified is automatically set to false.\nExpected: 200 OK, emailVerified=false in response"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deactivate / Reactivate",
+      "item": [
+        {
+          "name": "POST Deactivate User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}", "deactivate"]
+            },
+            "description": "Sets isActive=false, adminDeactivated=true. Revokes all refresh tokens.\nUser cannot self-reactivate.\nExpected: 200 OK"
+          }
+        },
+        {
+          "name": "POST Deactivate User — already inactive (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}", "deactivate"]
+            },
+            "description": "Expected: 400 Bad Request — user is already inactive"
+          }
+        },
+        {
+          "name": "POST Reactivate User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}/reactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}", "reactivate"]
+            },
+            "description": "Restores isActive=true, clears adminDeactivated, resets login lock.\nExpected: 200 OK"
+          }
+        },
+        {
+          "name": "POST Reactivate User — already active (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}/reactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}", "reactivate"]
+            },
+            "description": "Expected: 400 Bad Request — user is already active"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hard Delete",
+      "item": [
+        {
+          "name": "DELETE User (hard delete — irreversible)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}"]
+            },
+            "description": "Permanently deletes the user. Revokes tokens and removes verification tokens first.\n\nExpected: 200 OK\n{\n  \"success\": true,\n  \"message\": \"User permanently deleted\"\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Password & Lock",
+      "item": [
+        {
+          "name": "POST Reset User Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}", "reset-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPassword\": \"FreshPass1!\"\n}"
+            },
+            "description": "Generates new salt, re-hashes with Argon2id, clears login lock.\nExpected: 200 OK\n{\n  \"success\": true,\n  \"message\": \"Password reset successfully\"\n}"
+          }
+        },
+        {
+          "name": "POST Unlock User Account",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}/unlock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}", "unlock"]
+            },
+            "description": "Clears loginAttempts and lockedUntil.\nExpected: 200 OK with AdminUserDTO"
+          }
+        }
+      ]
+    }
+  ]
+}
