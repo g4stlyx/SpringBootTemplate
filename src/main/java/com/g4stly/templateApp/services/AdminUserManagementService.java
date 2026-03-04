@@ -353,6 +353,22 @@ public class AdminUserManagementService {
         return mapToDTO(user);
     }
 
+    // ==================== TOGGLE EMAIL VERIFIED ====================
+
+    @Transactional
+    public AdminUserDTO toggleEmailVerified(Long adminId, Long targetUserId, HttpServletRequest httpRequest) {
+        User user = findUserById(targetUserId);
+        boolean newValue = !Boolean.TRUE.equals(user.getEmailVerified());
+        user.setEmailVerified(newValue);
+        user = userRepository.save(user);
+        log.info("emailVerified toggled to {} for userId={} by admin {}", newValue, targetUserId, adminId);
+
+        Map<String, Object> details = new HashMap<>();
+        details.put("emailVerified", newValue);
+        activityLogger.logActivity(adminId, "UPDATE", "User", targetUserId.toString(), details, httpRequest);
+        return mapToDTO(user);
+    }
+
     // ==================== INTERNALS ====================
 
     private User findUserById(Long userId) {

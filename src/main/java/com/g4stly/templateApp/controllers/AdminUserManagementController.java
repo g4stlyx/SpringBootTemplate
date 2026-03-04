@@ -201,4 +201,23 @@ public class AdminUserManagementController {
         log.info("Admin {} unlocking user {}", adminId, userId);
         return ResponseEntity.ok(adminUserManagementService.unlockUser(adminId, userId, httpRequest));
     }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // POST /api/v1/admin/users/{userId}/toggle-email-verified
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Toggles the {@code emailVerified} flag for the target user.
+     * Returns the updated user DTO with the new flag value.
+     */
+    @PostMapping("/{userId}/toggle-email-verified")
+    public ResponseEntity<AdminUserDTO> toggleEmailVerified(
+            @PathVariable Long userId,
+            Authentication authentication,
+            HttpServletRequest httpRequest) {
+
+        Long adminId = (Long) authentication.getDetails();
+        log.info("Admin {} toggling emailVerified for user {}", adminId, userId);
+        return ResponseEntity.ok(adminUserManagementService.toggleEmailVerified(adminId, userId, httpRequest));
+    }
 }

@@ -348,6 +348,19 @@
             },
             "description": "Clears loginAttempts and lockedUntil.\nExpected: 200 OK with AdminUserDTO"
           }
+        },
+        {
+          "name": "POST Toggle Email Verified",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}/toggle-email-verified",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", "{{user_id}}", "toggle-email-verified"]
+            },
+            "description": "Flips the emailVerified flag (true → false or false → true) for the target user.\nExpected: 200 OK with updated AdminUserDTO"
+          }
         }
       ]
     }
