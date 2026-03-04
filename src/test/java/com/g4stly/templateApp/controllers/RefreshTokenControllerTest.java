@@ -4,6 +4,7 @@ import tools.jackson.databind.ObjectMapper;
 import com.g4stly.templateApp.models.Admin;
 import com.g4stly.templateApp.models.RefreshToken;
 import com.g4stly.templateApp.repos.AdminRepository;
+import com.g4stly.templateApp.repos.UserRepository;
 import com.g4stly.templateApp.services.RefreshTokenService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,9 @@ class RefreshTokenControllerTest extends BaseControllerTest {
 
     @MockitoBean
     private AdminRepository adminRepository;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @Autowired
     private ObjectMapper objectMapper;

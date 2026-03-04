@@ -11,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-//TODO: this service should work on async mode to prevent blocking main thread. Event listeners, queues or other async mechanisms can be used.
-
 @Service
 @Slf4j
 public class EmailService {

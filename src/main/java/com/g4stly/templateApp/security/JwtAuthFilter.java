@@ -21,14 +21,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
     
-    //TODO: jwt auth atlayan endpointler.
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        String method = request.getMethod();
-        
-        return path.startsWith("/api/v1/auth/") || 
-               (path.matches("/api/v1/polyclinics") && "GET".equals(method));
+        return path.startsWith("/api/v1/auth/");
     }
 
     @Override

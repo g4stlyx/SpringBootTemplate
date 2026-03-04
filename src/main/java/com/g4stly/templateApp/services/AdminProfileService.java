@@ -7,6 +7,7 @@ import com.g4stly.templateApp.exception.BadRequestException;
 import com.g4stly.templateApp.exception.ResourceNotFoundException;
 import com.g4stly.templateApp.models.Admin;
 import com.g4stly.templateApp.repos.AdminRepository;
+import com.g4stly.templateApp.repos.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,9 @@ public class AdminProfileService {
     
     @Autowired
     private AdminRepository adminRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
     
     @Autowired
     private PasswordService passwordService;
@@ -44,9 +48,10 @@ public class AdminProfileService {
         Admin admin = adminRepository.findById(adminId)
             .orElseThrow(() -> new ResourceNotFoundException("Admin not found with ID: " + adminId));
         
-        // Check if email is being changed and if it's already taken
+        // Check if email is being changed and if it's already taken (check both tables)
         if (request.getEmail() != null && !request.getEmail().equals(admin.getEmail())) {
-            if (adminRepository.existsByEmail(request.getEmail())) {
+            if (adminRepository.existsByEmail(request.getEmail()) ||
+                userRepository.existsByEmail(request.getEmail())) {
                 throw new BadRequestException("Email is already in use");
             }
             admin.setEmail(request.getEmail());

@@ -50,7 +50,7 @@ class AuthControllerTest extends BaseControllerTest {
         req.setUsername("alice");
         req.setEmail("alice@test.com");
         req.setPassword("Password1!");
-        req.setUserType("user");
+        req.setUserType("waiter");
 
         AuthResponse response = AuthResponse.builder().success(true).message("Check your email").build();
         when(authService.register(any(), any())).thenReturn(response);
@@ -69,7 +69,7 @@ class AuthControllerTest extends BaseControllerTest {
         req.setUsername("alice");
         req.setEmail("alice@test.com");
         req.setPassword("Password1!");
-        req.setUserType("user");
+        req.setUserType("waiter");
 
         AuthResponse response = AuthResponse.builder().success(false).message("Username already taken").build();
         when(authService.register(any(), any())).thenReturn(response);

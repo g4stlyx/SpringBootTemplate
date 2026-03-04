@@ -14,17 +14,20 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
 /**
  * Controller for refresh token operations.
- * Handles token refresh and logout for all user types (client, coach, admin).
+ * Handles token refresh and logout for all user roles (user, admin).
  */
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -108,7 +111,7 @@ public class RefreshTokenController {
             } else {
                 // Fetch user's app-level type from database
                 String userType = userRepository.findById(oldRefreshToken.getUserId())
-                        .map(u -> u.getUserType().name().toLowerCase())
+                        .map(u -> u.getUserType().name().toLowerCase(Locale.ROOT))
                         .orElse("waiter");
                 accessToken = jwtUtils.generateUserToken(username, oldRefreshToken.getUserId(), userType);
                 log.debug("Generated user access token with userType: {}", userType);
@@ -253,36 +256,50 @@ public class RefreshTokenController {
     }
 
     /**
-     * Set refresh token in HttpOnly secure cookie.
+     * Set refresh token in HttpOnly secure cookie with SameSite attribute.
      */
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        Cookie cookie = new Cookie(cookieName, refreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSecure);
-        cookie.setPath("/");
-        cookie.setMaxAge(cookieMaxAge);
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from(cookieName, refreshToken)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(cookieMaxAge)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     /**
      * Clear refresh token cookie.
      */
     private void clearRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(cookieName, null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSecure);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from(cookieName, "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     /**
-     * Resolve username by userId and role.
-     * This is a simple fallback - in production, you might want to inject repositories.
+     * Resolve username by userId and role from the database.
      */
     private String resolveUsername(Long userId, String role) {
-        // For simplicity, we return a generic username
-        // In a real implementation, you'd query the appropriate repository
-        return role + "_" + userId;
+        try {
+            if ("admin".equalsIgnoreCase(role)) {
+                return adminRepository.findById(userId)
+                        .map(admin -> admin.getUsername())
+                        .orElse("unknown_admin_" + userId);
+            } else {
+                return userRepository.findById(userId)
+                        .map(user -> user.getUsername())
+                        .orElse("unknown_user_" + userId);
+            }
+        } catch (Exception e) {
+            log.error("Failed to resolve username for userId={}, role={}: {}", userId, role, e.getMessage());
+            return "unknown_" + userId;
+        }
     }
 }

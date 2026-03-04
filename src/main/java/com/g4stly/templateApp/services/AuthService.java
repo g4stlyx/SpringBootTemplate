@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -89,7 +90,7 @@ public class AuthService {
             user.setUserType(UserType.WAITER);  // default
             if (request.getUserType() != null && !request.getUserType().isBlank()) {
                 try {
-                    user.setUserType(UserType.valueOf(request.getUserType().toUpperCase()));
+                    user.setUserType(UserType.valueOf(request.getUserType().toUpperCase(Locale.ROOT)));
                 } catch (IllegalArgumentException e) {
                     return errorResponse("Invalid user type: " + request.getUserType());
                 }
@@ -120,7 +121,7 @@ public class AuthService {
                     .isActive(user.getIsActive())
                     .emailVerified(user.getEmailVerified())
                     .role("user")
-                    .userType(user.getUserType().name().toLowerCase())
+                    .userType(user.getUserType().name().toLowerCase(Locale.ROOT))
                     .lastLoginAt(user.getLastLoginAt())
                     .build())
                 .build();
@@ -208,7 +209,7 @@ public class AuthService {
         userActivityLogger.logLoginSuccess(user.getId(), "user", httpRequest);
 
         String accessToken = jwtUtils.generateUserToken(user.getUsername(), user.getId(),
-                user.getUserType().name().toLowerCase());
+                user.getUserType().name().toLowerCase(Locale.ROOT));
         RefreshToken refreshTokenEntity = refreshTokenService.createRefreshToken(user.getId(), "user", httpRequest);
 
         log.info("Returning refresh token: {}...", refreshTokenEntity.getToken().substring(0, 8));
@@ -229,7 +230,7 @@ public class AuthService {
                 .isActive(user.getIsActive())
                 .emailVerified(user.getEmailVerified())
                 .role("user")
-                .userType(user.getUserType().name().toLowerCase())
+                .userType(user.getUserType().name().toLowerCase(Locale.ROOT))
                 .lastLoginAt(user.getLastLoginAt())
                 .build())
             .build();
@@ -280,7 +281,6 @@ public class AuthService {
                 .build();
         }
 
-        adminRepository.save(admin);
         admin.setLastLoginAt(LocalDateTime.now());
         adminRepository.save(admin);
 
@@ -528,7 +528,7 @@ public class AuthService {
 
             if (userId == null || role == null) return null;
 
-            switch (role.toLowerCase()) {
+            switch (role.toLowerCase(Locale.ROOT)) {
                 case "user":
                     return userRepository.findById(userId)
                         .map(u -> UserSessionDTO.builder()
@@ -537,7 +537,7 @@ public class AuthService {
                             .lastName(u.getLastName())
                             .profilePicture(u.getProfilePicture())
                             .role("USER")
-                            .userType(u.getUserType().name())
+                            .userType(u.getUserType().name().toLowerCase(Locale.ROOT))
                             .build())
                         .orElse(null);
 

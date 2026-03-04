@@ -115,7 +115,7 @@ class AuthServiceTest {
             RegisterRequest req = buildRegisterRequest("admin");
             AuthResponse resp = authService.register(req, httpRequest);
             assertThat(resp.isSuccess()).isFalse();
-            assertThat(resp.getMessage()).containsIgnoringCase("invalid role");
+            assertThat(resp.getMessage()).containsIgnoringCase("invalid user type");
         }
 
         @Test
@@ -147,7 +147,7 @@ class AuthServiceTest {
         @Test
         @DisplayName("Valid user registration: success=true, no tokens, email sent")
         void validUserRegistration() {
-            RegisterRequest req = buildRegisterRequest("user");
+            RegisterRequest req = buildRegisterRequest("waiter");
             when(userRepository.existsByUsername(any())).thenReturn(false);
             when(adminRepository.existsByUsername(any())).thenReturn(false);
             when(userRepository.existsByEmail(any())).thenReturn(false);
