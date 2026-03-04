@@ -7,6 +7,7 @@ import com.g4stly.templateApp.security.JwtAuthFilter;
 import com.g4stly.templateApp.security.JwtUtils;
 import com.g4stly.templateApp.security.SensitiveEndpointAccessFilter;
 import com.g4stly.templateApp.services.AuthErrorLogService;
+import com.g4stly.templateApp.services.UserActivityLogger;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -40,6 +41,11 @@ public abstract class BaseControllerTest {
     @MockitoBean protected CustomAccessDeniedHandler customAccessDeniedHandler;
     @MockitoBean protected GlobalRateLimitFilter globalRateLimitFilter;
     @MockitoBean protected SensitiveEndpointAccessFilter sensitiveEndpointAccessFilter;
+
+    // ----- WebMvcConfig / interceptor dependencies -----
+    // WebMvcConfig registers UserActivityLoggingInterceptor which requires
+    // UserActivityLogger (@Service). Mock it so the @WebMvcTest slice can start.
+    @MockitoBean protected UserActivityLogger userActivityLogger;
 
     // ----- GlobalExceptionHandler dependencies -----
     // @RestControllerAdvice is always loaded in @WebMvcTest; its injected

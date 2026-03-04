@@ -1,25 +1,24 @@
 package com.g4stly.templateApp.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
-    private TemplateEngine templateEngine;
+    private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
@@ -30,6 +29,7 @@ public class EmailService {
     @Value("${app.admin.email:admin@g4stly.tr}")
     private String adminEmail;
 
+    @Async("emailExecutor")
     public void sendVerificationEmail(String to, String token, String name) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -56,11 +56,11 @@ public class EmailService {
             // Send the email
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            // Log error but don't prevent registration
-            System.err.println("Failed to send verification email: " + e.getMessage());
+            log.error("Failed to send verification email to {}: {}", to, e.getMessage(), e);
         }
     }
 
+    @Async("emailExecutor")
     public void sendPasswordResetEmail(String to, String token, String name) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -88,11 +88,11 @@ public class EmailService {
             // Send the email
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            // Log error but don't fail the whole process
-            System.err.println("Failed to send password reset email: " + e.getMessage());
+            log.error("Failed to send password reset email to {}: {}", to, e.getMessage(), e);
         }
     }
 
+    @Async("emailExecutor")
     public void sendPasswordResetSuccessEmail(String to, String name, String ipAddress) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -122,8 +122,7 @@ public class EmailService {
             // Send the email
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            // Log error but don't fail the whole process
-            System.err.println("Failed to send password reset success email: " + e.getMessage());
+            log.error("Failed to send password reset success email to {}: {}", to, e.getMessage(), e);
         }
     }
 
@@ -134,6 +133,7 @@ public class EmailService {
      * @param subject The email subject
      * @param body The HTML body content of the email
      */
+    @Async("emailExecutor")
     public void sendSystemNotificationEmail(String subject, String body) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -145,9 +145,9 @@ public class EmailService {
             helper.setText(body, true); // true indicates HTML content
 
             mailSender.send(mimeMessage);
-            System.out.println("System notification email sent successfully to admin");
+            log.info("System notification email sent successfully to admin");
         } catch (MessagingException e) {
-            System.err.println("Failed to send system notification email: " + e.getMessage());
+            log.error("Failed to send system notification email: {}", e.getMessage(), e);
         }
     }
 

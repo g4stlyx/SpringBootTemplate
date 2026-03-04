@@ -30,7 +30,7 @@ public class AdminActivityLogger {
      * Log admin activity asynchronously
      * Uses separate transaction to ensure logging doesn't interfere with main operation
      */
-    @Async
+    @Async("loggingExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logActivity(Long adminId, String action, String resourceType, 
                            String resourceId, Map<String, Object> details,

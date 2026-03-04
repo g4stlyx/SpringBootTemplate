@@ -31,7 +31,7 @@ public class UserActivityLogger {
      * Log user activity asynchronously.
      * Uses separate transaction to ensure logging doesn't interfere with main operation.
      */
-    @Async
+    @Async("loggingExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logActivity(Long userId, String role, String action,
                            String resourceType, String resourceId,
