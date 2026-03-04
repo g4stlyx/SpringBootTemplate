@@ -87,6 +87,15 @@ public class User {
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
+    /**
+     * Set when a user self-deactivates their account.
+     * Null means the account has never been self-deactivated.
+     * Non-null means the account may be in the 30-day grace period (still re-activatable
+     * on login) or may have been anonymised by AccountCleanupScheduledService.
+     */
+    @Column(name = "deactivated_at")
+    private LocalDateTime deactivatedAt;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

@@ -67,4 +67,16 @@ public abstract class BaseControllerTest {
         auth.setDetails(adminId);
         return auth;
     }
+
+    /**
+     * Creates an Authentication that satisfies hasRole('USER') and returns
+     * the given userId from authentication.getDetails().
+     */
+    protected Authentication makeUserAuth(Long userId) {
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                "testUser", null,
+                AuthorityUtils.createAuthorityList("ROLE_USER"));
+        auth.setDetails(userId);
+        return auth;
+    }
 }

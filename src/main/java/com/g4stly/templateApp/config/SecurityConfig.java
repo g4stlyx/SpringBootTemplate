@@ -93,6 +93,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/profile").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/users/profile").hasAnyRole("USER", "ADMIN")
 
+                        // User profile (self-service)
+                        .requestMatchers(HttpMethod.GET,    "/api/v1/profile").hasRole("USER")
+                        .requestMatchers(HttpMethod.PUT,    "/api/v1/profile").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST,   "/api/v1/profile/change-password").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/profile").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST,   "/api/v1/profile/image").hasRole("USER")
+                        .requestMatchers(HttpMethod.PUT,    "/api/v1/profile/image").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/profile/image").hasRole("USER")
+
                         // Chat endpoints
                         .requestMatchers("/api/v1/chat/**").hasAnyRole("USER", "ADMIN")
 

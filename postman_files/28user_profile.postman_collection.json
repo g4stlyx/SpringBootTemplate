@@ -1,0 +1,279 @@
+{
+  "info": {
+    "_postman_id": "user-profile-collection-v1",
+    "name": "28 — User Profile",
+    "description": "Self-service profile management for ROLE_USER accounts.\n\nAll requests require:\n  Authorization: Bearer {{accessToken}}\n\nSet `accessToken` in your environment after logging in via the Auth collection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "{{baseUrl}}",
+      "description": "API base URL, e.g. http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "profile"]
+            },
+            "description": "Returns the authenticated user's full profile.\n\nOwnership is enforced server-side via the JWT — no userId parameter is accepted."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"id\": 1,\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"profilePicture\": \"https://cdn.example.com/USER/1/profile.jpg\",\n  \"phone\": \"+905551234567\",\n  \"bio\": \"My short bio\",\n  \"userType\": \"waiter\",\n  \"isActive\": true,\n  \"emailVerified\": true,\n  \"createdAt\": \"2025-01-01T10:00:00\",\n  \"updatedAt\": \"2025-06-01T12:00:00\",\n  \"lastLoginAt\": \"2025-06-15T09:30:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newemail@example.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+905559876543\",\n  \"bio\": \"Updated bio\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "profile"]
+            },
+            "description": "Partial update — only non-null fields are applied.\n\nEmail uniqueness is checked across both tables (users + admins)."
+          },
+          "response": [
+            {
+              "name": "200 OK — Updated Profile",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"id\": 1,\n  \"username\": \"johndoe\",\n  \"email\": \"newemail@example.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+905559876543\",\n  \"bio\": \"Updated bio\",\n  \"userType\": \"waiter\",\n  \"isActive\": true,\n  \"emailVerified\": true,\n  \"createdAt\": \"2025-01-01T10:00:00\",\n  \"updatedAt\": \"2025-06-15T14:00:00\",\n  \"lastLoginAt\": \"2025-06-15T09:30:00\"\n}"
+            },
+            {
+              "name": "400 Bad Request — Email Taken",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Email is already in use\",\n  \"path\": \"/api/v1/profile\",\n  \"timestamp\": \"2025-06-15T14:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"OldPassword1!\",\n  \"newPassword\": \"NewPassword1!\",\n  \"confirmPassword\": \"NewPassword1!\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "profile", "change-password"]
+            },
+            "description": "Changes the user's password.\n\nRules:\n- newPassword must differ from currentPassword\n- newPassword must equal confirmPassword\n- currentPassword is verified via Argon2id"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Password changed successfully\"\n}"
+            },
+            {
+              "name": "400 Bad Request — Wrong Current Password",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Current password is incorrect\",\n  \"path\": \"/api/v1/profile/change-password\",\n  \"timestamp\": \"2025-06-15T14:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Deactivate Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"MyCurrentPassword1!\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "profile"]
+            },
+            "description": "Soft-deactivates the caller's own account.\n\nPassword confirmation prevents accidental or CSRF-driven closure.\n\nSide effects:\n1. isActive=false, deactivatedAt=now()\n2. All refresh tokens immediately revoked\n3. 30-day grace period: logging in reactivates the account\n4. After 30 days: nightly job permanently anonymises all PII"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Account deactivated. You may reactivate it by logging in within 30 days.\"\n}"
+            },
+            {
+              "name": "400 Bad Request — Wrong Password",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Password is incorrect\",\n  \"path\": \"/api/v1/profile\",\n  \"timestamp\": \"2025-06-15T14:00:00\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile Image",
+      "item": [
+        {
+          "name": "Upload Profile Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "Image file — JPEG, PNG, GIF, BMP or WebP. Max 5 MB."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile/image",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "profile", "image"]
+            },
+            "description": "Uploads a profile picture for the first time.\n\nValidation is magic-byte based (not Content-Type header) to prevent content-type spoofing attacks."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile image uploaded successfully\",\n  \"imageUrl\": \"https://cdn.example.com/USER/1/profile_1718000000.jpg\"\n}"
+            },
+            {
+              "name": "400 Bad Request — Invalid File",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid file type\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile Image",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "New image file."
+                },
+                {
+                  "key": "oldImageUrl",
+                  "value": "https://cdn.example.com/USER/1/profile_OLD.jpg",
+                  "type": "text",
+                  "description": "Optional. The current image URL to delete from R2 after successful upload."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile/image",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "profile", "image"]
+            },
+            "description": "Replaces the existing profile picture. Optionally deletes the old R2 object."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile image updated successfully\",\n  \"imageUrl\": \"https://cdn.example.com/USER/1/profile_1718999999.jpg\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Profile Image",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile/image?imageUrl=https://cdn.example.com/USER/1/profile.jpg",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "profile", "image"],
+              "query": [
+                {
+                  "key": "imageUrl",
+                  "value": "https://cdn.example.com/USER/1/profile.jpg",
+                  "description": "Full R2 URL of the profile image to delete."
+                }
+              ]
+            },
+            "description": "Deletes the profile picture from R2 and nulls the profilePicture field."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile image removed successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

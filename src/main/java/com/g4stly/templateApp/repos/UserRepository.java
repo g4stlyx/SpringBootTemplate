@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -31,4 +33,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByUserType(UserType userType, Pageable pageable);
 
     Page<User> findByIsActiveAndEmailVerified(Boolean isActive, Boolean emailVerified, Pageable pageable);
+
+    /**
+     * Used by AccountCleanupScheduledService: find soft-deleted accounts whose 30-day
+     * grace period has expired so they can be permanently anonymised.
+     */
+    List<User> findByIsActiveFalseAndDeactivatedAtBefore(LocalDateTime cutoff);
 }

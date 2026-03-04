@@ -179,7 +179,26 @@ public class AuthService {
     }
 
     private AuthResponse authenticateUser(User user, String password, HttpServletRequest httpRequest) {
-        if (!user.getIsActive()) return errorResponse("Account is deactivated");
+        // Handle inactive accounts with grace-period reactivation
+        boolean reactivated = false;
+        if (!user.getIsActive()) {
+            boolean withinGracePeriod = user.getDeactivatedAt() != null
+                    && user.getDeactivatedAt().isAfter(LocalDateTime.now().minusDays(30));
+            if (!withinGracePeriod) {
+                return errorResponse("Account is deactivated");
+            }
+            // Within 30-day grace period: verify credentials first, then reactivate
+            if (!passwordService.verifyPassword(password, user.getSalt(), user.getPasswordHash())) {
+                return errorResponse("Invalid credentials");
+            }
+            user.setIsActive(true);
+            user.setDeactivatedAt(null);
+            user.setLoginAttempts(0);
+            user.setLockedUntil(null);
+            userRepository.save(user);
+            log.info("Account auto-reactivated for userId={} within grace period", user.getId());
+            reactivated = true;
+        }
 
         if (!user.getEmailVerified()) {
             return errorResponse("Email must be verified before login. Please check your email for verification link.");
@@ -189,7 +208,8 @@ public class AuthService {
             return errorResponse("Account is temporarily locked. Please try again later.");
         }
 
-        boolean valid = passwordService.verifyPassword(password, user.getSalt(), user.getPasswordHash());
+        // Skip second verify if password was already checked during reactivation above
+        boolean valid = reactivated || passwordService.verifyPassword(password, user.getSalt(), user.getPasswordHash());
 
         if (!valid) {
             user.setLoginAttempts(user.getLoginAttempts() + 1);
@@ -216,7 +236,7 @@ public class AuthService {
 
         return AuthResponse.builder()
             .success(true)
-            .message("Login successful")
+            .message(reactivated ? "Account reactivated. Login successful." : "Login successful")
             .accessToken(accessToken)
             .refreshToken(refreshTokenEntity.getToken())
             .expiresIn(jwtUtils.getAccessTokenExpiration())
