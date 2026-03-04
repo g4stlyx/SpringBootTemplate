@@ -17,7 +17,7 @@ public class SensitiveAccessLogResponse {
     private String severity;
     private String severityDescription;
     private Long userId;
-    private String userType;
+    private String role;
     private String username;
     private String ipAddress;
     private String userAgent;
@@ -35,7 +35,7 @@ public class SensitiveAccessLogResponse {
                 .severity(log.getSeverity().name())
                 .severityDescription(log.getSeverity().getDescription())
                 .userId(log.getUserId())
-                .userType(log.getUserType())
+                .role(log.getRole())
                 .username(log.getUsername())
                 .ipAddress(log.getIpAddress())
                 .userAgent(log.getUserAgent())

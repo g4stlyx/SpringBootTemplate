@@ -1,12 +1,12 @@
-package  com.g4stly.templateApp.controllers;
+package com.g4stly.templateApp.controllers;
 
-import  com.g4stly.templateApp.dto.admin.PasswordResetTokenDTO;
-import  com.g4stly.templateApp.dto.admin.TokenListResponse;
-import  com.g4stly.templateApp.dto.admin.VerificationTokenDTO;
-import  com.g4stly.templateApp.models.Admin;
-import  com.g4stly.templateApp.repos.AdminRepository;
-import  com.g4stly.templateApp.security.JwtUtils;
-import  com.g4stly.templateApp.services.AdminTokenManagementService;
+import com.g4stly.templateApp.dto.admin.PasswordResetTokenDTO;
+import com.g4stly.templateApp.dto.admin.TokenListResponse;
+import com.g4stly.templateApp.dto.admin.VerificationTokenDTO;
+import com.g4stly.templateApp.models.Admin;
+import com.g4stly.templateApp.repos.AdminRepository;
+import com.g4stly.templateApp.security.JwtUtils;
+import com.g4stly.templateApp.services.AdminTokenManagementService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class AdminTokenManagementController {
     @GetMapping("/password-reset")
     public ResponseEntity<?> getAllPasswordResetTokens(
             @RequestHeader("Authorization") String token,
-            @RequestParam(required = false) String userType,
+            @RequestParam(required = false) String role,
             @RequestParam(required = false, defaultValue = "true") Boolean includeExpired,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -56,7 +56,7 @@ public class AdminTokenManagementController {
             }
             
             TokenListResponse<PasswordResetTokenDTO> response = tokenManagementService.getAllPasswordResetTokens(
-                    userType, includeExpired, page, size, sortBy, sortDirection, currentAdminId, httpRequest
+                    role, includeExpired, page, size, sortBy, sortDirection, currentAdminId, httpRequest
             );
             
             return ResponseEntity.ok(Map.of(
@@ -170,7 +170,7 @@ public class AdminTokenManagementController {
     @GetMapping("/verification")
     public ResponseEntity<?> getAllVerificationTokens(
             @RequestHeader("Authorization") String token,
-            @RequestParam(required = false) String userType,
+            @RequestParam(required = false) String role,
             @RequestParam(required = false, defaultValue = "true") Boolean includeExpired,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -192,7 +192,7 @@ public class AdminTokenManagementController {
             }
             
             TokenListResponse<VerificationTokenDTO> response = tokenManagementService.getAllVerificationTokens(
-                    userType, includeExpired, page, size, sortBy, sortDirection, currentAdminId, httpRequest
+                    role, includeExpired, page, size, sortBy, sortDirection, currentAdminId, httpRequest
             );
             
             return ResponseEntity.ok(Map.of(

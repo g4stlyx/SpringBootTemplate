@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "password_reset_tokens", indexes = {
     @Index(name = "idx_password_reset_token", columnList = "token"),
-    @Index(name = "idx_password_reset_user", columnList = "user_id, user_type"),
-    @Index(name = "idx_password_reset_user_type", columnList = "user_type"),
+    @Index(name = "idx_password_reset_user", columnList = "user_id, role"),
+    @Index(name = "idx_password_reset_role", columnList = "role"),
     @Index(name = "idx_password_reset_expiry_date", columnList = "expiry_date"),
     @Index(name = "idx_password_reset_created_date", columnList = "created_date"),
     @Index(name = "idx_password_reset_requesting_ip", columnList = "requesting_ip")
@@ -25,8 +25,8 @@ public class PasswordResetToken {
     @Column(name = "user_id", nullable = false)
     private Long userId;
     
-    @Column(name = "user_type", nullable = false)
-    private String userType; // "user" or "admin"
+    @Column(name = "role", nullable = false)
+    private String role; // "user" or "admin"
     
     @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;
@@ -46,10 +46,10 @@ public class PasswordResetToken {
         // Default constructor for JPA
     }
     
-    public PasswordResetToken(Long userId, String userType, String requestingIp) {
+    public PasswordResetToken(Long userId, String role, String requestingIp) {
         this.token = java.util.UUID.randomUUID().toString();
         this.userId = userId;
-        this.userType = userType;
+        this.role = role;
         this.requestingIp = requestingIp;
         this.createdDate = LocalDateTime.now();
         // Password reset tokens should expire quickly - 15 minutes

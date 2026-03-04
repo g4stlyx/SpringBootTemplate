@@ -1,6 +1,6 @@
-package  com.g4stly.templateApp.dto.admin;
+package com.g4stly.templateApp.dto.admin;
 
-import  com.g4stly.templateApp.models.AuthenticationErrorLog;
+import com.g4stly.templateApp.models.AuthenticationErrorLog;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +17,7 @@ public class AuthErrorLogResponse {
     private String errorType;
     private String errorDescription;
     private Long userId;
-    private String userType;
+    private String role;
     private String username;
     private String ipAddress;
     private String userAgent;
@@ -33,7 +33,7 @@ public class AuthErrorLogResponse {
                 .errorType(log.getErrorType().name())
                 .errorDescription(log.getErrorType().getDescription())
                 .userId(log.getUserId())
-                .userType(log.getUserType())
+                .role(log.getRole())
                 .username(log.getUsername())
                 .ipAddress(log.getIpAddress())
                 .userAgent(log.getUserAgent())

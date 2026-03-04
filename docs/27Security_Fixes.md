@@ -150,7 +150,7 @@ log.info("  → Password: {}", DEFAULT_PASSWORD);
 **B. RequestParam values** - Multiple endpoints don't validate URL parameters:
 - `AuthController:177` - `token` parameter
 - `AdminImageController` - `imageUrl`, `oldImageUrl` parameters
-- Various controllers - `userType`, `ipAddress`, `severity` parameters
+- Various controllers - `role`, `ipAddress`, `severity` parameters
 
 **C. List fields** - No size limits on:
 - `UpdateAdminRequest.permissions`

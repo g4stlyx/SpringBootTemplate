@@ -1,11 +1,11 @@
-package  com.g4stly.templateApp.security;
+package com.g4stly.templateApp.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import  com.g4stly.templateApp.config.JwtConfig;
+import com.g4stly.templateApp.config.JwtConfig;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -25,11 +25,16 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String username, Long userId, String userType) {
+    /**
+     * Generate an access token for a regular user.
+     * Sets {@code role="user"} and the app-level {@code userType} (e.g. "waiter").
+     */
+    public String generateUserToken(String username, Long userId, String userType) {
         Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put("userId", userId);
+        claimsMap.put("role", "user");
         claimsMap.put("userType", userType);
-        
+
         return Jwts.builder()
                 .claims(claimsMap)
                 .subject(username)
@@ -40,47 +45,18 @@ public class JwtUtils {
                 .compact();
     }
 
-    public String generateToken(String username, Long userId, String userType, Integer adminLevel) {
+    /**
+     * Generate an access token for an admin.
+     * Sets {@code role="admin"} and optionally {@code adminLevel}.
+     */
+    public String generateAdminToken(String username, Long userId, Integer adminLevel) {
         Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put("userId", userId);
-        claimsMap.put("userType", userType);
-        if ("admin".equals(userType) && adminLevel != null) {
+        claimsMap.put("role", "admin");
+        if (adminLevel != null) {
             claimsMap.put("adminLevel", adminLevel);
         }
-        
-        return Jwts.builder()
-                .claims(claimsMap)
-                .subject(username)
-                .issuer(jwtConfig.getIssuer())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtConfig.getExpiration()))
-                .signWith(getSigningKey())
-                .compact();
-    }
 
-    public String generateToken(String username, Integer userId, String userType) {
-        Map<String, Object> claimsMap = new HashMap<>();
-        claimsMap.put("userId", userId);
-        claimsMap.put("userType", userType);
-        
-        return Jwts.builder()
-                .claims(claimsMap)
-                .subject(username)
-                .issuer(jwtConfig.getIssuer())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtConfig.getExpiration()))
-                .signWith(getSigningKey())
-                .compact();
-    }
-
-    public String generateToken(String username, Integer userId, String userType, Integer adminLevel) {
-        Map<String, Object> claimsMap = new HashMap<>();
-        claimsMap.put("userId", userId);
-        claimsMap.put("userType", userType);
-        if ("admin".equals(userType) && adminLevel != null) {
-            claimsMap.put("adminLevel", adminLevel);
-        }
-        
         return Jwts.builder()
                 .claims(claimsMap)
                 .subject(username)
@@ -153,6 +129,18 @@ public class JwtUtils {
         return null;
     }
     
+    /**
+     * Extract the auth-level role claim ("user" or "admin") from the token.
+     * Use this for Spring Security authority and routing decisions.
+     */
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
+    }
+
+    /**
+     * Extract the app-level user type claim (e.g. "waiter", "chef") from the token.
+     * Returns null for admin tokens (admins have no app-level type).
+     */
     public String extractUserType(String token) {
         return extractAllClaims(token).get("userType", String.class);
     }

@@ -46,14 +46,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/refresh-tokens?userType=client&isRevoked=false",
+					"raw": "{{baseUrl}}/api/v1/admin/refresh-tokens?role=client&isRevoked=false",
 					"host": ["{{baseUrl}}"],
 					"path": ["api", "v1", "admin", "refresh-tokens"],
 					"query": [
 						{
-							"key": "userType",
-							"value": "client",
-							"description": "Filter by user type (client, coach, admin)"
+							"key": "role",
+							"value": "user",
+							"description": "Filter by user type (user, admin)"
 						},
 						{
 							"key": "isRevoked",
@@ -74,7 +74,7 @@
 						}
 					]
 				},
-				"description": "Get filtered refresh tokens.\n\n**Query Parameters** (all optional):\n- `userType`: client, coach, admin\n- `userId`: specific user ID\n- `isRevoked`: true/false\n- `ipAddress`: specific IP address\n\n**Authorization**: Admin level 0"
+				"description": "Get filtered refresh tokens.\n\n**Query Parameters** (all optional):\n- `role`: user, admin\n- `userId`: specific user ID\n- `isRevoked`: true/false\n- `ipAddress`: specific IP address\n\n**Authorization**: Admin level 0"
 			},
 			"response": [
 				{
@@ -88,13 +88,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/admin/refresh-tokens?userType=client&isRevoked=false",
+							"raw": "{{baseUrl}}/api/v1/admin/refresh-tokens?role=client&isRevoked=false",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "v1", "admin", "refresh-tokens"],
 							"query": [
 								{
-									"key": "userType",
-									"value": "client"
+									"key": "role",
+									"value": "user"
 								},
 								{
 									"key": "isRevoked",
@@ -113,7 +113,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "[\n  {\n    \"id\": 1,\n    \"tokenPreview\": \"550e8400...\",\n    \"userId\": 5,\n    \"userType\": \"client\",\n    \"username\": \"testuser\",\n    \"expiryDate\": \"2026-03-15T10:30:00\",\n    \"createdAt\": \"2026-02-15T10:30:00\",\n    \"lastUsedAt\": \"2026-02-16T15:45:00\",\n    \"isRevoked\": false,\n    \"isExpired\": false,\n    \"deviceInfo\": \"Mozilla/5.0...\",\n    \"ipAddress\": \"192.168.1.100\"\n  }\n]"
+					"body": "[\n  {\n    \"id\": 1,\n    \"tokenPreview\": \"550e8400...\",\n    \"userId\": 5,\n    \"role\": \"client\",\n    \"username\": \"testuser\",\n    \"expiryDate\": \"2026-03-15T10:30:00\",\n    \"createdAt\": \"2026-02-15T10:30:00\",\n    \"lastUsedAt\": \"2026-02-16T15:45:00\",\n    \"isRevoked\": false,\n    \"isExpired\": false,\n    \"deviceInfo\": \"Mozilla/5.0...\",\n    \"ipAddress\": \"192.168.1.100\"\n  }\n]"
 				}
 			]
 		},
@@ -166,7 +166,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n  \"id\": 1,\n  \"tokenPreview\": \"550e8400...\",\n  \"userId\": 5,\n  \"userType\": \"client\",\n  \"username\": \"testuser\",\n  \"expiryDate\": \"2026-03-15T10:30:00\",\n  \"createdAt\": \"2026-02-15T10:30:00\",\n  \"lastUsedAt\": \"2026-02-16T15:45:00\",\n  \"isRevoked\": false,\n  \"isExpired\": false,\n  \"deviceInfo\": \"Mozilla/5.0...\",\n  \"ipAddress\": \"192.168.1.100\"\n}"
+					"body": "{\n  \"id\": 1,\n  \"tokenPreview\": \"550e8400...\",\n  \"userId\": 5,\n  \"role\": \"client\",\n  \"username\": \"testuser\",\n  \"expiryDate\": \"2026-03-15T10:30:00\",\n  \"createdAt\": \"2026-02-15T10:30:00\",\n  \"lastUsedAt\": \"2026-02-16T15:45:00\",\n  \"isRevoked\": false,\n  \"isExpired\": false,\n  \"deviceInfo\": \"Mozilla/5.0...\",\n  \"ipAddress\": \"192.168.1.100\"\n}"
 				},
 				{
 					"name": "Error - Not Found",
@@ -214,18 +214,18 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/refresh-tokens/user/5?userType=client",
+					"raw": "{{baseUrl}}/api/v1/admin/refresh-tokens/user/5?role=client",
 					"host": ["{{baseUrl}}"],
 					"path": ["api", "v1", "admin", "refresh-tokens", "user", "5"],
 					"query": [
 						{
-							"key": "userType",
-							"value": "client",
-							"description": "Required: client, coach, or admin"
+							"key": "role",
+							"value": "user",
+							"description": "Required: user or admin"
 						}
 					]
 				},
-				"description": "Get all active (non-revoked, non-expired) tokens for a specific user.\n\n**Path Parameter**: userId\n\n**Query Parameter**: userType (required)\n\n**Authorization**: Admin level 0"
+				"description": "Get all active (non-revoked, non-expired) tokens for a specific user.\n\n**Path Parameter**: userId\n\n**Query Parameter**: role (required)\n\n**Authorization**: Admin level 0"
 			},
 			"response": []
 		},
@@ -278,7 +278,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n  \"totalActiveTokens\": 150,\n  \"totalTokens\": 200,\n  \"activeTokensByUserType\": {\n    \"client\": 80,\n    \"coach\": 45,\n    \"admin\": 25\n  },\n  \"clientTokens\": 80,\n  \"coachTokens\": 45,\n  \"adminTokens\": 25\n}"
+					"body": "{\n  \"totalActiveTokens\": 150,\n  \"totalTokens\": 200,\n  \"activeTokensByRole\": {\n    \"client\": 80,\n    \"coach\": 45,\n    \"admin\": 25\n  },\n  \"clientTokens\": 80,\n  \"coachTokens\": 45,\n  \"adminTokens\": 25\n}"
 				}
 			]
 		},
@@ -351,7 +351,7 @@
 				"method": "PUT",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/api/v1/admin/refresh-tokens/revoke-all?userId=5&userType=client",
+					"raw": "{{baseUrl}}/api/v1/admin/refresh-tokens/revoke-all?userId=5&role=client",
 					"host": ["{{baseUrl}}"],
 					"path": ["api", "v1", "admin", "refresh-tokens", "revoke-all"],
 					"query": [
@@ -361,13 +361,13 @@
 							"description": "Required: User ID"
 						},
 						{
-							"key": "userType",
-							"value": "client",
-							"description": "Required: client, coach, or admin"
+							"key": "role",
+							"value": "user",
+							"description": "Required: user or admin"
 						}
 					]
 				},
-				"description": "Revoke ALL refresh tokens for a specific user.\n\n**Action**: Revokes all tokens for userId + userType.\n\n**Effect**: User will be logged out from all devices.\n\n**Authorization**: Admin level 0"
+				"description": "Revoke ALL refresh tokens for a specific user.\n\n**Action**: Revokes all tokens for userId + role.\n\n**Effect**: User will be logged out from all devices.\n\n**Authorization**: Admin level 0"
 			},
 			"response": [
 				{
@@ -381,7 +381,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/admin/refresh-tokens/revoke-all?userId=5&userType=client",
+							"raw": "{{baseUrl}}/api/v1/admin/refresh-tokens/revoke-all?userId=5&role=client",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "v1", "admin", "refresh-tokens", "revoke-all"],
 							"query": [
@@ -390,8 +390,8 @@
 									"value": "5"
 								},
 								{
-									"key": "userType",
-									"value": "client"
+									"key": "role",
+									"value": "user"
 								}
 							]
 						}

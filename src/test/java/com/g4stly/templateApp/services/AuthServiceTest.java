@@ -5,9 +5,9 @@ import com.g4stly.templateApp.dto.auth.LoginRequest;
 import com.g4stly.templateApp.dto.auth.RegisterRequest;
 import com.g4stly.templateApp.dto.auth.AuthResponse;
 import com.g4stly.templateApp.models.Admin;
-import com.g4stly.templateApp.models.Client;
-import com.g4stly.templateApp.models.Coach;
+import com.g4stly.templateApp.models.User;
 import com.g4stly.templateApp.models.RefreshToken;
+import com.g4stly.templateApp.models.enums.UserType;
 import com.g4stly.templateApp.repos.*;
 import com.g4stly.templateApp.security.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,8 +27,7 @@ import static org.mockito.Mockito.*;
 @DisplayName("AuthService Unit Tests")
 class AuthServiceTest {
 
-    @Mock private ClientRepository clientRepository;
-    @Mock private CoachRepository coachRepository;
+    @Mock private UserRepository userRepository;
     @Mock private AdminRepository adminRepository;
     @Mock private PasswordService passwordService;
     @Mock private JwtUtils jwtUtils;
@@ -59,41 +58,27 @@ class AuthServiceTest {
         return req;
     }
 
-    private LoginRequest buildLoginRequest(String username, String password, String userType) {
+    private LoginRequest buildLoginRequest(String username, String password, String role) {
         LoginRequest req = new LoginRequest();
         req.setUsername(username);
         req.setPassword(password);
-        req.setUserType(userType);
+        req.setRole(role);
         return req;
     }
 
-    private Client buildClient(Long id, boolean active, boolean emailVerified, LocalDateTime lockedUntil, int attempts) {
-        Client c = new Client();
-        c.setId(id);
-        c.setUsername("clientUser");
-        c.setEmail("client@example.com");
-        c.setPasswordHash("hash");
-        c.setSalt("salt");
-        c.setIsActive(active);
-        c.setEmailVerified(emailVerified);
-        c.setLockedUntil(lockedUntil);
-        c.setLoginAttempts(attempts);
-        return c;
-    }
-
-    private Coach buildCoach(Long id, boolean active, boolean emailVerified, boolean isVerified, LocalDateTime lockedUntil) {
-        Coach c = new Coach();
-        c.setId(id);
-        c.setUsername("coachUser");
-        c.setEmail("coach@example.com");
-        c.setPasswordHash("hash");
-        c.setSalt("salt");
-        c.setIsActive(active);
-        c.setEmailVerified(emailVerified);
-        c.setIsVerified(isVerified);
-        c.setLockedUntil(lockedUntil);
-        c.setLoginAttempts(0);
-        return c;
+    private User buildUser(Long id, boolean active, boolean emailVerified, LocalDateTime lockedUntil, int attempts) {
+        User u = new User();
+        u.setId(id);
+        u.setUsername("testUser");
+        u.setEmail("user@example.com");
+        u.setPasswordHash("hash");
+        u.setSalt("salt");
+        u.setIsActive(active);
+        u.setEmailVerified(emailVerified);
+        u.setLockedUntil(lockedUntil);
+        u.setLoginAttempts(attempts);
+        u.setUserType(UserType.WAITER);
+        return u;
     }
 
     private Admin buildAdmin(Long id, boolean active, LocalDateTime lockedUntil, boolean twoFaEnabled, int attempts) {
@@ -111,7 +96,7 @@ class AuthServiceTest {
     }
 
     private RefreshToken buildRefreshToken() {
-        RefreshToken rt = new RefreshToken(1L, "client", 30L);
+        RefreshToken rt = new RefreshToken(1L, "user", 30L);
         rt.setId(1L);
         return rt;
     }
@@ -125,19 +110,19 @@ class AuthServiceTest {
     class Register {
 
         @Test
-        @DisplayName("Admin userType returns success=false")
-        void adminUserType_rejected() {
+        @DisplayName("Admin role returns success=false")
+        void adminRole_rejected() {
             RegisterRequest req = buildRegisterRequest("admin");
             AuthResponse resp = authService.register(req, httpRequest);
             assertThat(resp.isSuccess()).isFalse();
-            assertThat(resp.getMessage()).containsIgnoringCase("invalid user type");
+            assertThat(resp.getMessage()).containsIgnoringCase("invalid role");
         }
 
         @Test
         @DisplayName("Duplicate username returns success=false")
         void duplicateUsername_rejected() {
-            RegisterRequest req = buildRegisterRequest("client");
-            when(clientRepository.existsByUsername("testuser")).thenReturn(true);
+            RegisterRequest req = buildRegisterRequest("user");
+            when(userRepository.existsByUsername("testuser")).thenReturn(true);
 
             AuthResponse resp = authService.register(req, httpRequest);
 
@@ -148,11 +133,10 @@ class AuthServiceTest {
         @Test
         @DisplayName("Duplicate email returns success=false")
         void duplicateEmail_rejected() {
-            RegisterRequest req = buildRegisterRequest("client");
-            when(clientRepository.existsByUsername("testuser")).thenReturn(false);
-            when(coachRepository.existsByUsername("testuser")).thenReturn(false);
+            RegisterRequest req = buildRegisterRequest("user");
+            when(userRepository.existsByUsername("testuser")).thenReturn(false);
             when(adminRepository.existsByUsername("testuser")).thenReturn(false);
-            when(clientRepository.existsByEmail("test@example.com")).thenReturn(true);
+            when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
 
             AuthResponse resp = authService.register(req, httpRequest);
 
@@ -161,20 +145,18 @@ class AuthServiceTest {
         }
 
         @Test
-        @DisplayName("Valid client registration: success=true, no tokens, email sent")
-        void validClientRegistration() {
-            RegisterRequest req = buildRegisterRequest("client");
-            when(clientRepository.existsByUsername(any())).thenReturn(false);
-            when(coachRepository.existsByUsername(any())).thenReturn(false);
+        @DisplayName("Valid user registration: success=true, no tokens, email sent")
+        void validUserRegistration() {
+            RegisterRequest req = buildRegisterRequest("user");
+            when(userRepository.existsByUsername(any())).thenReturn(false);
             when(adminRepository.existsByUsername(any())).thenReturn(false);
-            when(clientRepository.existsByEmail(any())).thenReturn(false);
-            when(coachRepository.existsByEmail(any())).thenReturn(false);
+            when(userRepository.existsByEmail(any())).thenReturn(false);
             when(adminRepository.existsByEmail(any())).thenReturn(false);
             when(passwordService.generateSalt()).thenReturn("randomsalt");
             when(passwordService.hashPassword(any(), any())).thenReturn("hashed");
 
-            Client saved = buildClient(1L, true, false, null, 0);
-            when(clientRepository.save(any(Client.class))).thenReturn(saved);
+            User saved = buildUser(1L, true, false, null, 0);
+            when(userRepository.save(any(User.class))).thenReturn(saved);
 
             AuthResponse resp = authService.register(req, httpRequest);
 
@@ -183,61 +165,37 @@ class AuthServiceTest {
             assertThat(resp.getRefreshToken()).isNull();
             verify(verificationTokenRepository).save(any());
             verify(emailService).sendVerificationEmail(any(), any(), any());
-            verify(userActivityLogger).logRegister(eq(1L), eq("client"), eq(true), isNull(), eq(httpRequest));
-        }
-
-        @Test
-        @DisplayName("Valid coach registration: success=true, pending approval message")
-        void validCoachRegistration() throws Exception {
-            RegisterRequest req = buildRegisterRequest("coach");
-            when(clientRepository.existsByUsername(any())).thenReturn(false);
-            when(coachRepository.existsByUsername(any())).thenReturn(false);
-            when(adminRepository.existsByUsername(any())).thenReturn(false);
-            when(clientRepository.existsByEmail(any())).thenReturn(false);
-            when(coachRepository.existsByEmail(any())).thenReturn(false);
-            when(adminRepository.existsByEmail(any())).thenReturn(false);
-            when(passwordService.generateSalt()).thenReturn("randomsalt");
-            when(passwordService.hashPassword(any(), any())).thenReturn("hashed");
-
-            Coach saved = buildCoach(2L, true, false, false, null);
-            when(coachRepository.save(any(Coach.class))).thenReturn(saved);
-
-            AuthResponse resp = authService.register(req, httpRequest);
-
-            assertThat(resp.isSuccess()).isTrue();
-            assertThat(resp.getMessage()).containsIgnoringCase("coach registered");
-            assertThat(resp.getAccessToken()).isNull();
-            verify(emailService).sendVerificationEmail(any(), any(), any());
+            verify(userActivityLogger).logRegister(eq(1L), eq("user"), eq(true), isNull(), eq(httpRequest));
         }
     }
 
     // =====================================================================
-    // login() — client
+    // login() — user
     // =====================================================================
 
     @Nested
-    @DisplayName("login() — client")
-    class LoginClient {
+    @DisplayName("login() — user")
+    class LoginUser {
 
         @Test
-        @DisplayName("Client not found returns success=false")
+        @DisplayName("User not found returns success=false")
         void notFound_returnsFalse() {
-            LoginRequest req = buildLoginRequest("clientUser", "pass", "client");
-            when(clientRepository.findByUsernameOrEmail("clientUser", "clientUser")).thenReturn(Optional.empty());
+            LoginRequest req = buildLoginRequest("testUser", "pass", "user");
+            when(userRepository.findByUsernameOrEmail("testUser", "testUser")).thenReturn(Optional.empty());
 
             AuthResponse resp = authService.login(req, httpRequest);
 
             assertThat(resp.isSuccess()).isFalse();
-            assertThat(resp.getMessage()).containsIgnoringCase("invalid client credentials");
+            assertThat(resp.getMessage()).containsIgnoringCase("invalid");
         }
 
         @Test
-        @DisplayName("Inactive client returns success=false")
+        @DisplayName("Inactive user returns success=false")
         void inactive_returnsFalse() {
-            Client client = buildClient(1L, false, true, null, 0);
-            when(clientRepository.findByUsernameOrEmail("clientUser", "clientUser")).thenReturn(Optional.of(client));
+            User user = buildUser(1L, false, true, null, 0);
+            when(userRepository.findByUsernameOrEmail("testUser", "testUser")).thenReturn(Optional.of(user));
 
-            LoginRequest req = buildLoginRequest("clientUser", "pass", "client");
+            LoginRequest req = buildLoginRequest("testUser", "pass", "user");
             AuthResponse resp = authService.login(req, httpRequest);
 
             assertThat(resp.isSuccess()).isFalse();
@@ -247,10 +205,10 @@ class AuthServiceTest {
         @Test
         @DisplayName("Email not verified returns success=false")
         void emailNotVerified_returnsFalse() {
-            Client client = buildClient(1L, true, false, null, 0);
-            when(clientRepository.findByUsernameOrEmail("clientUser", "clientUser")).thenReturn(Optional.of(client));
+            User user = buildUser(1L, true, false, null, 0);
+            when(userRepository.findByUsernameOrEmail("testUser", "testUser")).thenReturn(Optional.of(user));
 
-            LoginRequest req = buildLoginRequest("clientUser", "pass", "client");
+            LoginRequest req = buildLoginRequest("testUser", "pass", "user");
             AuthResponse resp = authService.login(req, httpRequest);
 
             assertThat(resp.isSuccess()).isFalse();
@@ -260,10 +218,10 @@ class AuthServiceTest {
         @Test
         @DisplayName("Locked account returns success=false")
         void locked_returnsFalse() {
-            Client client = buildClient(1L, true, true, LocalDateTime.now().plusMinutes(10), 5);
-            when(clientRepository.findByUsernameOrEmail("clientUser", "clientUser")).thenReturn(Optional.of(client));
+            User user = buildUser(1L, true, true, LocalDateTime.now().plusMinutes(10), 5);
+            when(userRepository.findByUsernameOrEmail("testUser", "testUser")).thenReturn(Optional.of(user));
 
-            LoginRequest req = buildLoginRequest("clientUser", "pass", "client");
+            LoginRequest req = buildLoginRequest("testUser", "pass", "user");
             AuthResponse resp = authService.login(req, httpRequest);
 
             assertThat(resp.isSuccess()).isFalse();
@@ -273,123 +231,56 @@ class AuthServiceTest {
         @Test
         @DisplayName("Wrong password returns success=false and increments loginAttempts")
         void wrongPassword_incrementsAttempts() {
-            Client client = buildClient(1L, true, true, null, 0);
-            when(clientRepository.findByUsernameOrEmail("clientUser", "clientUser")).thenReturn(Optional.of(client));
+            User user = buildUser(1L, true, true, null, 0);
+            when(userRepository.findByUsernameOrEmail("testUser", "testUser")).thenReturn(Optional.of(user));
             when(passwordService.verifyPassword("wrong", "salt", "hash")).thenReturn(false);
-            when(clientRepository.save(any())).thenReturn(client);
+            when(userRepository.save(any())).thenReturn(user);
 
-            LoginRequest req = buildLoginRequest("clientUser", "wrong", "client");
+            LoginRequest req = buildLoginRequest("testUser", "wrong", "user");
             AuthResponse resp = authService.login(req, httpRequest);
 
             assertThat(resp.isSuccess()).isFalse();
-            assertThat(client.getLoginAttempts()).isEqualTo(1);
-            assertThat(client.getLockedUntil()).isNull();
+            assertThat(user.getLoginAttempts()).isEqualTo(1);
+            assertThat(user.getLockedUntil()).isNull();
         }
 
         @Test
         @DisplayName("5th wrong password locks the account for 15 minutes")
         void fifthWrongPassword_locksAccount() {
-            Client client = buildClient(1L, true, true, null, 4); // already at 4
-            when(clientRepository.findByUsernameOrEmail("clientUser", "clientUser")).thenReturn(Optional.of(client));
+            User user = buildUser(1L, true, true, null, 4); // already at 4
+            when(userRepository.findByUsernameOrEmail("testUser", "testUser")).thenReturn(Optional.of(user));
             when(passwordService.verifyPassword("wrong", "salt", "hash")).thenReturn(false);
-            when(clientRepository.save(any())).thenReturn(client);
+            when(userRepository.save(any())).thenReturn(user);
 
-            LoginRequest req = buildLoginRequest("clientUser", "wrong", "client");
+            LoginRequest req = buildLoginRequest("testUser", "wrong", "user");
             authService.login(req, httpRequest);
 
-            assertThat(client.getLoginAttempts()).isEqualTo(5);
-            assertThat(client.getLockedUntil()).isNotNull();
-            assertThat(client.getLockedUntil()).isAfter(LocalDateTime.now());
+            assertThat(user.getLoginAttempts()).isEqualTo(5);
+            assertThat(user.getLockedUntil()).isNotNull();
+            assertThat(user.getLockedUntil()).isAfter(LocalDateTime.now());
         }
 
         @Test
         @DisplayName("Successful login resets attempts and returns tokens")
         void validLogin_returnsTokens() {
-            Client client = buildClient(1L, true, true, null, 2);
-            when(clientRepository.findByUsernameOrEmail("clientUser", "clientUser")).thenReturn(Optional.of(client));
+            User user = buildUser(1L, true, true, null, 2);
+            when(userRepository.findByUsernameOrEmail("testUser", "testUser")).thenReturn(Optional.of(user));
             when(passwordService.verifyPassword("correct", "salt", "hash")).thenReturn(true);
-            when(clientRepository.save(any())).thenReturn(client);
-            when(jwtUtils.generateToken(eq("clientUser"), eq(1L), eq("client"), isNull())).thenReturn("jwt-access-token");
+            when(userRepository.save(any())).thenReturn(user);
+            when(jwtUtils.generateUserToken(eq("testUser"), eq(1L), eq("waiter"))).thenReturn("jwt-access-token");
             when(jwtUtils.getAccessTokenExpiration()).thenReturn(900L);
 
             RefreshToken rt = buildRefreshToken();
-            when(refreshTokenService.createRefreshToken(1L, "client", httpRequest)).thenReturn(rt);
+            when(refreshTokenService.createRefreshToken(1L, "user", httpRequest)).thenReturn(rt);
 
-            LoginRequest req = buildLoginRequest("clientUser", "correct", "client");
+            LoginRequest req = buildLoginRequest("testUser", "correct", "user");
             AuthResponse resp = authService.login(req, httpRequest);
 
             assertThat(resp.isSuccess()).isTrue();
             assertThat(resp.getAccessToken()).isEqualTo("jwt-access-token");
             assertThat(resp.getRefreshToken()).isNotNull();
-            assertThat(client.getLoginAttempts()).isEqualTo(0);
-            assertThat(client.getLockedUntil()).isNull();
-        }
-    }
-
-    // =====================================================================
-    // login() — coach
-    // =====================================================================
-
-    @Nested
-    @DisplayName("login() — coach")
-    class LoginCoach {
-
-        @Test
-        @DisplayName("Coach not found returns success=false")
-        void notFound_returnsFalse() {
-            when(coachRepository.findByUsernameOrEmail("coachUser", "coachUser")).thenReturn(Optional.empty());
-
-            LoginRequest req = buildLoginRequest("coachUser", "pass", "coach");
-            AuthResponse resp = authService.login(req, httpRequest);
-
-            assertThat(resp.isSuccess()).isFalse();
-            assertThat(resp.getMessage()).containsIgnoringCase("invalid coach credentials");
-        }
-
-        @Test
-        @DisplayName("Coach email not verified returns success=false")
-        void emailNotVerified_returnsFalse() {
-            Coach coach = buildCoach(2L, true, false, true, null);
-            when(coachRepository.findByUsernameOrEmail("coachUser", "coachUser")).thenReturn(Optional.of(coach));
-
-            LoginRequest req = buildLoginRequest("coachUser", "pass", "coach");
-            AuthResponse resp = authService.login(req, httpRequest);
-
-            assertThat(resp.isSuccess()).isFalse();
-            assertThat(resp.getMessage()).containsIgnoringCase("email must be verified");
-        }
-
-        @Test
-        @DisplayName("Coach not approved by admin returns success=false with pending message")
-        void notAdminVerified_returnsFalse() {
-            Coach coach = buildCoach(2L, true, true, false, null);
-            when(coachRepository.findByUsernameOrEmail("coachUser", "coachUser")).thenReturn(Optional.of(coach));
-
-            LoginRequest req = buildLoginRequest("coachUser", "pass", "coach");
-            AuthResponse resp = authService.login(req, httpRequest);
-
-            assertThat(resp.isSuccess()).isFalse();
-            assertThat(resp.getMessage()).containsIgnoringCase("pending admin approval");
-        }
-
-        @Test
-        @DisplayName("Valid coach login returns tokens")
-        void validLogin_returnsTokens() {
-            Coach coach = buildCoach(2L, true, true, true, null);
-            when(coachRepository.findByUsernameOrEmail("coachUser", "coachUser")).thenReturn(Optional.of(coach));
-            when(passwordService.verifyPassword("correct", "salt", "hash")).thenReturn(true);
-            when(coachRepository.save(any())).thenReturn(coach);
-            when(jwtUtils.generateToken(eq("coachUser"), eq(2L), eq("coach"), isNull())).thenReturn("coach-jwt");
-            when(jwtUtils.getAccessTokenExpiration()).thenReturn(900L);
-
-            RefreshToken rt = new RefreshToken(2L, "coach", 30L);
-            when(refreshTokenService.createRefreshToken(2L, "coach", httpRequest)).thenReturn(rt);
-
-            LoginRequest req = buildLoginRequest("coachUser", "correct", "coach");
-            AuthResponse resp = authService.login(req, httpRequest);
-
-            assertThat(resp.isSuccess()).isTrue();
-            assertThat(resp.getAccessToken()).isEqualTo("coach-jwt");
+            assertThat(user.getLoginAttempts()).isEqualTo(0);
+            assertThat(user.getLockedUntil()).isNull();
         }
     }
 
@@ -479,7 +370,7 @@ class AuthServiceTest {
             when(adminRepository.findByUsernameOrEmail("adminUser", "adminUser")).thenReturn(Optional.of(admin));
             when(passwordService.verifyPassword("correct", "salt", "hash")).thenReturn(true);
             when(adminRepository.save(any())).thenReturn(admin);
-            when(jwtUtils.generateToken(eq("adminUser"), eq(3L), eq("admin"), any())).thenReturn("admin-jwt");
+            when(jwtUtils.generateAdminToken(eq("adminUser"), eq(3L), any())).thenReturn("admin-jwt");
             when(jwtUtils.getAccessTokenExpiration()).thenReturn(900L);
 
             RefreshToken rt = new RefreshToken(3L, "admin", 30L);
@@ -510,37 +401,35 @@ class AuthServiceTest {
     }
 
     // =====================================================================
-    // login() — no userType (auto-detection)
+    // login() — no role (auto-detection)
     // =====================================================================
 
     @Nested
-    @DisplayName("login() — no userType (auto-detect)")
-    class LoginNoUserType {
+    @DisplayName("login() — no role (auto-detect)")
+    class LoginNoRole {
 
         @Test
-        @DisplayName("Falls through to client when found first")
-        void findsClientFirst() {
-            Client client = buildClient(1L, true, true, null, 0);
-            when(clientRepository.findByUsernameOrEmail("clientUser", "clientUser")).thenReturn(Optional.of(client));
+        @DisplayName("Falls through to user when found first")
+        void findsUserFirst() {
+            User user = buildUser(1L, true, true, null, 0);
+            when(userRepository.findByUsernameOrEmail("user", "user")).thenReturn(Optional.of(user));
             when(passwordService.verifyPassword("correct", "salt", "hash")).thenReturn(true);
-            when(clientRepository.save(any())).thenReturn(client);
-            when(jwtUtils.generateToken(anyString(), anyLong(), anyString(), any())).thenReturn("jwt");
+            when(userRepository.save(any())).thenReturn(user);
+            when(jwtUtils.generateUserToken(anyString(), anyLong(), anyString())).thenReturn("jwt");
             when(jwtUtils.getAccessTokenExpiration()).thenReturn(900L);
             RefreshToken rt = buildRefreshToken();
             when(refreshTokenService.createRefreshToken(any(), any(), any())).thenReturn(rt);
 
-            LoginRequest req = buildLoginRequest("clientUser", "correct", null);
+            LoginRequest req = buildLoginRequest("user", "correct", null);
             AuthResponse resp = authService.login(req, httpRequest);
 
             assertThat(resp.isSuccess()).isTrue();
-            verify(coachRepository, never()).findByUsernameOrEmail(any(), any());
         }
 
         @Test
         @DisplayName("No user in any table returns success=false")
         void noUserAnywhere_returnsFalse() {
-            when(clientRepository.findByUsernameOrEmail("ghost", "ghost")).thenReturn(Optional.empty());
-            when(coachRepository.findByUsernameOrEmail("ghost", "ghost")).thenReturn(Optional.empty());
+            when(userRepository.findByUsernameOrEmail("ghost", "ghost")).thenReturn(Optional.empty());
             when(adminRepository.findByUsernameOrEmail("ghost", "ghost")).thenReturn(Optional.empty());
 
             LoginRequest req = buildLoginRequest("ghost", "pass", null);

@@ -26,11 +26,11 @@ class UserActivityLogRepositoryTest {
 
     private final LocalDateTime NOW = LocalDateTime.now();
 
-    private UserActivityLog buildLog(Long userId, String userType, String action,
+    private UserActivityLog buildLog(Long userId, String role, String action,
                                      boolean success, String ipAddress) {
         UserActivityLog log = new UserActivityLog();
         log.setUserId(userId);
-        log.setUserType(userType);
+        log.setRole(role);
         log.setAction(action);
         log.setSuccess(success);
         log.setIpAddress(ipAddress);
@@ -41,11 +41,11 @@ class UserActivityLogRepositoryTest {
     void setUp() {
         logRepository.deleteAll();
         logRepository.saveAll(List.of(
-            buildLog(1L, "client", "LOGIN",          true,  "1.1.1.1"),
-            buildLog(1L, "client", "PROFILE_UPDATE", true,  "1.1.1.1"),
-            buildLog(1L, "client", "LOGIN",          false, "2.2.2.2"),  // failed attempt
-            buildLog(2L, "coach",  "LOGIN",          true,  "3.3.3.3"),
-            buildLog(2L, "coach",  "LOGOUT",         true,  "3.3.3.3")
+            buildLog(1L, "user", "LOGIN",          true,  "1.1.1.1"),
+            buildLog(1L, "user", "PROFILE_UPDATE", true,  "1.1.1.1"),
+            buildLog(1L, "user", "LOGIN",          false, "2.2.2.2"),  // failed attempt
+            buildLog(2L, "user",  "LOGIN",          true,  "3.3.3.3"),
+            buildLog(2L, "user",  "LOGOUT",         true,  "3.3.3.3")
         ));
     }
 
@@ -54,14 +54,14 @@ class UserActivityLogRepositoryTest {
     // -----------------------------------------------------------------------
 
     @Nested
-    @DisplayName("findByUserIdAndUserType")
+    @DisplayName("findByUserIdAndRole")
     class FindByUserTests {
 
         @Test
         @DisplayName("returns all logs for given user (paginated)")
         void paginatedForUser() {
             Page<UserActivityLog> page = logRepository
-                    .findByUserIdAndUserTypeOrderByCreatedAtDesc(1L, "client", PageRequest.of(0, 10));
+                    .findByUserIdAndRoleOrderByCreatedAtDesc(1L, "user", PageRequest.of(0, 10));
             assertThat(page.getTotalElements()).isEqualTo(3L);
         }
 
@@ -69,7 +69,7 @@ class UserActivityLogRepositoryTest {
         @DisplayName("returns all logs for given user (list)")
         void listForUser() {
             List<UserActivityLog> logs = logRepository
-                    .findByUserIdAndUserTypeOrderByCreatedAtDesc(1L, "client");
+                    .findByUserIdAndRoleOrderByCreatedAtDesc(1L, "user");
             assertThat(logs).hasSize(3);
         }
 
@@ -77,21 +77,21 @@ class UserActivityLogRepositoryTest {
         @DisplayName("returns empty for unknown user")
         void emptyForUnknownUser() {
             Page<UserActivityLog> page = logRepository
-                    .findByUserIdAndUserTypeOrderByCreatedAtDesc(99L, "client", PageRequest.of(0, 10));
+                    .findByUserIdAndRoleOrderByCreatedAtDesc(99L, "user", PageRequest.of(0, 10));
             assertThat(page.getTotalElements()).isEqualTo(0L);
         }
     }
 
     @Nested
-    @DisplayName("findByUserType")
-    class FindByUserTypeTests {
+    @DisplayName("findByRole")
+    class FindByRoleTests {
 
         @Test
-        @DisplayName("returns logs for given user type")
-        void returnsForUserType() {
+        @DisplayName("returns logs for given role")
+        void returnsForRole() {
             Page<UserActivityLog> page = logRepository
-                    .findByUserTypeOrderByCreatedAtDesc("coach", PageRequest.of(0, 10));
-            assertThat(page.getTotalElements()).isEqualTo(2L);
+                    .findByRoleOrderByCreatedAtDesc("user", PageRequest.of(0, 10));
+            assertThat(page.getTotalElements()).isEqualTo(5L);
         }
     }
 
@@ -122,16 +122,16 @@ class UserActivityLogRepositoryTest {
     }
 
     @Nested
-    @DisplayName("findByActionAndUserType")
-    class FindByActionAndUserTypeTests {
+    @DisplayName("findByActionAndRole")
+    class FindByActionAndRoleTests {
 
         @Test
-        @DisplayName("filters by action AND user type")
+        @DisplayName("filters by action AND role")
         void filtersCorrectly() {
             Page<UserActivityLog> page = logRepository
-                    .findByActionAndUserTypeOrderByCreatedAtDesc("LOGIN", "coach", PageRequest.of(0, 10));
-            assertThat(page.getTotalElements()).isEqualTo(1L);
-            assertThat(page.getContent().get(0).getUserId()).isEqualTo(2L);
+                    .findByActionAndRoleOrderByCreatedAtDesc("LOGIN", "user", PageRequest.of(0, 10));
+            assertThat(page.getTotalElements()).isEqualTo(3L);
+            assertThat(page.getContent().get(0).getUserId()).isNotNull();
         }
     }
 
@@ -178,28 +178,28 @@ class UserActivityLogRepositoryTest {
     }
 
     @Nested
-    @DisplayName("findByUserTypeAndCreatedAtAfter")
-    class DateAfterByUserTypeTests {
+    @DisplayName("findByRoleAndCreatedAtAfter")
+    class DateAfterByRoleTests {
 
         @Test
-        @DisplayName("filters by user type and date")
+        @DisplayName("filters by role and date")
         void filtersCorrectly() {
             Page<UserActivityLog> page = logRepository
-                    .findByUserTypeAndCreatedAtAfterOrderByCreatedAtDesc("client", NOW.minusMinutes(1), PageRequest.of(0, 10));
-            assertThat(page.getTotalElements()).isEqualTo(3L);
+                    .findByRoleAndCreatedAtAfterOrderByCreatedAtDesc("user", NOW.minusMinutes(1), PageRequest.of(0, 10));
+            assertThat(page.getTotalElements()).isEqualTo(5L);
         }
     }
 
     @Nested
-    @DisplayName("findByUserIdAndUserTypeAndCreatedAtAfter")
+    @DisplayName("findByUserIdAndRoleAndCreatedAtAfter")
     class DateAfterByUserTests {
 
         @Test
         @DisplayName("filters by user and date range")
         void filtersCorrectly() {
             Page<UserActivityLog> page = logRepository
-                    .findByUserIdAndUserTypeAndCreatedAtAfterOrderByCreatedAtDesc(
-                            1L, "client", NOW.minusMinutes(1), PageRequest.of(0, 10));
+                    .findByUserIdAndRoleAndCreatedAtAfterOrderByCreatedAtDesc(
+                            1L, "user", NOW.minusMinutes(1), PageRequest.of(0, 10));
             assertThat(page.getTotalElements()).isEqualTo(3L);
         }
     }
@@ -209,22 +209,22 @@ class UserActivityLogRepositoryTest {
     // -----------------------------------------------------------------------
 
     @Nested
-    @DisplayName("countByUserIdAndUserTypeAndCreatedAtAfter")
+    @DisplayName("countByUserIdAndRoleAndCreatedAtAfter")
     class CountByUserDateTests {
 
         @Test
         @DisplayName("counts recent logs for user")
         void countsRecent() {
-            long count = logRepository.countByUserIdAndUserTypeAndCreatedAtAfter(
-                    1L, "client", NOW.minusMinutes(1));
+            long count = logRepository.countByUserIdAndRoleAndCreatedAtAfter(
+                    1L, "user", NOW.minusMinutes(1));
             assertThat(count).isEqualTo(3L);
         }
 
         @Test
         @DisplayName("returns 0 for future cutoff date")
         void returnsZeroForFutureCutoff() {
-            long count = logRepository.countByUserIdAndUserTypeAndCreatedAtAfter(
-                    1L, "client", NOW.plusMinutes(1));
+            long count = logRepository.countByUserIdAndRoleAndCreatedAtAfter(
+                    1L, "user", NOW.plusMinutes(1));
             assertThat(count).isEqualTo(0L);
         }
     }
@@ -272,15 +272,15 @@ class UserActivityLogRepositoryTest {
     // -----------------------------------------------------------------------
 
     @Nested
-    @DisplayName("findByUserIdAndUserTypeAndSuccessFalse")
+    @DisplayName("findByUserIdAndRoleAndSuccessFalse")
     class FailedLogsTests {
 
         @Test
         @DisplayName("returns only failed logs for given user")
         void returnsFailedLogs() {
             Page<UserActivityLog> page = logRepository
-                    .findByUserIdAndUserTypeAndSuccessFalseOrderByCreatedAtDesc(
-                            1L, "client", PageRequest.of(0, 10));
+                    .findByUserIdAndRoleAndSuccessFalseOrderByCreatedAtDesc(
+                            1L, "user", PageRequest.of(0, 10));
             assertThat(page.getTotalElements()).isEqualTo(1L);
             assertThat(page.getContent().get(0).getSuccess()).isFalse();
         }

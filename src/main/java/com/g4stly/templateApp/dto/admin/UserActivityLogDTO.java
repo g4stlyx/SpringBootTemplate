@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class UserActivityLogDTO {
     private Long id;
     private Long userId;
-    private String userType;
+    private String role;
     private String username;
     private String email;
     private String action;

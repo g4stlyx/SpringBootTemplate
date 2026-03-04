@@ -33,7 +33,7 @@ Comprehensive authentication and authorization error logging system that tracks 
 - Fields:
   - `errorType`: Enum (UNAUTHORIZED_401, FORBIDDEN_403, NOT_FOUND_404, BAD_REQUEST_400, INTERNAL_SERVER_ERROR_500, INVALID_TOKEN, ACCESS_DENIED)
   - `userId`: User ID (if identified)
-  - `userType`: Type of user (admin, coach, client)
+  - `role`: Type of user (admin, user)
   - `username`: Username (if available)
   - `ipAddress`: Client IP address
   - `userAgent`: Browser/client user agent
@@ -48,7 +48,7 @@ Comprehensive authentication and authorization error logging system that tracks 
 - JPA repository with advanced query methods:
   - `findByErrorType()`: Filter by error type
   - `findByUserId()`: Filter by user ID
-  - `findByUserType()`: Filter by user type
+  - `findByRole()`: Filter by user type
   - `findByIpAddress()`: Filter by IP address
   - `findByDateRange()`: Filter by date range
   - `countByIpAddressSince()`: Count errors from IP (for rate limiting)
@@ -109,7 +109,7 @@ GET /api/v1/admin/auth-error-logs
 | sortBy | string | createdAt | Sort field |
 | sortDirection | string | desc | Sort direction (asc/desc) |
 | userId | Long | null | Filter by user ID |
-| userType | string | null | Filter by user type (admin, coach, client) |
+| role | string | null | Filter by user type (admin, user) |
 | errorType | string | null | Filter by error type |
 | ipAddress | string | null | Filter by IP address |
 | startDate | ISO DateTime | null | Filter logs after this date |
@@ -218,7 +218,7 @@ CREATE TABLE authentication_error_logs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     error_type VARCHAR(30) NOT NULL,
     user_id BIGINT,
-    user_type VARCHAR(20),
+    role VARCHAR(20),
     username VARCHAR(100),
     ip_address VARCHAR(45),
     user_agent TEXT,
@@ -229,7 +229,7 @@ CREATE TABLE authentication_error_logs (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_auth_error_type (error_type),
     INDEX idx_auth_error_user_id (user_id),
-    INDEX idx_auth_error_user_type (user_type),
+    INDEX idx_auth_error_role (role),
     INDEX idx_auth_error_created_at (created_at),
     INDEX idx_auth_error_ip_address (ip_address)
 );

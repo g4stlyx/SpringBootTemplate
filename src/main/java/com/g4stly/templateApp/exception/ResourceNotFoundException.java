@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.exception;
+package com.g4stly.templateApp.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {

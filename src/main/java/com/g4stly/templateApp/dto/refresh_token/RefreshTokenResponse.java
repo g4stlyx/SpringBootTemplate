@@ -11,7 +11,7 @@ public class RefreshTokenResponse {
     private Long id;
     private String tokenPreview; // Only show first 8 chars + "..." for security
     private Long userId;
-    private String userType;
+    private String role;
     private String username; // Resolved from user tables
     private LocalDateTime expiryDate;
     private LocalDateTime createdAt;

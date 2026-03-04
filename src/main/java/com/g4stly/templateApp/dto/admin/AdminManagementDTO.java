@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.admin;
+package com.g4stly.templateApp.dto.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -271,7 +271,7 @@ public class SensitiveEndpointAccessFilter extends OncePerRequestFilter {
                 config.category,
                 config.severity,
                 userInfo.userId,
-                userInfo.userType,
+                userInfo.role,
                 userInfo.username,
                 getClientIpAddress(request),
                 request.getHeader("User-Agent"),
@@ -312,47 +312,47 @@ public class SensitiveEndpointAccessFilter extends OncePerRequestFilter {
     /**
      * Log access based on category and severity
      */
-    private void logAccessBasedOnCategory(String category, String severity, Long userId, String userType,
+    private void logAccessBasedOnCategory(String category, String severity, Long userId, String role,
                                           String username, String ipAddress, String userAgent,
                                           String endpoint, String httpMethod, Integer responseStatus) {
         switch (category) {
             case "DATABASE_BACKUP":
-                accessLogService.logDatabaseBackupAccess(userId, userType, username, ipAddress, 
+                accessLogService.logDatabaseBackupAccess(userId, role, username, ipAddress, 
                         userAgent, endpoint, httpMethod, responseStatus);
                 break;
             case "ADMIN_MANAGEMENT":
-                accessLogService.logAdminManagementAccess(userId, userType, username, ipAddress, 
+                accessLogService.logAdminManagementAccess(userId, role, username, ipAddress, 
                         userAgent, endpoint, httpMethod, responseStatus);
                 break;
             case "TOKEN_MANAGEMENT":
-                accessLogService.logTokenManagementAccess(userId, userType, username, ipAddress, 
+                accessLogService.logTokenManagementAccess(userId, role, username, ipAddress, 
                         userAgent, endpoint, httpMethod, responseStatus);
                 break;
             case "2FA_SETTINGS":
-                accessLogService.log2FASettingsAccess(userId, userType, username, ipAddress, 
+                accessLogService.log2FASettingsAccess(userId, role, username, ipAddress, 
                         userAgent, endpoint, httpMethod, responseStatus);
                 break;
             case "ACTIVITY_LOGS":
-                accessLogService.logActivityLogsAccess(userId, userType, username, ipAddress, 
+                accessLogService.logActivityLogsAccess(userId, role, username, ipAddress, 
                         userAgent, endpoint, httpMethod, responseStatus);
                 break;
             case "ERROR_LOGS":
-                accessLogService.logErrorLogsAccess(userId, userType, username, ipAddress, 
+                accessLogService.logErrorLogsAccess(userId, role, username, ipAddress, 
                         userAgent, endpoint, httpMethod, responseStatus);
                 break;
             case "SUSPICIOUS_FILE_ACCESS":
-                accessLogService.logSuspiciousFileAccess(userId, userType, username, ipAddress, 
+                accessLogService.logSuspiciousFileAccess(userId, role, username, ipAddress, 
                         userAgent, endpoint, httpMethod, responseStatus, getSeverityLevel(severity));
                 break;
             case "SUSPICIOUS_PATH_PROBE":
-                accessLogService.logSuspiciousPathProbe(userId, userType, username, ipAddress, 
+                accessLogService.logSuspiciousPathProbe(userId, role, username, ipAddress, 
                         userAgent, endpoint, httpMethod, responseStatus, getSeverityLevel(severity));
                 break;
             default:
                 // Use generic logging for other categories
                 accessLogService.logAccess(
                         getSeverityLevel(severity),
-                        userId, userType, username, ipAddress, userAgent,
+                        userId, role, username, ipAddress, userAgent,
                         endpoint, httpMethod, category, 
                         "Access to " + category + " endpoint", responseStatus
                 );
@@ -380,13 +380,13 @@ public class SensitiveEndpointAccessFilter extends OncePerRequestFilter {
         
         // Try to get from request attributes (set by JwtAuthFilter)
         Object userIdAttr = request.getAttribute("userId");
-        Object userTypeAttr = request.getAttribute("userType");
+        Object roleAttr = request.getAttribute("role");
         
         if (userIdAttr != null) {
             info.userId = (Long) userIdAttr;
         }
-        if (userTypeAttr != null) {
-            info.userType = (String) userTypeAttr;
+        if (roleAttr != null) {
+            info.role = (String) roleAttr;
         }
         
         // Try to get from security context
@@ -406,7 +406,7 @@ public class SensitiveEndpointAccessFilter extends OncePerRequestFilter {
             try {
                 String token = authHeader.substring(7);
                 info.userId = jwtUtils.extractUserIdAsLong(token);
-                info.userType = jwtUtils.extractUserType(token);
+                info.role = jwtUtils.extractRole(token);
                 info.username = jwtUtils.extractUsername(token);
             } catch (Exception e) {
                 log.debug("Could not extract user info from token: {}", e.getMessage());
@@ -466,7 +466,7 @@ public class SensitiveEndpointAccessFilter extends OncePerRequestFilter {
      */
     private static class UserInfo {
         Long userId;
-        String userType;
+        String role;
         String username;
     }
 }

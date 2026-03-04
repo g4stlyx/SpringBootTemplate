@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.two_factor;
+package com.g4stly.templateApp.dto.two_factor;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

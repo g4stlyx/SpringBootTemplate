@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the user activity logging system for the template application. This feature provides comprehensive audit trails for all significant user (Client/Coach) actions, enabling security monitoring, compliance, and debugging.
+This document describes the user activity logging system for the template application. This feature provides comprehensive audit trails for all significant user actions, enabling security monitoring, compliance, and debugging.
 
 ## Features
 
@@ -50,7 +50,7 @@ Super Admins (Level 0) can view and filter all user activity logs through dedica
 CREATE TABLE user_activity_log (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    user_type VARCHAR(20) NOT NULL,  -- 'client' or 'coach'
+    role VARCHAR(20) NOT NULL,  -- 'user'
     action VARCHAR(100) NOT NULL,
     resource_type VARCHAR(50),
     resource_id VARCHAR(100),
@@ -61,7 +61,7 @@ CREATE TABLE user_activity_log (
     failure_reason VARCHAR(500),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
-    INDEX idx_user_activity_user (user_id, user_type),
+    INDEX idx_user_activity_user (user_id, role),
     INDEX idx_user_activity_action (action),
     INDEX idx_user_activity_created_at (created_at)
 );
@@ -85,7 +85,7 @@ GET /api/v1/admin/user-activity-logs
 | sortBy | string | createdAt | Sort field |
 | sortDirection | string | desc | Sort direction (asc/desc) |
 | userId | Long | null | Filter by user ID |
-| userType | string | null | Filter by user type (client/coach) |
+| role | string | null | Filter by user type |
 | action | string | null | Filter by action type |
 | resourceType | string | null | Filter by resource type |
 | success | Boolean | null | Filter by success status |
@@ -102,7 +102,7 @@ GET /api/v1/admin/user-activity-logs
       {
         "id": 1,
         "userId": 5,
-        "userType": "client",
+        "role": "user",
         "username": "john_doe",
         "email": "john@example.com",
         "action": "LOGIN",
@@ -139,7 +139,7 @@ GET /api/v1/admin/user-activity-logs/{logId}
   "data": {
     "id": 1,
     "userId": 5,
-    "userType": "client",
+    "role": "user",
     "username": "john_doe",
     "email": "john@example.com",
     "action": "PASSWORD_RESET_COMPLETE",
@@ -164,7 +164,7 @@ GET /api/v1/admin/user-activity-logs/user/{userId}
 **Query Parameters:**
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| userType | string | client | User type (client/coach) |
+| role | string | user | User type |
 | page | int | 0 | Page number |
 | size | int | 20 | Page size |
 | sortBy | string | createdAt | Sort field |
@@ -250,20 +250,20 @@ To log user activity in a service:
 private UserActivityLogger userActivityLogger;
 
 // Log successful login
-userActivityLogger.logLoginSuccess(userId, "client", httpRequest);
+userActivityLogger.logLoginSuccess(userId, "user", httpRequest);
 
 // Log failed login
-userActivityLogger.logLoginFailure(userId, "client", "Invalid password", httpRequest);
+userActivityLogger.logLoginFailure(userId, "user", "Invalid password", httpRequest);
 
 // Log profile update with details
 Map<String, Object> changedFields = new HashMap<>();
 changedFields.put("firstName", "New Name");
-userActivityLogger.logProfileUpdate(userId, "coach", changedFields, httpRequest);
+userActivityLogger.logProfileUpdate(userId, "user", changedFields, httpRequest);
 
 // Log custom action
 Map<String, Object> details = new HashMap<>();
 details.put("customField", "value");
-userActivityLogger.logActivity(userId, "client", "CUSTOM_ACTION", 
+userActivityLogger.logActivity(userId, "user", "CUSTOM_ACTION", 
     "ResourceType", "resourceId", details, true, null, httpRequest);
 ```
 
@@ -296,7 +296,7 @@ The following actions are **automatically logged** in the AuthService:
 
 | Action | Trigger |
 |--------|---------|
-| REGISTER | Successful client/coach registration |
+| REGISTER | Successful user registration |
 | LOGIN | Login success or failure |
 | EMAIL_VERIFICATION | Email verification completion |
 | PASSWORD_RESET_REQUEST | Password reset initiation |
@@ -334,7 +334,7 @@ curl -X GET "http://localhost:8080/api/v1/admin/user-activity-logs?action=LOGIN&
 ### Filter Logs by User Type
 
 ```bash
-curl -X GET "http://localhost:8080/api/v1/admin/user-activity-logs?userType=client&page=0&size=20" \
+curl -X GET "http://localhost:8080/api/v1/admin/user-activity-logs?role=user&page=0&size=20" \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
 ```
 
@@ -355,6 +355,6 @@ curl -X GET "http://localhost:8080/api/v1/admin/user-activity-logs?startDate=202
 ### Get User's Activity History
 
 ```bash
-curl -X GET "http://localhost:8080/api/v1/admin/user-activity-logs/user/5?userType=client" \
+curl -X GET "http://localhost:8080/api/v1/admin/user-activity-logs/user/5?role=user" \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
 ```

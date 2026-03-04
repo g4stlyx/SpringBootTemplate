@@ -15,7 +15,7 @@ A production-ready Spring Boot REST API template to kickstart your projects. Bui
 - **Session Management** - Logout from single or all devices
 
 ### User Management
-- **Multi-User Type Support** - Admin, Client, Coach user types (easily customizable)
+- **Multi-User Type Support** - Admin, User user types (easily customizable)
 - **Email Verification** - User email verification with customizable HTML templates
 - **Password Reset** - Secure password reset flow with email notifications
 - **Admin Management** - Full admin CRUD operations with activity logging
@@ -31,7 +31,7 @@ A production-ready Spring Boot REST API template to kickstart your projects. Bui
 - **Admin Activity Logging** - Track all admin actions (CRUD operations) with full audit trail
 - **Authentication Error Logging** - Log failed login attempts with IP, User-Agent, and error types
 - **Sensitive Endpoint Access Logging** - Track access to sensitive endpoints with severity levels
-- **User Activity Logging** - Complete user action tracking for clients and coaches
+- **User Activity Logging** - Complete user action tracking for users
 - **Token Management Logging** - Track verification and password reset token lifecycle
 - **Database Backup** - Automated MySQL backup with email notifications (daily at 3:00 AM)
 
@@ -107,12 +107,14 @@ src/main/java/com/g4stly/templateApp/
 │   ├── SensitiveEndpointAccessLog.java
 │   ├── UserActivityeption.java
 ├── models/                 # JPA Entities
+├    ├── enums
+├      ├── UserType.java
+├      ├── Role.java
 │   ├── Admin.java
 │   ├── AdminActivityLog.java
 │   ├── AuthenticationErrorLog.java
 │   ├── PasswordResetToken.java
 │   ├── VerificationToken.java
-│   └── UserType.java
 ├── repos/                  # Spring Data Repositories
 ├── security/               # Security components
 │   ├── JwtAuthFilter.java
@@ -223,7 +225,6 @@ RATE_LIMITDocumentation
 | POST | `/api/v1/auth/refresh` | Refresh access token | No (uses refresh token) |
 | POST | `/api/v1/auth/logout` | Logout from current device | No (uses refresh token) |
 | POST | `/api/v1/auth/logout-all` | Logout from all devices | Yes |
-| POST | `/api/v1/auth/verify-password` | Verify password before change | No |
 | POST | `/api/v1/auth/forgot-password` | Request password reset | No |
 | POST | `/api/v1/auth/reset-password` | Reset password with token | No |
 | GET | `/api/v1/auth/verify-email` | Verify email address | No |
@@ -246,7 +247,7 @@ RATE_LIMITDocumentation
 | GET | `/api/v1/admin/profile/{id}` | Get admin profile by ID | Yes (Admin L0/L1) |
 | PUT | `/api/v1/admin/profile` | Update own profile | Yes (Admin) |
 | POST |& Token System
-- **Access Tokens**: Short-lived (15 minutes), includes userId, userType, adminLevel
+- **Access Tokens**: Short-lived (15 minutes), includes userId, role, adminLevel
 - **Refresh Tokens**: Long-lived (30 days) with automatic rotation
 - **Token Rotation**: New refresh token issued on each refresh (old token revoked)
 - **Reuse Detection**: Automatic revocation if refresh token reused
@@ -452,7 +453,7 @@ Uses Argon2id (winner of the Password Hashing Competition) with:
 ### JWT Tokens
 - Access tokens with configurable expiration
 - Refresh tokens for seamless re-authentication
-- Claims include: userId, userType, adminLevel
+- Claims include: userId, role, adminLevel
 
 ### File Upload Security
 - **Magic byte validation** - Verifies actual file content, not just headers

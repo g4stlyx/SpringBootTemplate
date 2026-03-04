@@ -28,17 +28,17 @@ public class AdminRefreshTokenController {
 
     /**
      * Get all refresh tokens with optional filters.
-     * Supports filtering by userType, userId, isRevoked, ipAddress.
+     * Supports filtering by role, userId, isRevoked, ipAddress.
      */
     @GetMapping
     public ResponseEntity<?> getAllTokens(
-            @RequestParam(required = false) String userType,
+            @RequestParam(required = false) String role,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Boolean isRevoked,
             @RequestParam(required = false) String ipAddress) {
         try {
             List<RefreshTokenResponse> tokens = refreshTokenService.getFilteredTokens(
-                    userType, userId, isRevoked, ipAddress);
+                    role, userId, isRevoked, ipAddress);
 
             return ResponseEntity.ok(tokens);
 
@@ -74,9 +74,9 @@ public class AdminRefreshTokenController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getActiveTokensForUser(
             @PathVariable Long userId,
-            @RequestParam String userType) {
+            @RequestParam String role) {
         try {
-            List<RefreshTokenResponse> tokens = refreshTokenService.getActiveTokensForUser(userId, userType);
+            List<RefreshTokenResponse> tokens = refreshTokenService.getActiveTokensForUser(userId, role);
             return ResponseEntity.ok(tokens);
 
         } catch (Exception e) {
@@ -128,9 +128,9 @@ public class AdminRefreshTokenController {
     @PutMapping("/revoke-all")
     public ResponseEntity<?> revokeAllUserTokens(
             @RequestParam Long userId,
-            @RequestParam String userType) {
+            @RequestParam String role) {
         try {
-            int count = refreshTokenService.revokeAllUserTokens(userId, userType);
+            int count = refreshTokenService.revokeAllUserTokens(userId, role);
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "All tokens revoked for user");

@@ -1,7 +1,7 @@
-package  com.g4stly.templateApp.exception;
+package com.g4stly.templateApp.exception;
 
-import  com.g4stly.templateApp.security.JwtUtils;
-import  com.g4stly.templateApp.services.AuthErrorLogService;
+import com.g4stly.templateApp.security.JwtUtils;
+import com.g4stly.templateApp.services.AuthErrorLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
             try {
                 authErrorLogService.log404(
                     userInfo.userId,
-                    userInfo.userType,
+                    userInfo.role,
                     userInfo.username,
                     getClientIP(request),
                     request.getHeader("User-Agent"),
@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
             try {
                 authErrorLogService.log404(
                     userInfo.userId,
-                    userInfo.userType,
+                    userInfo.role,
                     userInfo.username,
                     getClientIP(request),
                     request.getHeader("User-Agent"),
@@ -128,7 +128,7 @@ public class GlobalExceptionHandler {
             try {
                 authErrorLogService.log403(
                     userInfo.userId,
-                    userInfo.userType,
+                    userInfo.role,
                     userInfo.username,
                     getClientIP(request),
                     request.getHeader("User-Agent"),
@@ -169,7 +169,7 @@ public class GlobalExceptionHandler {
             try {
                 authErrorLogService.logAccessDenied(
                     userInfo.userId,
-                    userInfo.userType,
+                    userInfo.role,
                     userInfo.username,
                     getClientIP(request),
                     request.getHeader("User-Agent"),
@@ -244,7 +244,7 @@ public class GlobalExceptionHandler {
         try {
             authErrorLogService.log400(
                 userInfo.userId,
-                userInfo.userType,
+                userInfo.role,
                 userInfo.username,
                 getClientIP(request),
                 request.getHeader("User-Agent"),
@@ -296,7 +296,7 @@ public class GlobalExceptionHandler {
         try {
             authErrorLogService.log400(
                 userInfo.userId,
-                userInfo.userType,
+                userInfo.role,
                 userInfo.username,
                 getClientIP(request),
                 request.getHeader("User-Agent"),
@@ -325,9 +325,9 @@ public class GlobalExceptionHandler {
         UserInfo userInfo = extractUserInfo(request);
         try {
             authErrorLogService.log500(
-                userInfo.userId,
-                userInfo.userType,
-                userInfo.username,
+                    userInfo.userId,
+                    userInfo.role,
+                    userInfo.username,
                 getClientIP(request),
                 request.getHeader("User-Agent"),
                 request.getRequestURI(),
@@ -389,8 +389,8 @@ public class GlobalExceptionHandler {
                     if (userInfo.userId == null) {
                         userInfo.userId = jwtUtils.extractUserIdAsLong(token);
                     }
-                    if (userInfo.userType == null) {
-                        userInfo.userType = jwtUtils.extractUserType(token);
+                    if (userInfo.role == null) {
+                        userInfo.role = jwtUtils.extractRole(token);
                     }
                 } catch (Exception e) {
                     log.debug("Could not extract user info from JWT token: {}", e.getMessage());
@@ -408,7 +408,7 @@ public class GlobalExceptionHandler {
      */
     private static class UserInfo {
         Long userId;
-        String userType;
+        String role;
         String username;
     }
 

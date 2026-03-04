@@ -2,11 +2,9 @@ package com.g4stly.templateApp.services;
 
 import com.g4stly.templateApp.dto.admin.UserActivityLogDTO;
 import com.g4stly.templateApp.dto.admin.UserActivityLogListResponse;
-import com.g4stly.templateApp.models.Client;
-import com.g4stly.templateApp.models.Coach;
+import com.g4stly.templateApp.models.User;
 import com.g4stly.templateApp.models.UserActivityLog;
-import com.g4stly.templateApp.repos.ClientRepository;
-import com.g4stly.templateApp.repos.CoachRepository;
+import com.g4stly.templateApp.repos.UserRepository;
 import com.g4stly.templateApp.repos.UserActivityLogRepository;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -37,13 +35,12 @@ public class UserActivityLogService {
     
     // Whitelist of allowed sort fields to prevent sort field injection
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-        "id", "userId", "userType", "action", "resourceType", 
+        "id", "userId", "role", "action", "resourceType", 
         "resourceId", "ipAddress", "success", "createdAt"
     );
     
     private final UserActivityLogRepository userActivityLogRepository;
-    private final ClientRepository clientRepository;
-    private final CoachRepository coachRepository;
+    private final UserRepository userRepository;
     private final AdminActivityLogger adminActivityLogger;
     
     /**
@@ -52,7 +49,7 @@ public class UserActivityLogService {
     @Transactional(readOnly = true)
     public UserActivityLogListResponse getAllUserActivityLogs(
             Long userId,
-            String userType,
+            String role,
             String action,
             String resourceType,
             Boolean success,
@@ -74,7 +71,7 @@ public class UserActivityLogService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, validatedSortBy));
         
         // Build specification for dynamic filtering
-        Specification<UserActivityLog> spec = buildSpecification(userId, userType, action, resourceType, success, startDate, endDate, ipAddress);
+        Specification<UserActivityLog> spec = buildSpecification(userId, role, action, resourceType, success, startDate, endDate, ipAddress);
         
         Page<UserActivityLog> logPage = userActivityLogRepository.findAll(spec, pageable);
         
@@ -89,7 +86,7 @@ public class UserActivityLogService {
         details.put("sortBy", sortBy);
         details.put("sortDirection", sortDirection);
         if (userId != null) details.put("filterUserId", userId);
-        if (userType != null) details.put("filterUserType", userType);
+        if (role != null) details.put("filterRole", role);
         if (action != null) details.put("filterAction", action);
         if (resourceType != null) details.put("filterResourceType", resourceType);
         if (success != null) details.put("filterSuccess", success);
@@ -131,7 +128,7 @@ public class UserActivityLogService {
         java.util.Map<String, Object> details = new java.util.HashMap<>();
         details.put("logId", logId);
         details.put("targetUserId", activityLog.getUserId());
-        details.put("targetUserType", activityLog.getUserType());
+        details.put("targetRole", activityLog.getRole());
         details.put("action", activityLog.getAction());
         
         adminActivityLogger.logActivity(
@@ -152,7 +149,7 @@ public class UserActivityLogService {
     @Transactional(readOnly = true)
     public UserActivityLogListResponse getUserActivityLogsByUser(
             Long userId,
-            String userType,
+            String role,
             int page,
             int size,
             String sortBy,
@@ -167,7 +164,7 @@ public class UserActivityLogService {
                 Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, validatedSortBy));
         
-        Page<UserActivityLog> logPage = userActivityLogRepository.findByUserIdAndUserTypeOrderByCreatedAtDesc(userId, userType, pageable);
+        Page<UserActivityLog> logPage = userActivityLogRepository.findByUserIdAndRoleOrderByCreatedAtDesc(userId, role, pageable);
         
         List<UserActivityLogDTO> logDTOs = logPage.getContent().stream()
                 .map(this::convertToDTO)
@@ -176,7 +173,7 @@ public class UserActivityLogService {
         // Log admin activity
         java.util.Map<String, Object> details = new java.util.HashMap<>();
         details.put("targetUserId", userId);
-        details.put("targetUserType", userType);
+        details.put("targetRole", role);
         details.put("page", page);
         details.put("size", size);
         details.put("resultCount", logDTOs.size());
@@ -238,7 +235,7 @@ public class UserActivityLogService {
      * Build JPA Specification for dynamic filtering
      */
     private Specification<UserActivityLog> buildSpecification(
-            Long userId, String userType, String action, String resourceType,
+            Long userId, String role, String action, String resourceType,
             Boolean success, LocalDateTime startDate, LocalDateTime endDate, String ipAddress
     ) {
         return (root, query, criteriaBuilder) -> {
@@ -248,8 +245,8 @@ public class UserActivityLogService {
                 predicates.add(criteriaBuilder.equal(root.get("userId"), userId));
             }
             
-            if (userType != null && !userType.isEmpty()) {
-                predicates.add(criteriaBuilder.equal(criteriaBuilder.lower(root.get("userType")), userType.toLowerCase()));
+            if (role != null && !role.isEmpty()) {
+                predicates.add(criteriaBuilder.equal(criteriaBuilder.lower(root.get("role")), role.toLowerCase()));
             }
             
             if (action != null && !action.isEmpty()) {
@@ -287,27 +284,20 @@ public class UserActivityLogService {
         String username = "Unknown";
         String email = "Unknown";
         
-        // Fetch user info based on userType
-        if ("client".equalsIgnoreCase(log.getUserType())) {
-            Optional<Client> clientOpt = clientRepository.findById(log.getUserId());
-            if (clientOpt.isPresent()) {
-                Client client = clientOpt.get();
-                username = client.getUsername();
-                email = client.getEmail();
-            }
-        } else if ("coach".equalsIgnoreCase(log.getUserType())) {
-            Optional<Coach> coachOpt = coachRepository.findById(log.getUserId());
-            if (coachOpt.isPresent()) {
-                Coach coach = coachOpt.get();
-                username = coach.getUsername();
-                email = coach.getEmail();
+        // Fetch user info based on role
+        if ("user".equalsIgnoreCase(log.getRole())) {
+            Optional<User> userOpt = userRepository.findById(log.getUserId());
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                username = user.getUsername();
+                email = user.getEmail();
             }
         }
         
         return UserActivityLogDTO.builder()
                 .id(log.getId())
                 .userId(log.getUserId())
-                .userType(log.getUserType())
+                .role(log.getRole())
                 .username(username)
                 .email(email)
                 .action(log.getAction())

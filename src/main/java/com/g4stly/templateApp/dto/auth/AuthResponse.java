@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.auth;
+package com.g4stly.templateApp.dto.auth;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -36,9 +36,9 @@ public class AuthResponse {
         private String profilePicture;
         private boolean isActive;
         private boolean emailVerified;
-        private String userType; // "client", "coach" or "admin"
-        private Integer level; // For admins
-        private Boolean isVerified; // For coaches - admin approval status
+        private String role;     // "user" or "admin" — auth-level role
+        private String userType; // App-level type, e.g. "waiter", "chef" — null for admins
+        private Integer level; // For admins only
         private LocalDateTime lastLoginAt;
     }
 }

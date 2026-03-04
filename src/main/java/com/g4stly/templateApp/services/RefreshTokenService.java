@@ -3,8 +3,7 @@ package com.g4stly.templateApp.services;
 import com.g4stly.templateApp.dto.refresh_token.RefreshTokenResponse;
 import com.g4stly.templateApp.models.RefreshToken;
 import com.g4stly.templateApp.repos.AdminRepository;
-import com.g4stly.templateApp.repos.CoachRepository;
-import com.g4stly.templateApp.repos.ClientRepository;
+import com.g4stly.templateApp.repos.UserRepository;
 import com.g4stly.templateApp.repos.RefreshTokenRepository;
 import com.g4stly.templateApp.security.JwtUtils;
 
@@ -32,10 +31,7 @@ public class RefreshTokenService {
     private JwtUtils jwtUtils;
 
     @Autowired
-    private ClientRepository clientRepository;
-
-    @Autowired
-    private CoachRepository coachRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private AdminRepository adminRepository;
@@ -43,11 +39,11 @@ public class RefreshTokenService {
     /**
      * Create a new refresh token for a user.
      */
-    public RefreshToken createRefreshToken(Long userId, String userType, HttpServletRequest request) {
+    public RefreshToken createRefreshToken(Long userId, String role, HttpServletRequest request) {
         long expirationDays = jwtUtils.getRefreshTokenExpirationDays();
-        log.info("Creating refresh token for userId={}, userType={}, expirationDays={}", userId, userType, expirationDays);
+        log.info("Creating refresh token for userId={}, role={}, expirationDays={}", userId, role, expirationDays);
         
-        RefreshToken refreshToken = new RefreshToken(userId, userType, expirationDays);
+        RefreshToken refreshToken = new RefreshToken(userId, role, expirationDays);
 
         // Capture device info and IP
         refreshToken.setDeviceInfo(extractDeviceInfo(request));
@@ -75,17 +71,17 @@ public class RefreshTokenService {
         }
 
         RefreshToken refreshToken = refreshTokenOpt.get();
-        log.info("Found refresh token - ID: {}, userId: {}, userType: {}, isRevoked: {}, expiryDate: {}, now: {}", 
-                refreshToken.getId(), refreshToken.getUserId(), refreshToken.getUserType(), 
+        log.info("Found refresh token - ID: {}, userId: {}, role: {}, isRevoked: {}, expiryDate: {}, now: {}", 
+                refreshToken.getId(), refreshToken.getUserId(), refreshToken.getRole(), 
                 refreshToken.getIsRevoked(), refreshToken.getExpiryDate(), LocalDateTime.now());
 
         // Check if revoked - possible token reuse attack
         if (refreshToken.getIsRevoked()) {
             // Security: If a revoked token is used, revoke ALL tokens for this user
             // This indicates a potential token theft/reuse attack
-            log.error("WARNING: Revoked refresh token reuse detected for userId={} userType={}", 
-                    refreshToken.getUserId(), refreshToken.getUserType());
-            refreshTokenRepository.revokeAllUserTokens(refreshToken.getUserId(), refreshToken.getUserType());
+            log.error("WARNING: Revoked refresh token reuse detected for userId={} role={}", 
+                    refreshToken.getUserId(), refreshToken.getRole());
+            refreshTokenRepository.revokeAllUserTokens(refreshToken.getUserId(), refreshToken.getRole());
             return Optional.empty();
         }
 
@@ -112,7 +108,7 @@ public class RefreshTokenService {
         refreshTokenRepository.save(oldToken);
 
         // Create new token
-        return createRefreshToken(oldToken.getUserId(), oldToken.getUserType(), request);
+        return createRefreshToken(oldToken.getUserId(), oldToken.getRole(), request);
     }
 
     /**
@@ -134,8 +130,8 @@ public class RefreshTokenService {
      * Revoke all refresh tokens for a user.
      */
     @Transactional
-    public int revokeAllUserTokens(Long userId, String userType) {
-        return refreshTokenRepository.revokeAllUserTokens(userId, userType);
+    public int revokeAllUserTokens(Long userId, String role) {
+        return refreshTokenRepository.revokeAllUserTokens(userId, role);
     }
 
     /**
@@ -158,8 +154,8 @@ public class RefreshTokenService {
     /**
      * Get all refresh tokens with optional filters.
      */
-    public List<RefreshTokenResponse> getFilteredTokens(String userType, Long userId, Boolean isRevoked, String ipAddress) {
-        List<RefreshToken> tokens = refreshTokenRepository.findWithFilters(userType, userId, isRevoked, ipAddress);
+    public List<RefreshTokenResponse> getFilteredTokens(String role, Long userId, Boolean isRevoked, String ipAddress) {
+        List<RefreshToken> tokens = refreshTokenRepository.findWithFilters(role, userId, isRevoked, ipAddress);
         return tokens.stream()
                 .map(this::toRefreshTokenResponse)
                 .collect(Collectors.toList());
@@ -176,8 +172,8 @@ public class RefreshTokenService {
     /**
      * Get all active tokens for a specific user.
      */
-    public List<RefreshTokenResponse> getActiveTokensForUser(Long userId, String userType) {
-        List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndUserTypeAndIsRevokedFalse(userId, userType);
+    public List<RefreshTokenResponse> getActiveTokensForUser(Long userId, String role) {
+        List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndRoleAndIsRevokedFalse(userId, role);
         return tokens.stream()
                 .filter(t -> !t.isExpired())
                 .map(this::toRefreshTokenResponse)
@@ -221,30 +217,25 @@ public class RefreshTokenService {
         stats.put("totalActiveTokens", refreshTokenRepository.countAllActiveTokens(now));
         stats.put("totalTokens", refreshTokenRepository.count());
 
-        List<Object[]> byUserType = refreshTokenRepository.countActiveTokensByUserType(now);
-        Map<String, Long> activeByType = new HashMap<>();
-        long clientTokens = 0;
-        long coachTokens = 0;
+        List<Object[]> byRole = refreshTokenRepository.countActiveTokensByRole(now);
+        Map<String, Long> activeByRole = new HashMap<>();
+        long userTokens = 0;
         long adminTokens = 0;
         
-        for (Object[] row : byUserType) {
-            String type = (String) row[0];
+        for (Object[] row : byRole) {
+            String role = (String) row[0];
             Long count = (Long) row[1];
-            activeByType.put(type, count);
+            activeByRole.put(role, count);
             
-            // Set explicit counts for each user type
-            if ("client".equalsIgnoreCase(type)) {
-                clientTokens = count;
-            } else if ("coach".equalsIgnoreCase(type)) {
-                coachTokens = count;
-            } else if ("admin".equalsIgnoreCase(type)) {
+            if ("user".equalsIgnoreCase(role)) {
+                userTokens = count;
+            } else if ("admin".equalsIgnoreCase(role)) {
                 adminTokens = count;
             }
         }
         
-        stats.put("activeTokensByUserType", activeByType);
-        stats.put("clientTokens", clientTokens);
-        stats.put("coachTokens", coachTokens);
+        stats.put("activeTokensByRole", activeByRole);
+        stats.put("userTokens", userTokens);
         stats.put("adminTokens", adminTokens);
 
         return stats;
@@ -253,7 +244,7 @@ public class RefreshTokenService {
     // ==================== Helper Methods ====================
 
     private RefreshTokenResponse toRefreshTokenResponse(RefreshToken token) {
-        String username = resolveUsername(token.getUserId(), token.getUserType());
+        String username = resolveUsername(token.getUserId(), token.getRole());
         String tokenPreview = token.getToken().length() > 8 
                 ? token.getToken().substring(0, 8) + "..." 
                 : token.getToken();
@@ -262,7 +253,7 @@ public class RefreshTokenService {
                 token.getId(),
                 tokenPreview,
                 token.getUserId(),
-                token.getUserType(),
+                token.getRole(),
                 username,
                 token.getExpiryDate(),
                 token.getCreatedAt(),
@@ -274,17 +265,13 @@ public class RefreshTokenService {
         );
     }
 
-    private String resolveUsername(Long userId, String userType) {
+    private String resolveUsername(Long userId, String role) {
         try {
-            switch (userType.toLowerCase()) {
-                case "client":
-                    return clientRepository.findById(userId)
-                            .map(c -> c.getUsername())
-                            .orElse("Unknown Client #" + userId);
-                case "coach":
-                    return coachRepository.findById(userId)
-                            .map(c -> c.getUsername())
-                            .orElse("Unknown Coach #" + userId);
+            switch (role.toLowerCase()) {
+                case "user":
+                    return userRepository.findById(userId)
+                            .map(u -> u.getUsername())
+                            .orElse("Unknown User #" + userId);
                 case "admin":
                     return adminRepository.findById(userId)
                             .map(a -> a.getUsername())

@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.exception;
+package com.g4stly.templateApp.exception;
 
 /**
  * Exception thrown when a requested resource is not found (404)

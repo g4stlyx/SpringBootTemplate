@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.models;
+package com.g4stly.templateApp.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Table(name = "authentication_error_logs", indexes = {
     @Index(name = "idx_auth_error_type", columnList = "error_type"),
     @Index(name = "idx_auth_error_user_id", columnList = "user_id"),
-    @Index(name = "idx_auth_error_user_type", columnList = "user_type"),
+    @Index(name = "idx_auth_error_role", columnList = "role"),
     @Index(name = "idx_auth_error_created_at", columnList = "created_at"),
     @Index(name = "idx_auth_error_ip_address", columnList = "ip_address")
 })
@@ -36,8 +36,8 @@ public class AuthenticationErrorLog {
     @Column(name = "user_id")
     private Long userId;
     
-    @Column(name = "user_type", length = 20)
-    private String userType;
+    @Column(name = "role", length = 20)
+    private String role;
     
     @Column(name = "username", length = 100)
     private String username;

@@ -50,7 +50,7 @@ class AuthControllerTest extends BaseControllerTest {
         req.setUsername("alice");
         req.setEmail("alice@test.com");
         req.setPassword("Password1!");
-        req.setUserType("client");
+        req.setUserType("user");
 
         AuthResponse response = AuthResponse.builder().success(true).message("Check your email").build();
         when(authService.register(any(), any())).thenReturn(response);
@@ -69,7 +69,7 @@ class AuthControllerTest extends BaseControllerTest {
         req.setUsername("alice");
         req.setEmail("alice@test.com");
         req.setPassword("Password1!");
-        req.setUserType("client");
+        req.setUserType("user");
 
         AuthResponse response = AuthResponse.builder().success(false).message("Username already taken").build();
         when(authService.register(any(), any())).thenReturn(response);
@@ -123,7 +123,7 @@ class AuthControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginJson("admin", "wrongpass", "client", null)))
+                        .content(loginJson("admin", "wrongpass", "user", null)))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -163,7 +163,7 @@ class AuthControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginJson("alice", "pass", "client", null)))
+                        .content(loginJson("alice", "pass", "user", null)))
                 .andExpect(status().isOk());
     }
 
@@ -197,7 +197,7 @@ class AuthControllerTest extends BaseControllerTest {
     @Test
     @DisplayName("GET /me - valid session → 200 with session data")
     void me_validSession_returns200() throws Exception {
-        UserSessionDTO session = new UserSessionDTO(1L, "Alice", "Smith", null, "ADMIN", 0);
+        UserSessionDTO session = new UserSessionDTO(1L, "Alice", "Smith", null, "ADMIN", null, 0);
         when(authService.getCurrentUserSession(any())).thenReturn(session);
 
         mockMvc.perform(get("/api/v1/auth/me")
@@ -218,11 +218,11 @@ class AuthControllerTest extends BaseControllerTest {
 
     // ──────────────── helpers ─────────────────────────────────────────────────
 
-    private String loginJson(String username, String password, String userType, String captchaToken) throws Exception {
+    private String loginJson(String username, String password, String role, String captchaToken) throws Exception {
         LoginRequest req = new LoginRequest();
         req.setUsername(username);
         req.setPassword(password);
-        req.setUserType(userType);
+        req.setRole(role);
         req.setCaptchaToken(captchaToken);
         return objectMapper.writeValueAsString(req);
     }

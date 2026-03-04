@@ -53,9 +53,9 @@
 							"disabled": true
 						},
 						{
-							"key": "userType",
+							"key": "role",
 							"value": "",
-							"description": "Filter by user type (admin, coach, client)",
+							"description": "Filter by role (admin, user)",
 							"disabled": true
 						},
 						{
@@ -84,7 +84,7 @@
 						}
 					]
 				},
-				"description": "Get all sensitive endpoint access logs with pagination and optional filtering.\n\n**Access:** Level 0 Super Admins only\n\n**Query Parameters:**\n- page (optional): Page number (default: 0)\n- size (optional): Page size (default: 20)\n- sortBy (optional): Sort field (default: createdAt)\n- sortDirection (optional): asc or desc (default: desc)\n- userId (optional): Filter by specific user ID\n- userType (optional): Filter by user type (admin, coach, client)\n- severity (optional): Filter by severity level\n- category (optional): Filter by endpoint category\n- ipAddress (optional): Filter by IP address\n- startDate (optional): Filter logs after this date (ISO format)\n\n**Severity Levels:**\n- LOW: Informational - routine access\n- MEDIUM: Requires attention - sensitive data access\n- HIGH: Immediate review required - admin operations (triggers email)\n- CRITICAL: Security alert - database/backup/suspicious file access (triggers email)\n\n**Admin Categories:**\n- DATABASE_BACKUP: Database backup operations (CRITICAL)\n- ADMIN_MANAGEMENT: Admin management operations (HIGH)\n- TOKEN_MANAGEMENT: Token management operations (HIGH)\n- 2FA_SETTINGS: 2FA settings operations (MEDIUM)\n- ACTIVITY_LOGS: Activity log access (MEDIUM)\n- ERROR_LOGS: Error log access (MEDIUM)\n\n**Security Categories (Suspicious Access):**\n- SUSPICIOUS_FILE_ACCESS: Access to .env, .git, config, credentials, etc. (CRITICAL/HIGH)\n- SUSPICIOUS_PATH_PROBE: Access to common attack paths like /phpmyadmin, /shell, etc. (CRITICAL/HIGH)"
+				"description": "Get all sensitive endpoint access logs with pagination and optional filtering.\n\n**Access:** Level 0 Super Admins only\n\n**Query Parameters:**\n- page (optional): Page number (default: 0)\n- size (optional): Page size (default: 20)\n- sortBy (optional): Sort field (default: createdAt)\n- sortDirection (optional): asc or desc (default: desc)\n- userId (optional): Filter by specific user ID\n- role (optional): Filter by user type (admin, user)\n- severity (optional): Filter by severity level\n- category (optional): Filter by endpoint category\n- ipAddress (optional): Filter by IP address\n- startDate (optional): Filter logs after this date (ISO format)\n\n**Severity Levels:**\n- LOW: Informational - routine access\n- MEDIUM: Requires attention - sensitive data access\n- HIGH: Immediate review required - admin operations (triggers email)\n- CRITICAL: Security alert - database/backup/suspicious file access (triggers email)\n\n**Admin Categories:**\n- DATABASE_BACKUP: Database backup operations (CRITICAL)\n- ADMIN_MANAGEMENT: Admin management operations (HIGH)\n- TOKEN_MANAGEMENT: Token management operations (HIGH)\n- 2FA_SETTINGS: 2FA settings operations (MEDIUM)\n- ACTIVITY_LOGS: Activity log access (MEDIUM)\n- ERROR_LOGS: Error log access (MEDIUM)\n\n**Security Categories (Suspicious Access):**\n- SUSPICIOUS_FILE_ACCESS: Access to .env, .git, config, credentials, etc. (CRITICAL/HIGH)\n- SUSPICIOUS_PATH_PROBE: Access to common attack paths like /phpmyadmin, /shell, etc. (CRITICAL/HIGH)"
 			},
 			"response": []
 		},
@@ -152,12 +152,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs?userType=admin&page=0&size=20",
+					"raw": "{{base_url}}/api/v1/admin/sensitive-access-logs?role=admin&page=0&size=20",
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "sensitive-access-logs"],
 					"query": [
 						{
-							"key": "userType",
+							"key": "role",
 							"value": "admin",
 							"description": "Filter by user type"
 						},
@@ -171,7 +171,7 @@
 						}
 					]
 				},
-				"description": "Get sensitive access logs filtered by user type (admin, coach, client).\n\n**Access:** Level 0 Super Admins only"
+				"description": "Get sensitive access logs filtered by user type (admin, user).\n\n**Access:** Level 0 Super Admins only"
 			},
 			"response": []
 		},
@@ -243,7 +243,7 @@
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "sensitive-access-logs", "1"]
 				},
-				"description": "Get a specific sensitive access log entry by ID.\n\n**Access:** Level 0 Super Admins only\n\n**Response:**\n- id: Log entry ID\n- severity: Severity level code\n- severityDescription: Human-readable severity description\n- userId: ID of user who accessed the endpoint\n- userType: Type of user (admin, coach, client)\n- username: Username of the accessor\n- ipAddress: IP address of the request\n- userAgent: User agent of the request\n- endpoint: Accessed endpoint\n- httpMethod: HTTP method used\n- endpointCategory: Category of the endpoint\n- description: Description of the access\n- responseStatus: HTTP response status code\n- emailAlertSent: Whether email alert was sent\n- createdAt: Timestamp of the access"
+				"description": "Get a specific sensitive access log entry by ID.\n\n**Access:** Level 0 Super Admins only\n\n**Response:**\n- id: Log entry ID\n- severity: Severity level code\n- severityDescription: Human-readable severity description\n- userId: ID of user who accessed the endpoint\n- role: Type of user (admin, user)\n- username: Username of the accessor\n- ipAddress: IP address of the request\n- userAgent: User agent of the request\n- endpoint: Accessed endpoint\n- httpMethod: HTTP method used\n- endpointCategory: Category of the endpoint\n- description: Description of the access\n- responseStatus: HTTP response status code\n- emailAlertSent: Whether email alert was sent\n- createdAt: Timestamp of the access"
 			},
 			"response": []
 		},

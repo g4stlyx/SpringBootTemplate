@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.admin;
+package com.g4stly.templateApp.dto.admin;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;

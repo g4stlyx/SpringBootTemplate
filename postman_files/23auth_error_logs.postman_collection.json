@@ -53,9 +53,9 @@
 							"disabled": true
 						},
 						{
-							"key": "userType",
+							"key": "role",
 							"value": "",
-							"description": "Filter by user type (admin, coach, client)",
+							"description": "Filter by user role (admin, user)",
 							"disabled": true
 						},
 						{
@@ -78,7 +78,7 @@
 						}
 					]
 				},
-				"description": "Get all authentication error logs with pagination and optional filtering.\n\n**Access:** All Admins\n\n**Query Parameters:**\n- page (optional): Page number (default: 0)\n- size (optional): Page size (default: 20)\n- sortBy (optional): Sort field (default: createdAt)\n- sortDirection (optional): asc or desc (default: desc)\n- userId (optional): Filter by specific user ID\n- userType (optional): Filter by user type (admin, coach, client)\n- errorType (optional): Filter by error type\n- ipAddress (optional): Filter by IP address\n- startDate (optional): Filter logs after this date (ISO format)\n\n**Error Types:**\n- UNAUTHORIZED_401: Authentication required\n- FORBIDDEN_403: Insufficient permissions\n- NOT_FOUND_404: Resource not found\n- BAD_REQUEST_400: Bad request\n- INTERNAL_SERVER_ERROR_500: Server error\n- INVALID_TOKEN: Invalid or expired token\n- ACCESS_DENIED: Access denied"
+				"description": "Get all authentication error logs with pagination and optional filtering.\n\n**Access:** All Admins\n\n**Query Parameters:**\n- page (optional): Page number (default: 0)\n- size (optional): Page size (default: 20)\n- sortBy (optional): Sort field (default: createdAt)\n- sortDirection (optional): asc or desc (default: desc)\n- userId (optional): Filter by specific user ID\n- role (optional): Filter by user type (admin, user)\n- errorType (optional): Filter by error type\n- ipAddress (optional): Filter by IP address\n- startDate (optional): Filter logs after this date (ISO format)\n\n**Error Types:**\n- UNAUTHORIZED_401: Authentication required\n- FORBIDDEN_403: Insufficient permissions\n- NOT_FOUND_404: Resource not found\n- BAD_REQUEST_400: Bad request\n- INTERNAL_SERVER_ERROR_500: Server error\n- INVALID_TOKEN: Invalid or expired token\n- ACCESS_DENIED: Access denied"
 			},
 			"response": []
 		},
@@ -117,14 +117,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/admin/auth-error-logs?userType=client&page=0&size=20",
+					"raw": "{{base_url}}/api/v1/admin/auth-error-logs?role=client&page=0&size=20",
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "auth-error-logs"],
 					"query": [
 						{
-							"key": "userType",
+							"key": "role",
 							"value": "client",
-							"description": "Filter by user type"
+							"description": "Filter by user role (admin, user)"
 						},
 						{
 							"key": "page",
@@ -136,7 +136,7 @@
 						}
 					]
 				},
-				"description": "Get auth error logs filtered by user type (admin, coach, client).\n\n**Access:** All Admins"
+				"description": "Get auth error logs filtered by role (admin, user).\n\n**Access:** All Admins"
 			},
 			"response": []
 		},
@@ -150,7 +150,7 @@
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "auth-error-logs", "1"]
 				},
-				"description": "Get a specific authentication error log entry by ID.\n\n**Access:** All Admins\n\n**Response:**\n- id: Log entry ID\n- errorType: Error type code\n- errorDescription: Human-readable error description\n- userId: ID of user (if identified)\n- userType: Type of user (admin, coach, client)\n- username: Username (if identified)\n- ipAddress: IP address of the request\n- userAgent: User agent of the request\n- endpoint: Requested endpoint\n- httpMethod: HTTP method used\n- errorMessage: Error message\n- attemptedAction: Description of attempted action\n- createdAt: Timestamp of the error"
+				"description": "Get a specific authentication error log entry by ID.\n\n**Access:** All Admins\n\n**Response:**\n- id: Log entry ID\n- errorType: Error type code\n- errorDescription: Human-readable error description\n- userId: ID of user (if identified)\n- role: Role (admin, user)\n- username: Username (if identified)\n- ipAddress: IP address of the request\n- userAgent: User agent of the request\n- endpoint: Requested endpoint\n- httpMethod: HTTP method used\n- errorMessage: Error message\n- attemptedAction: Description of attempted action\n- createdAt: Timestamp of the error"
 			},
 			"response": []
 		},

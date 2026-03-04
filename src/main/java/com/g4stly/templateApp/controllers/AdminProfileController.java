@@ -1,9 +1,9 @@
-package  com.g4stly.templateApp.controllers;
+package com.g4stly.templateApp.controllers;
 
-import  com.g4stly.templateApp.dto.profile.AdminProfileDTO;
-import  com.g4stly.templateApp.dto.profile.ChangePasswordRequest;
-import  com.g4stly.templateApp.dto.profile.UpdateAdminProfileRequest;
-import  com.g4stly.templateApp.services.AdminProfileService;
+import com.g4stly.templateApp.dto.profile.AdminProfileDTO;
+import com.g4stly.templateApp.dto.profile.ChangePasswordRequest;
+import com.g4stly.templateApp.dto.profile.UpdateAdminProfileRequest;
+import com.g4stly.templateApp.services.AdminProfileService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

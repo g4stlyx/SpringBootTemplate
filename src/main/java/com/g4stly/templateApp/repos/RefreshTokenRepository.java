@@ -18,9 +18,9 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     Optional<RefreshToken> findByToken(String token);
 
-    List<RefreshToken> findByUserIdAndUserType(Long userId, String userType);
+    List<RefreshToken> findByUserIdAndRole(Long userId, String role);
 
-    List<RefreshToken> findByUserIdAndUserTypeAndIsRevokedFalse(Long userId, String userType);
+    List<RefreshToken> findByUserIdAndRoleAndIsRevokedFalse(Long userId, String role);
 
     @Modifying
     @Transactional
@@ -32,39 +32,39 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     @Modifying
     @Transactional
-    @Query("UPDATE RefreshToken rt SET rt.isRevoked = true WHERE rt.userId = :userId AND rt.userType = :userType AND rt.isRevoked = false")
-    int revokeAllUserTokens(@Param("userId") Long userId, @Param("userType") String userType);
+    @Query("UPDATE RefreshToken rt SET rt.isRevoked = true WHERE rt.userId = :userId AND rt.role = :role AND rt.isRevoked = false")
+    int revokeAllUserTokens(@Param("userId") Long userId, @Param("role") String role);
 
     @Modifying
     @Transactional
     @Query("DELETE FROM RefreshToken rt WHERE rt.isRevoked = true OR rt.expiryDate < :date")
     int cleanupRevokedAndExpired(@Param("date") LocalDateTime date);
 
-    long countByUserIdAndUserType(Long userId, String userType);
+    long countByUserIdAndRole(Long userId, String role);
 
     long countByIsRevokedFalseAndExpiryDateAfter(LocalDateTime now);
 
     // Admin management queries
-    List<RefreshToken> findByUserType(String userType);
+    List<RefreshToken> findByRole(String role);
 
     List<RefreshToken> findByIsRevoked(Boolean isRevoked);
 
     List<RefreshToken> findByIpAddress(String ipAddress);
 
     @Query("SELECT rt FROM RefreshToken rt WHERE " +
-           "(:userType IS NULL OR rt.userType = :userType) AND " +
+           "(:role IS NULL OR rt.role = :role) AND " +
            "(:userId IS NULL OR rt.userId = :userId) AND " +
            "(:isRevoked IS NULL OR rt.isRevoked = :isRevoked) AND " +
            "(:ipAddress IS NULL OR rt.ipAddress = :ipAddress) " +
            "ORDER BY rt.createdAt DESC")
     List<RefreshToken> findWithFilters(
-            @Param("userType") String userType,
+            @Param("role") String role,
             @Param("userId") Long userId,
             @Param("isRevoked") Boolean isRevoked,
             @Param("ipAddress") String ipAddress);
 
-    @Query("SELECT rt.userType, COUNT(rt) FROM RefreshToken rt WHERE rt.isRevoked = false AND rt.expiryDate > :now GROUP BY rt.userType")
-    List<Object[]> countActiveTokensByUserType(@Param("now") LocalDateTime now);
+    @Query("SELECT rt.role, COUNT(rt) FROM RefreshToken rt WHERE rt.isRevoked = false AND rt.expiryDate > :now GROUP BY rt.role")
+    List<Object[]> countActiveTokensByRole(@Param("now") LocalDateTime now);
 
     @Query("SELECT COUNT(rt) FROM RefreshToken rt WHERE rt.isRevoked = false AND rt.expiryDate > :now")
     long countAllActiveTokens(@Param("now") LocalDateTime now);

@@ -9,8 +9,7 @@ import com.g4stly.templateApp.exception.ResourceNotFoundException;
 import com.g4stly.templateApp.exception.UnauthorizedException;
 import com.g4stly.templateApp.models.Admin;
 import com.g4stly.templateApp.repos.AdminRepository;
-import com.g4stly.templateApp.repos.ClientRepository;
-import com.g4stly.templateApp.repos.CoachRepository;
+import com.g4stly.templateApp.repos.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,8 +36,7 @@ class AdminManagementServiceTest {
     @Mock private AdminRepository adminRepository;
     @Mock private PasswordService passwordService;
     @Mock private AdminActivityLogger activityLogger;
-    @Mock private ClientRepository clientRepository;
-    @Mock private CoachRepository coachRepository;
+    @Mock private UserRepository userRepository;
     @Mock private HttpServletRequest httpRequest;
 
     // ─── helpers ──────────────────────────────────────────────────────────────
@@ -68,11 +66,9 @@ class AdminManagementServiceTest {
     }
 
     private void stubAllUniquenessChecks() {
-        when(clientRepository.existsByUsername(any())).thenReturn(false);
-        when(coachRepository.existsByUsername(any())).thenReturn(false);
+        when(userRepository.existsByUsername(any())).thenReturn(false);
         when(adminRepository.existsByUsername(any())).thenReturn(false);
-        when(clientRepository.existsByEmail(any())).thenReturn(false);
-        when(coachRepository.existsByEmail(any())).thenReturn(false);
+        when(userRepository.existsByEmail(any())).thenReturn(false);
         when(adminRepository.existsByEmail(any())).thenReturn(false);
     }
 
@@ -119,8 +115,7 @@ class AdminManagementServiceTest {
     @DisplayName("createAdmin - duplicate username throws BadRequestException")
     void createAdmin_duplicateUsername_badRequest() {
         when(adminRepository.findById(1L)).thenReturn(Optional.of(makeAdmin(1L, 0)));
-        when(clientRepository.existsByUsername("newadmin")).thenReturn(false);
-        when(coachRepository.existsByUsername("newadmin")).thenReturn(false);
+        when(userRepository.existsByUsername("newadmin")).thenReturn(false);
         when(adminRepository.existsByUsername("newadmin")).thenReturn(true);
 
         assertThatThrownBy(() -> adminManagementService.createAdmin(1L, makeCreateRequest(1), httpRequest))
@@ -132,10 +127,9 @@ class AdminManagementServiceTest {
     @DisplayName("createAdmin - email taken in clientRepository throws BadRequestException")
     void createAdmin_duplicateEmail_badRequest() {
         when(adminRepository.findById(1L)).thenReturn(Optional.of(makeAdmin(1L, 0)));
-        when(clientRepository.existsByUsername(any())).thenReturn(false);
-        when(coachRepository.existsByUsername(any())).thenReturn(false);
+        when(userRepository.existsByUsername(any())).thenReturn(false);
         when(adminRepository.existsByUsername(any())).thenReturn(false);
-        when(clientRepository.existsByEmail("new@test.com")).thenReturn(true);
+        when(userRepository.existsByEmail("new@test.com")).thenReturn(true);
 
         assertThatThrownBy(() -> adminManagementService.createAdmin(1L, makeCreateRequest(1), httpRequest))
                 .isInstanceOf(BadRequestException.class)
@@ -300,7 +294,7 @@ class AdminManagementServiceTest {
         req.setEmail("taken@test.com");
         when(adminRepository.findById(1L)).thenReturn(Optional.of(makeAdmin(1L, 0)));
         when(adminRepository.findById(2L)).thenReturn(Optional.of(makeAdmin(2L, 1)));
-        when(clientRepository.existsByEmail("taken@test.com")).thenReturn(true);
+        when(userRepository.existsByEmail("taken@test.com")).thenReturn(true);
 
         assertThatThrownBy(() -> adminManagementService.updateAdmin(1L, 2L, req, httpRequest))
                 .isInstanceOf(BadRequestException.class)

@@ -42,7 +42,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         // Extract user info
         Long userId = null;
         String username = null;
-        String userType = null;
+        String role = null;
         
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -66,8 +66,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                     if (userId == null) {
                         userId = jwtUtils.extractUserIdAsLong(token);
                     }
-                    if (userType == null) {
-                        userType = jwtUtils.extractUserType(token);
+                    if (role == null) {
+                        role = jwtUtils.extractRole(token);
                     }
                 } catch (Exception e) {
                     logger.debug("Could not extract user info from JWT token", e);
@@ -82,7 +82,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             try {
                 authErrorLogService.log403(
                     userId,
-                    userType,
+                    role,
                     username,
                     getClientIP(request),
                     request.getHeader("User-Agent"),

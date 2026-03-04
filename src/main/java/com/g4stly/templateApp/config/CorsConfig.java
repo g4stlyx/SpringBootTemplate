@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.config;
+package com.g4stly.templateApp.config;
 
 import java.util.Arrays;
 import java.util.List;

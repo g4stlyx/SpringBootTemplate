@@ -1,18 +1,16 @@
-package  com.g4stly.templateApp.services;
+package com.g4stly.templateApp.services;
 
-import  com.g4stly.templateApp.dto.admin.PasswordResetTokenDTO;
-import  com.g4stly.templateApp.dto.admin.TokenListResponse;
-import  com.g4stly.templateApp.dto.admin.VerificationTokenDTO;
-import  com.g4stly.templateApp.models.Admin;
-import  com.g4stly.templateApp.models.Client;
-import  com.g4stly.templateApp.models.Coach;
-import  com.g4stly.templateApp.models.PasswordResetToken;
-import  com.g4stly.templateApp.models.VerificationToken;
-import  com.g4stly.templateApp.repos.AdminRepository;
-import  com.g4stly.templateApp.repos.ClientRepository;
-import  com.g4stly.templateApp.repos.CoachRepository;
-import  com.g4stly.templateApp.repos.PasswordResetTokenRepository;
-import  com.g4stly.templateApp.repos.VerificationTokenRepository;
+import com.g4stly.templateApp.dto.admin.PasswordResetTokenDTO;
+import com.g4stly.templateApp.dto.admin.TokenListResponse;
+import com.g4stly.templateApp.dto.admin.VerificationTokenDTO;
+import com.g4stly.templateApp.models.Admin;
+import com.g4stly.templateApp.models.PasswordResetToken;
+import com.g4stly.templateApp.models.User;
+import com.g4stly.templateApp.models.VerificationToken;
+import com.g4stly.templateApp.repos.AdminRepository;
+import com.g4stly.templateApp.repos.PasswordResetTokenRepository;
+import com.g4stly.templateApp.repos.UserRepository;
+import com.g4stly.templateApp.repos.VerificationTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,19 +36,18 @@ public class AdminTokenManagementService {
     
     // Whitelist of allowed sort fields to prevent sort field injection
     private static final Set<String> ALLOWED_PASSWORD_RESET_SORT_FIELDS = Set.of(
-        "id", "token", "userId", "userType", "expiryDate", 
+        "id", "token", "userId", "role", "expiryDate", 
         "createdDate", "attemptCount", "requestingIp"
     );
     
     private static final Set<String> ALLOWED_VERIFICATION_SORT_FIELDS = Set.of(
-        "id", "token", "userId", "userType", "expiryDate", 
+        "id", "token", "userId", "role", "expiryDate", 
         "createdDate", "usedDate", "used"
     );
     
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final VerificationTokenRepository verificationTokenRepository;
-    private final ClientRepository clientRepository;
-    private final CoachRepository coachRepository;
+    private final UserRepository userRepository;
     private final AdminRepository adminRepository;
     
     @Autowired
@@ -61,7 +58,7 @@ public class AdminTokenManagementService {
      */
     @Transactional(readOnly = true)
     public TokenListResponse<PasswordResetTokenDTO> getAllPasswordResetTokens(
-            String userType,
+            String role,
             Boolean includeExpired,
             int page,
             int size,
@@ -79,8 +76,8 @@ public class AdminTokenManagementService {
         
         Page<PasswordResetToken> tokenPage;
         
-        if (userType != null && !userType.isEmpty()) {
-            tokenPage = passwordResetTokenRepository.findByUserTypeOrderByCreatedDateDesc(userType, pageable);
+        if (role != null && !role.isEmpty()) {
+            tokenPage = passwordResetTokenRepository.findByRoleOrderByCreatedDateDesc(role, pageable);
         } else if (Boolean.FALSE.equals(includeExpired)) {
             tokenPage = passwordResetTokenRepository.findByExpiryDateBeforeOrderByCreatedDateDesc(
                     LocalDateTime.now(), pageable);
@@ -98,7 +95,7 @@ public class AdminTokenManagementService {
         details.put("size", size);
         details.put("sortBy", sortBy);
         details.put("sortDirection", sortDirection);
-        if (userType != null) details.put("userType", userType);
+        if (role != null) details.put("role", role);
         if (includeExpired != null) details.put("includeExpired", includeExpired);
         details.put("resultCount", tokenDTOs.size());
         details.put("totalElements", tokenPage.getTotalElements());
@@ -135,7 +132,7 @@ public class AdminTokenManagementService {
         Map<String, Object> details = new HashMap<>();
         details.put("tokenId", tokenId);
         details.put("userId", token.getUserId());
-        details.put("userType", token.getUserType());
+        details.put("role", token.getRole());
         details.put("isExpired", token.getExpiryDate().isBefore(LocalDateTime.now()));
         
         adminActivityLogger.logActivity(
@@ -155,7 +152,7 @@ public class AdminTokenManagementService {
      */
     @Transactional(readOnly = true)
     public TokenListResponse<VerificationTokenDTO> getAllVerificationTokens(
-            String userType,
+            String role,
             Boolean includeExpired,
             int page,
             int size,
@@ -173,8 +170,8 @@ public class AdminTokenManagementService {
         
         Page<VerificationToken> tokenPage;
         
-        if (userType != null && !userType.isEmpty()) {
-            tokenPage = verificationTokenRepository.findByUserTypeOrderByCreatedDateDesc(userType, pageable);
+        if (role != null && !role.isEmpty()) {
+            tokenPage = verificationTokenRepository.findByRoleOrderByCreatedDateDesc(role, pageable);
         } else if (Boolean.FALSE.equals(includeExpired)) {
             tokenPage = verificationTokenRepository.findByExpiryDateBeforeOrderByCreatedDateDesc(
                     LocalDateTime.now(), pageable);
@@ -192,7 +189,7 @@ public class AdminTokenManagementService {
         details.put("size", size);
         details.put("sortBy", sortBy);
         details.put("sortDirection", sortDirection);
-        if (userType != null) details.put("userType", userType);
+        if (role != null) details.put("role", role);
         if (includeExpired != null) details.put("includeExpired", includeExpired);
         details.put("resultCount", tokenDTOs.size());
         details.put("totalElements", tokenPage.getTotalElements());
@@ -229,7 +226,7 @@ public class AdminTokenManagementService {
         Map<String, Object> details = new HashMap<>();
         details.put("tokenId", tokenId);
         details.put("userId", token.getUserId());
-        details.put("userType", token.getUserType());
+        details.put("role", token.getRole());
         details.put("isExpired", token.getExpiryDate().isBefore(LocalDateTime.now()));
         
         adminActivityLogger.logActivity(
@@ -254,7 +251,7 @@ public class AdminTokenManagementService {
         
         // Collect token details before deletion
         Map<String, Object> details = new HashMap<>();
-        details.put("userType", token.getUserType());
+        details.put("role", token.getRole());
         details.put("userId", token.getUserId());
         details.put("expiryDate", token.getExpiryDate().toString());
         details.put("wasExpired", token.getExpiryDate().isBefore(LocalDateTime.now()));
@@ -277,7 +274,7 @@ public class AdminTokenManagementService {
         
         // Collect token details before deletion
         Map<String, Object> details = new HashMap<>();
-        details.put("userType", token.getUserType());
+        details.put("role", token.getRole());
         details.put("userId", token.getUserId());
         details.put("expiryDate", token.getExpiryDate().toString());
         details.put("wasExpired", token.getExpiryDate().isBefore(LocalDateTime.now()));
@@ -341,20 +338,13 @@ public class AdminTokenManagementService {
         String username = "Unknown";
         String email = "Unknown";
         
-        //TODO: update according to the user types in your application
-        if ("client".equals(token.getUserType())) {
-            Client client = clientRepository.findById(token.getUserId()).orElse(null);
-            if (client != null) {
-                username = client.getUsername();
-                email = client.getEmail();
+        if ("user".equals(token.getRole())) {
+            User user = userRepository.findById(token.getUserId()).orElse(null);
+            if (user != null) {
+                username = user.getUsername();
+                email = user.getEmail();
             }
-        } else if ("coach".equals(token.getUserType())) {
-            Coach coach = coachRepository.findById(token.getUserId()).orElse(null);
-            if (coach != null) {
-                username = coach.getUsername();
-                email = coach.getEmail();
-            }
-        } else if ("admin".equals(token.getUserType())) {
+        } else if ("admin".equals(token.getRole())) {
             Admin admin = adminRepository.findById(token.getUserId()).orElse(null);
             if (admin != null) {
                 username = admin.getUsername();
@@ -366,7 +356,7 @@ public class AdminTokenManagementService {
                 .id(token.getId())
                 .token(token.getToken())
                 .userId(token.getUserId())
-                .userType(token.getUserType())
+                .role(token.getRole())
                 .username(username)
                 .email(email)
                 .expiryDate(token.getExpiryDate())
@@ -384,20 +374,13 @@ public class AdminTokenManagementService {
         String username = "Unknown";
         String email = "Unknown";
         
-        //TODO: update according to the user types in your application
-        if ("client".equals(token.getUserType())) {
-            Client client = clientRepository.findById(token.getUserId()).orElse(null);
-            if (client != null) {
-                username = client.getUsername();
-                email = client.getEmail();
+        if ("user".equals(token.getRole())) {
+            User user = userRepository.findById(token.getUserId()).orElse(null);
+            if (user != null) {
+                username = user.getUsername();
+                email = user.getEmail();
             }
-        } else if ("coach".equals(token.getUserType())) {
-            Coach coach = coachRepository.findById(token.getUserId()).orElse(null);
-            if (coach != null) {
-                username = coach.getUsername();
-                email = coach.getEmail();
-            }
-        } else if ("admin".equals(token.getUserType())) {
+        } else if ("admin".equals(token.getRole())) {
             Admin admin = adminRepository.findById(token.getUserId()).orElse(null);
             if (admin != null) {
                 username = admin.getUsername();
@@ -409,7 +392,7 @@ public class AdminTokenManagementService {
                 .id(token.getId())
                 .token(token.getToken())
                 .userId(token.getUserId())
-                .userType(token.getUserType())
+                .role(token.getRole())
                 .username(username)
                 .email(email)
                 .expiryDate(token.getExpiryDate())

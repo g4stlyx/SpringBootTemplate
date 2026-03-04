@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.exception;
+package com.g4stly.templateApp.exception;
 
 /**
  * Exception thrown when a user doesn't have permission to access a resource (403)

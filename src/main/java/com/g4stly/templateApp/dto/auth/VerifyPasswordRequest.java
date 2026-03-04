@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.auth;
+package com.g4stly.templateApp.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -19,6 +19,6 @@ public class VerifyPasswordRequest {
     @Size(max = 128, message = "Password must not exceed 128 characters")
     private String password;
     
-    @Pattern(regexp = "^(client|coach|admin)?$", message = "User type must be 'client', 'coach', or 'admin'")
-    private String userType; // Optional: "client", "coach", or "admin"
+    @Pattern(regexp = "^(user|admin)?$", message = "Role must be 'user' or 'admin'")
+    private String role; // Optional: "user" or "admin"
 }

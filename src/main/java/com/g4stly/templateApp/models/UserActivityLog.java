@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * Entity for logging user (Client/Coach) activity in the system.
+ * Entity for logging user activity in the system.
  * This provides an audit trail of all significant user actions.
  */
 @Data
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "user_activity_log", indexes = {
-    @Index(name = "idx_user_activity_user", columnList = "user_id, user_type"),
+    @Index(name = "idx_user_activity_user", columnList = "user_id, role"),
     @Index(name = "idx_user_activity_action", columnList = "action"),
     @Index(name = "idx_user_activity_created_at", columnList = "created_at")
 })
@@ -29,8 +29,8 @@ public class UserActivityLog {
     @Column(name = "user_id", nullable = false)
     private Long userId;
     
-    @Column(name = "user_type", nullable = false, length = 20)
-    private String userType; // "client" or "coach"
+    @Column(name = "role", nullable = false, length = 20)
+    private String role; // "user" or "admin"
     
     @Column(name = "action", nullable = false, length = 100)
     private String action; // LOGIN, LOGOUT, REGISTER, PASSWORD_RESET, PROFILE_UPDATE, etc.

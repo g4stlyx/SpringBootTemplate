@@ -1,14 +1,14 @@
-package  com.g4stly.templateApp.controllers;
+package com.g4stly.templateApp.controllers;
 
-import  com.g4stly.templateApp.dto.two_factor.TwoFactorLoginRequest;
-import  com.g4stly.templateApp.dto.two_factor.TwoFactorSetupResponse;
-import  com.g4stly.templateApp.dto.two_factor.TwoFactorVerifyRequest;
-import  com.g4stly.templateApp.dto.auth.AuthResponse;
-import  com.g4stly.templateApp.models.Admin;
-import  com.g4stly.templateApp.models.RefreshToken;
-import  com.g4stly.templateApp.security.JwtUtils;
-import  com.g4stly.templateApp.services.RefreshTokenService;
-import  com.g4stly.templateApp.services.TwoFactorAuthService;
+import com.g4stly.templateApp.dto.two_factor.TwoFactorLoginRequest;
+import com.g4stly.templateApp.dto.two_factor.TwoFactorSetupResponse;
+import com.g4stly.templateApp.dto.two_factor.TwoFactorVerifyRequest;
+import com.g4stly.templateApp.dto.auth.AuthResponse;
+import com.g4stly.templateApp.models.Admin;
+import com.g4stly.templateApp.models.RefreshToken;
+import com.g4stly.templateApp.security.JwtUtils;
+import com.g4stly.templateApp.services.RefreshTokenService;
+import com.g4stly.templateApp.services.TwoFactorAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -174,7 +174,7 @@ public class TwoFactorAuthController {
             admin.setLastLoginAt(LocalDateTime.now());
             
             // Generate access token with admin level
-            String accessToken = jwtUtils.generateToken(admin.getUsername(), admin.getId(), "admin", admin.getLevel());
+            String accessToken = jwtUtils.generateAdminToken(admin.getUsername(), admin.getId(), admin.getLevel());
             
             // Create and save refresh token in database
             RefreshToken refreshTokenEntity = refreshTokenService.createRefreshToken(
@@ -197,7 +197,7 @@ public class TwoFactorAuthController {
                     .profilePicture(admin.getProfilePicture())
                     .isActive(admin.getIsActive())
                     .emailVerified(true) // Admins are auto-verified
-                    .userType("admin")
+                    .role("admin")
                     .level(admin.getLevel())
                     .lastLoginAt(admin.getLastLoginAt())
                     .build())

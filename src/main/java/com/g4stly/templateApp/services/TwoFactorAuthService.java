@@ -1,9 +1,9 @@
-package  com.g4stly.templateApp.services;
+package com.g4stly.templateApp.services;
 
-import  com.g4stly.templateApp.dto.two_factor.TwoFactorSetupResponse;
-import  com.g4stly.templateApp.exception.ResourceNotFoundException;
-import  com.g4stly.templateApp.models.Admin;
-import  com.g4stly.templateApp.repos.AdminRepository;
+import com.g4stly.templateApp.dto.two_factor.TwoFactorSetupResponse;
+import com.g4stly.templateApp.exception.ResourceNotFoundException;
+import com.g4stly.templateApp.models.Admin;
+import com.g4stly.templateApp.repos.AdminRepository;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;

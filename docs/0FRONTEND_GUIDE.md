@@ -27,7 +27,7 @@
 
 ## OVERVIEW
 
-This API is a production-ready Spring Boot REST API with comprehensive authentication, authorization, and admin management features. It supports multiple user types (admin, client, coach) with hierarchical permission levels.
+This API is a production-ready Spring Boot REST API with comprehensive authentication, authorization, and admin management features. It supports multiple user types (admin, user) with hierarchical permission levels.
 
 ### Key Features
 - JWT-based authentication with access & refresh tokens
@@ -110,8 +110,7 @@ Authorization: Bearer <access_token>
 
 ### User Types
 - `admin` - Administrative users with levels 0, 1, or 2
-- `client` - Standard user type
-- `coach` - Professional user type
+- `user` - Standard user type
 
 ### Admin Permission Levels
 
@@ -146,7 +145,7 @@ Authorization: Bearer <access_token>
 ### CAPTCHA Requirement
 - **Admin logins** require Google reCAPTCHA when enabled
 - Include `captchaToken` in login request for admin users
-- Regular users (client/coach) do not require CAPTCHA
+- Regular users do not require CAPTCHA
 
 ---
 
@@ -230,7 +229,7 @@ axios.interceptors.response.use(
 
 **Endpoint:** `POST /auth/register`
 
-**Description:** Register a new user account (client or coach).
+**Description:** Register a new user account.
 
 **Request Body:**
 ```json
@@ -240,7 +239,7 @@ axios.interceptors.response.use(
   "password": "SecurePass123!",
   "firstName": "John",
   "lastName": "Doe",
-  "userType": "client" // or "coach"
+  "role": "user"
 }
 ```
 
@@ -248,7 +247,7 @@ axios.interceptors.response.use(
 - Username: 3-50 characters, alphanumeric + underscore
 - Email: Valid email format
 - Password: Minimum 8 characters
-- UserType: "client" or "coach" (admin accounts cannot be created via register)
+- Role: "user" (admin accounts cannot be created via register)
 
 **Success Response (200):**
 ```json
@@ -284,7 +283,7 @@ axios.interceptors.response.use(
 {
   "username": "johndoe",
   "password": "SecurePass123!",
-  "userType": "client", // "client", "coach", or "admin"
+  "role": "user", // "user" or "admin"
   "captchaToken": "recaptcha_token_here" // Required only for admin logins
 }
 ```
@@ -307,7 +306,7 @@ axios.interceptors.response.use(
     "profilePicture": "https://cdn.example.com/profile.jpg",
     "isActive": true,
     "emailVerified": true,
-    "userType": "client",
+    "role": "user",
     "level": null,
     "lastLoginAt": "2026-02-12T10:30:00"
   }
@@ -424,7 +423,7 @@ axios.interceptors.response.use(
 ```json
 {
   "email": "john@example.com",
-  "userType": "client" // "client", "coach", or "admin"
+  "role": "user" // "user" or "admin"
 }
 ```
 
@@ -475,33 +474,6 @@ axios.interceptors.response.use(
 
 ---
 
-### 7. Verify Password (for Password Change)
-
-**Endpoint:** `POST /auth/verify-password`
-
-**Description:** Verify current password before allowing password change.
-
-**Request Body:**
-```json
-{
-  "username": "johndoe",
-  "password": "CurrentPassword123!",
-  "userType": "client"
-}
-```
-
-**Response (200):**
-```json
-{
-  "valid": true,
-  "message": "Password is valid"
-}
-```
-
-**Use Case:** Called before showing change password form to ensure user knows current password.
-
----
-
 ### 8. Get Current User Session
 
 **Endpoint:** `GET /auth/me`
@@ -519,7 +491,7 @@ axios.interceptors.response.use(
   "lastName": "Doe",
   "email": "john@example.com",
   "profilePicture": "https://cdn.example.com/profile.jpg",
-  "userType": "client",
+  "role": "user",
   "level": null
 }
 ```
@@ -643,7 +615,7 @@ axios.interceptors.response.use(
     "profilePicture": null,
     "isActive": true,
     "emailVerified": true,
-    "userType": "admin",
+    "role": "admin",
     "level": 0,
     "lastLoginAt": "2026-02-12T10:30:00"
   }
@@ -1525,7 +1497,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
 
 **Query Parameters:**
 - `userId` (optional): Filter by user ID
-- `userType` (optional): Filter by user type
+- `role` (optional): Filter by user type
 - `errorType` (optional): Filter by error type
 - `ipAddress` (optional): Filter by IP address
 - `startDate` (optional): Filter by start date (ISO 8601)
@@ -1540,7 +1512,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
         "id": 1,
         "userId": 5,
         "username": "johndoe",
-        "userType": "client",
+        "role": "user",
         "errorType": "INVALID_CREDENTIALS",
         "errorMessage": "Invalid username or password",
         "ipAddress": "192.168.1.200",
@@ -1585,9 +1557,8 @@ All logging endpoints follow similar patterns with pagination and filtering.
       "ACCOUNT_LOCKED": 25,
       "EMAIL_NOT_VERIFIED": 25
     },
-    "byUserType": {
-      "client": 80,
-      "coach": 50,
+    "byRole": {
+      "user": 130,
       "admin": 20
     }
   }
@@ -1608,7 +1579,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
 
 **Query Parameters:**
 - `userId` (optional): Filter by user ID
-- `userType` (optional): Filter by user type
+- `role` (optional): Filter by user type
 - `severity` (optional): Filter by severity (LOW, MEDIUM, HIGH, CRITICAL)
 - `category` (optional): Filter by category (ADMIN_MANAGEMENT, TOKEN_MANAGEMENT, etc.)
 - `ipAddress` (optional): Filter by IP address
@@ -1624,7 +1595,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
         "id": 1,
         "userId": 1,
         "username": "super_admin",
-        "userType": "admin",
+        "role": "admin",
         "endpoint": "/api/v1/admin/admins",
         "method": "POST",
         "severity": "HIGH",
@@ -1695,7 +1666,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
 
 **Base:** `/admin/user-activity-logs`
 
-**Description:** Logs all user (client/coach) activities for auditing.
+**Description:** Logs all user activities for auditing.
 
 #### Get All User Activity Logs
 
@@ -1703,7 +1674,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
 
 **Query Parameters:**
 - `userId` (optional): Filter by user ID
-- `userType` (optional): Filter by user type (client/coach)
+- `role` (optional): Filter by user type
 - `action` (optional): Filter by action (LOGIN, REGISTER, LOGOUT, etc.)
 - `resourceType` (optional): Filter by resource type
 - `success` (optional): Filter by success status (true/false)
@@ -1721,7 +1692,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
         "id": 1,
         "userId": 5,
         "username": "johndoe",
-        "userType": "client",
+        "role": "user",
         "action": "LOGIN",
         "resourceType": null,
         "resourceId": null,
@@ -1748,7 +1719,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
 **Endpoint:** `GET /admin/user-activity-logs/user/{userId}`
 
 **Query Parameters:**
-- `userType` (default: client): User type (client/coach)
+- `role` (default: user): User type
 
 **Common Actions Logged:**
 - LOGIN - User login
@@ -1773,7 +1744,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
 **Endpoint:** `GET /admin/tokens/password-reset`
 
 **Query Parameters:**
-- `userType` (optional): Filter by user type
+- `role` (optional): Filter by user type
 - `includeExpired` (default: true): Include expired tokens
 - `page`, `size`, `sortBy`, `sortDirection`
 
@@ -1787,7 +1758,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
         "id": 1,
         "userId": 5,
         "username": "johndoe",
-        "userType": "client",
+        "role": "user",
         "token": "a4f2e9b8...",
         "expiryDate": "2026-02-13T10:30:00",
         "used": false,
@@ -1846,7 +1817,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
 **Endpoint:** `GET /admin/refresh-tokens`
 
 **Query Parameters:**
-- `userType` (optional): Filter by user type
+- `role` (optional): Filter by user type
 - `userId` (optional): Filter by user ID
 - `isRevoked` (optional): Filter by revoked status
 - `ipAddress` (optional): Filter by IP address
@@ -1857,7 +1828,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
   {
     "id": 1,
     "userId": 5,
-    "userType": "client",
+    "role": "user",
     "token": "550e8400-e29b-41d4-a716-446655440000",
     "isRevoked": false,
     "expiryDate": "2026-03-14T10:30:00",
@@ -1877,7 +1848,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
 **Endpoint:** `GET /admin/refresh-tokens/user/{userId}`
 
 **Query Parameters:**
-- `userType` (required): User type
+- `role` (required): User type
 
 #### Get Token Statistics
 
@@ -1890,9 +1861,8 @@ All logging endpoints follow similar patterns with pagination and filtering.
   "activeTokens": 180,
   "revokedTokens": 50,
   "expiredTokens": 20,
-  "byUserType": {
-    "client": 150,
-    "coach": 80,
+  "byRole": {
+    "user": 230,
     "admin": 20
   }
 }
@@ -1915,7 +1885,7 @@ All logging endpoints follow similar patterns with pagination and filtering.
 
 **Query Parameters:**
 - `userId` (required): User ID
-- `userType` (required): User type
+- `role` (required): User type
 
 **Response (200):**
 ```json
@@ -2358,18 +2328,18 @@ Always check admin level before showing UI elements:
 
 ```javascript
 const canAccessAdminManagement = (user) => {
-  return user?.userType === 'admin' && 
+  return user?.role === 'admin' && 
          user?.level !== undefined && 
          user?.level <= 1; // Level 0 or 1
 };
 
 const canAccessLogs = (user) => {
-  return user?.userType === 'admin' && 
+  return user?.role === 'admin' && 
          user?.level === 0; // Level 0 only
 };
 
 const canAccessProfile = (user) => {
-  return user?.userType === 'admin'; // All admin levels
+  return user?.role === 'admin'; // All admin levels
 };
 ```
 
@@ -2436,7 +2406,7 @@ const logout = async (logoutAll = false) => {
 
 // In login form for admin
 const handleAdminLogin = async (credentials) => {
-  if (credentials.userType === 'admin') {
+  if (credentials.role === 'admin') {
     // Execute reCAPTCHA
     const captchaToken = await grecaptcha.execute(
       CAPTCHA_SITE_KEY, 
@@ -2453,13 +2423,13 @@ const handleAdminLogin = async (credentials) => {
 ### 9. 2FA Flow Implementation
 
 ```javascript
-const handle2FALogin = async (username, password, userType) => {
+const handle2FALogin = async (username, password, role) => {
   try {
     const response = await api.post('/auth/login', {
       username,
       password,
-      userType,
-      captchaToken: userType === 'admin' ? await getCaptchaToken() : null
+      role,
+      captchaToken: role === 'admin' ? await getCaptchaToken() : null
     });
     
     if (response.status === 202) {
@@ -2520,13 +2490,12 @@ const logger = {
 
 ## APPENDIX
 
-### User Types Reference
+### Roles Reference
 
 ```javascript
-const USER_TYPES = {
+const ROLES = {
   ADMIN: 'admin',
-  CLIENT: 'client',
-  COACH: 'coach'
+  USER: 'user'
 };
 ```
 
@@ -2579,7 +2548,7 @@ const SEVERITY_LEVELS = {
 
 #### Authenticated User Endpoints
 - `GET /auth/me`
-- `POST /auth/verify-password`
+
 - `POST /auth/refresh`
 - `POST /auth/logout`
 - `POST /auth/logout-all`

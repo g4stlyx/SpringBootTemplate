@@ -31,9 +31,9 @@ public interface SensitiveEndpointAccessLogRepository extends JpaRepository<Sens
     Page<SensitiveEndpointAccessLog> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
     
     /**
-     * Find logs by user type (admin, coach, client)
+     * Find logs by role (admin, user)
      */
-    Page<SensitiveEndpointAccessLog> findByUserTypeOrderByCreatedAtDesc(String userType, Pageable pageable);
+    Page<SensitiveEndpointAccessLog> findByRoleOrderByCreatedAtDesc(String role, Pageable pageable);
     
     /**
      * Find logs by IP address

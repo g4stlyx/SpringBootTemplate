@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.exception;
+package com.g4stly.templateApp.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.auth;
+package com.g4stly.templateApp.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

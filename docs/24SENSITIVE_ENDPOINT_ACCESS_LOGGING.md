@@ -78,7 +78,7 @@ Security monitoring system that logs successful access attempts to sensitive/imp
 - Fields:
   - `severity`: Enum (LOW, MEDIUM, HIGH, CRITICAL)
   - `userId`: User ID who accessed the endpoint
-  - `userType`: Type of user (admin, coach, client)
+  - `role`: Type of user (admin, user)
   - `username`: Username of the accessor
   - `ipAddress`: Client IP address
   - `userAgent`: Browser/client user agent
@@ -95,7 +95,7 @@ Security monitoring system that logs successful access attempts to sensitive/imp
 - JPA repository with advanced query methods:
   - `findBySeverity()`: Filter by severity level
   - `findByUserId()`: Filter by user ID
-  - `findByUserType()`: Filter by user type
+  - `findByRole()`: Filter by role
   - `findByIpAddress()`: Filter by IP address
   - `findByEndpointCategory()`: Filter by category
   - `getStatisticsBySeverity()`: Aggregate statistics
@@ -150,7 +150,7 @@ GET /api/v1/admin/sensitive-access-logs
 | sortBy | string | createdAt | Sort field |
 | sortDirection | string | desc | Sort direction (asc/desc) |
 | userId | Long | null | Filter by user ID |
-| userType | string | null | Filter by user type (admin, coach, client) |
+| role | string | null | Filter by user type (admin, user) |
 | severity | string | null | Filter by severity (LOW, MEDIUM, HIGH, CRITICAL) |
 | category | string | null | Filter by endpoint category |
 | ipAddress | string | null | Filter by IP address |
@@ -241,7 +241,7 @@ CREATE TABLE sensitive_endpoint_access_logs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     severity VARCHAR(20) NOT NULL,
     user_id BIGINT,
-    user_type VARCHAR(20),
+    role VARCHAR(20),
     username VARCHAR(100),
     ip_address VARCHAR(45),
     user_agent TEXT,
@@ -253,7 +253,7 @@ CREATE TABLE sensitive_endpoint_access_logs (
     email_alert_sent BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_sensitive_access_user_id (user_id),
-    INDEX idx_sensitive_access_user_type (user_type),
+    INDEX idx_sensitive_access_role (role),
     INDEX idx_sensitive_access_endpoint (endpoint),
     INDEX idx_sensitive_access_created_at (created_at),
     INDEX idx_sensitive_access_ip_address (ip_address),

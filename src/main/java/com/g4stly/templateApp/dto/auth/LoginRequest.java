@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.auth;
+package com.g4stly.templateApp.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -19,8 +19,8 @@ public class LoginRequest {
     @Size(max = 128, message = "Password must not exceed 128 characters")
     private String password;
     
-    @Pattern(regexp = "^(client|coach|admin)?$", message = "User type must be 'client', 'coach', or 'admin'")
-    private String userType; // "client", "coach", or "admin" - specifies which account type to login as
+    @Pattern(regexp = "^(user|admin)?$", message = "Role must be 'user' or 'admin'")
+    private String role; // "user" or "admin" - specifies which account type to login as
     
     private String captchaToken; // Google reCAPTCHA token (required for admin login when enabled)
 }

@@ -1,10 +1,11 @@
 package com.g4stly.templateApp.integration;
 
 import com.g4stly.templateApp.models.Admin;
-import com.g4stly.templateApp.models.Client;
+import com.g4stly.templateApp.models.User;
+import com.g4stly.templateApp.models.enums.UserType;
 import com.g4stly.templateApp.repos.AdminRepository;
-import com.g4stly.templateApp.repos.ClientRepository;
 import com.g4stly.templateApp.repos.RefreshTokenRepository;
+import com.g4stly.templateApp.repos.UserRepository;
 import com.g4stly.templateApp.repos.VerificationTokenRepository;
 import com.g4stly.templateApp.services.EmailService;
 import com.g4stly.templateApp.services.PasswordService;
@@ -57,7 +58,7 @@ public abstract class BaseIntegrationTest {
     protected AdminRepository adminRepository;
 
     @Autowired
-    protected ClientRepository clientRepository;
+    protected UserRepository userRepository;
 
     @Autowired
     protected RefreshTokenRepository refreshTokenRepository;
@@ -81,7 +82,7 @@ public abstract class BaseIntegrationTest {
         try {
             refreshTokenRepository.deleteAll();
             verificationTokenRepository.deleteAll();
-            clientRepository.deleteAll();
+            userRepository.deleteAll();
             adminRepository.deleteAll();
         } finally {
             jdbcTemplate.execute("SET REFERENTIAL_INTEGRITY TRUE");
@@ -105,30 +106,31 @@ public abstract class BaseIntegrationTest {
         return adminRepository.save(admin);
     }
 
-    // ---- Helper: create a client with email already verified ----
+    // ---- Helper: create a user with email already verified ----
 
-    protected Client createVerifiedClient(String username, String email, String password) {
+    protected User createVerifiedUser(String username, String email, String password) {
         String salt = passwordService.generateSalt();
         String hash = passwordService.hashPassword(password, salt);
 
-        Client client = new Client();
-        client.setUsername(username);
-        client.setEmail(email);
-        client.setPasswordHash(hash);
-        client.setSalt(salt);
-        client.setEmailVerified(true);
-        client.setIsActive(true);
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPasswordHash(hash);
+        user.setSalt(salt);
+        user.setEmailVerified(true);
+        user.setIsActive(true);
+        user.setUserType(UserType.WAITER);
 
-        return clientRepository.save(client);
+        return userRepository.save(user);
     }
 
     // ---- Helper: POST /api/v1/auth/login and return full ResponseEntity ----
 
-    protected ResponseEntity<Map<String, Object>> login(String username, String password, String userType) {
+    protected ResponseEntity<Map<String, Object>> login(String username, String password, String role) {
         Map<String, String> body = Map.of(
                 "username", username,
                 "password", password,
-                "userType", userType
+                "role", role
         );
         return restTemplate.exchange(
                 "/api/v1/auth/login", HttpMethod.POST, new HttpEntity<>(body), MAP_TYPE_REF);

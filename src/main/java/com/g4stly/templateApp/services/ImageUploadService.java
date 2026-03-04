@@ -1,6 +1,6 @@
-package  com.g4stly.templateApp.services;
+package com.g4stly.templateApp.services;
 
-import  com.g4stly.templateApp.config.CloudflareR2Config;
+import com.g4stly.templateApp.config.CloudflareR2Config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,30 +43,16 @@ public class ImageUploadService {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
     /**
-     * Upload profile image for client, coach, or admin
+     * Upload profile image for user or admin
      */
-    public String uploadProfileImage(MultipartFile file, String userType, Long userId) throws IOException {
+    public String uploadProfileImage(MultipartFile file, String role, Long userId) throws IOException {
         validateImage(file);
         
-        // Normalize userType to avoid Turkish character issues (ı vs i)
-        String normalizedUserType = normalizeUserType(userType);
+        // Normalize role to avoid Turkish character issues (ı vs i)
+        String normalizedRole = normalizeRole(role);
         
-        String fileName = generateFileName(file, "profile", normalizedUserType, userId);
-        String key = "profiles/" + normalizedUserType + "/" + fileName;
-        
-        uploadToR2(file, key);
-        
-        return getPublicUrl(key);
-    }
-
-    /**
-     * Upload book cover image
-     */
-    public String uploadBookCover(MultipartFile file, Long bookId) throws IOException {
-        validateImage(file);
-        
-        String fileName = generateFileName(file, "book", null, bookId);
-        String key = "books/" + fileName;
+        String fileName = generateFileName(file, "profile", normalizedRole, userId);
+        String key = "profiles/" + normalizedRole + "/" + fileName;
         
         uploadToR2(file, key);
         
@@ -101,30 +87,17 @@ public class ImageUploadService {
     /**
      * Update profile image (delete old, upload new)
      */
-    public String updateProfileImage(MultipartFile file, String userType, Long userId, String oldImageUrl) throws IOException {
+    public String updateProfileImage(MultipartFile file, String role, Long userId, String oldImageUrl) throws IOException {
         // Delete old image if exists
         if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
             deleteImage(oldImageUrl);
         }
         
-        // Normalize userType before upload
-        String normalizedUserType = normalizeUserType(userType);
+        // Normalize role before upload
+        String normalizedRole = normalizeRole(role);
         
         // Upload new image
-        return uploadProfileImage(file, normalizedUserType, userId);
-    }
-
-    /**
-     * Update book cover (delete old, upload new)
-     */
-    public String updateBookCover(MultipartFile file, Long bookId, String oldImageUrl) throws IOException {
-        // Delete old image if exists
-        if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
-            deleteImage(oldImageUrl);
-        }
-        
-        // Upload new image
-        return uploadBookCover(file, bookId);
+        return uploadProfileImage(file, normalizedRole, userId);
     }
 
     /**
@@ -271,7 +244,7 @@ public class ImageUploadService {
     /**
      * Generate unique file name
      */
-    private String generateFileName(MultipartFile file, String prefix, String userType, Long entityId) {
+    private String generateFileName(MultipartFile file, String prefix, String role, Long entityId) {
         String originalFileName = file.getOriginalFilename();
         String extension = "";
         
@@ -281,8 +254,8 @@ public class ImageUploadService {
 
         String uuid = UUID.randomUUID().toString();
         
-        if (userType != null) {
-            return String.format("%s_%s_%d_%s%s", prefix, userType, entityId, uuid, extension);
+        if (role != null) {
+            return String.format("%s_%s_%d_%s%s", prefix, role, entityId, uuid, extension);
         } else {
             return String.format("%s_%d_%s%s", prefix, entityId, uuid, extension);
         }
@@ -312,8 +285,8 @@ public class ImageUploadService {
         key = key.replaceAll("\\.\\./", "").replaceAll("\\.\\.\\\\", "");
         
         // Validate key format (should match expected patterns)
-        // Valid patterns: profiles/{userType}/* or books/*
-        if (!key.matches("^profiles/(client|coach|admin)/[^/]+$") && 
+        // Valid patterns: profiles/{role}/* or books/*
+        if (!key.matches("^profiles/(user|admin)/[^/]+$") && 
             !key.matches("^books/[^/]+$")) {
             log.warn("Invalid key format rejected: {}", key);
             throw new IllegalArgumentException("URL geçersiz: format uygun değil");
@@ -323,14 +296,14 @@ public class ImageUploadService {
     }
 
     /**
-     * Normalize user type to avoid Turkish character issues
+     * Normalize role to avoid Turkish character issues
      * Converts to lowercase using English locale to prevent ı/i problems
      */
-    private String normalizeUserType(String userType) {
-        if (userType == null) {
+    private String normalizeRole(String role) {
+        if (role == null) {
             return null;
         }
         // Use English locale to ensure 'I' becomes 'i' not 'ı'
-        return userType.toLowerCase(java.util.Locale.ENGLISH);
+        return role.toLowerCase(java.util.Locale.ENGLISH);
     }
 }

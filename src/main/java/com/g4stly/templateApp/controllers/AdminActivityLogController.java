@@ -1,11 +1,11 @@
-package  com.g4stly.templateApp.controllers;
+package com.g4stly.templateApp.controllers;
 
-import  com.g4stly.templateApp.dto.admin.AdminActivityLogDTO;
-import  com.g4stly.templateApp.dto.admin.AdminActivityLogListResponse;
-import  com.g4stly.templateApp.models.Admin;
-import  com.g4stly.templateApp.repos.AdminRepository;
-import  com.g4stly.templateApp.security.JwtUtils;
-import  com.g4stly.templateApp.services.AdminActivityLogService;
+import com.g4stly.templateApp.dto.admin.AdminActivityLogDTO;
+import com.g4stly.templateApp.dto.admin.AdminActivityLogListResponse;
+import com.g4stly.templateApp.models.Admin;
+import com.g4stly.templateApp.repos.AdminRepository;
+import com.g4stly.templateApp.security.JwtUtils;
+import com.g4stly.templateApp.services.AdminActivityLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

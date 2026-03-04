@@ -1,6 +1,6 @@
-package  com.g4stly.templateApp.repos;
+package com.g4stly.templateApp.repos;
 
-import  com.g4stly.templateApp.models.AdminActivityLog;
+import com.g4stly.templateApp.models.AdminActivityLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

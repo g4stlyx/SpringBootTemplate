@@ -120,7 +120,6 @@ For this stack (Spring Boot + JWT + Argon2 + MySQL + S3), the real failure risk 
 src/test/java/com/g4stly/templateApp/
 ├── repos/                         # @DataJpaTest — custom query validation
 │   ├── AdminRepositoryTest.java
-│   ├── ClientRepositoryTest.java
 │   ├── RefreshTokenRepositoryTest.java
 │   ├── AuthenticationErrorLogRepositoryTest.java
 │   ├── UserActivityLogRepositoryTest.java

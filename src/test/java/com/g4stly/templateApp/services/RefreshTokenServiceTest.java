@@ -2,9 +2,8 @@ package com.g4stly.templateApp.services;
 
 import com.g4stly.templateApp.models.RefreshToken;
 import com.g4stly.templateApp.repos.AdminRepository;
-import com.g4stly.templateApp.repos.ClientRepository;
-import com.g4stly.templateApp.repos.CoachRepository;
 import com.g4stly.templateApp.repos.RefreshTokenRepository;
+import com.g4stly.templateApp.repos.UserRepository;
 import com.g4stly.templateApp.security.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.*;
@@ -25,9 +24,8 @@ class RefreshTokenServiceTest {
 
     @Mock private RefreshTokenRepository refreshTokenRepository;
     @Mock private JwtUtils jwtUtils;
-    @Mock private ClientRepository clientRepository;
-    @Mock private CoachRepository coachRepository;
     @Mock private AdminRepository adminRepository;
+    @Mock private UserRepository userRepository;
     @Mock private HttpServletRequest httpRequest;
 
     @InjectMocks
@@ -52,10 +50,10 @@ class RefreshTokenServiceTest {
             when(httpRequest.getHeader("WL-Proxy-Client-IP")).thenReturn(null);
             when(httpRequest.getRemoteAddr()).thenReturn("127.0.0.1");
 
-            RefreshToken saved = new RefreshToken(1L, "client", 30L);
+            RefreshToken saved = new RefreshToken(1L, "user", 30L);
             when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(saved);
 
-            RefreshToken result = refreshTokenService.createRefreshToken(1L, "client", httpRequest);
+            RefreshToken result = refreshTokenService.createRefreshToken(1L, "user", httpRequest);
 
             assertThat(result).isNotNull();
             verify(refreshTokenRepository).save(any(RefreshToken.class));
@@ -73,10 +71,10 @@ class RefreshTokenServiceTest {
             when(httpRequest.getRemoteAddr()).thenReturn("10.0.0.1");
 
             ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
-            RefreshToken saved = new RefreshToken(2L, "coach", 30L);
+            RefreshToken saved = new RefreshToken(2L, "user", 30L);
             when(refreshTokenRepository.save(captor.capture())).thenReturn(saved);
 
-            refreshTokenService.createRefreshToken(2L, "coach", httpRequest);
+            refreshTokenService.createRefreshToken(2L, "user", httpRequest);
 
             RefreshToken captured = captor.getValue();
             assertThat(captured.getDeviceInfo()).isEqualTo("Mozilla/5.0");
@@ -135,7 +133,7 @@ class RefreshTokenServiceTest {
         @Test
         @DisplayName("Revoked token triggers revokeAllUserTokens and returns empty")
         void revokedToken_revokesAllAndReturnsEmpty() {
-            RefreshToken revokedToken = new RefreshToken(10L, "client", 30L);
+            RefreshToken revokedToken = new RefreshToken(10L, "user", 30L);
             revokedToken.setIsRevoked(true);
 
             when(refreshTokenRepository.findByToken("revoked-token")).thenReturn(Optional.of(revokedToken));
@@ -143,13 +141,13 @@ class RefreshTokenServiceTest {
             Optional<RefreshToken> result = refreshTokenService.verifyRefreshToken("revoked-token");
 
             assertThat(result).isEmpty();
-            verify(refreshTokenRepository).revokeAllUserTokens(10L, "client");
+            verify(refreshTokenRepository).revokeAllUserTokens(10L, "user");
         }
 
         @Test
         @DisplayName("Expired token returns empty Optional")
         void expiredToken_returnsEmpty() {
-            RefreshToken expiredToken = new RefreshToken(11L, "coach", 30L);
+            RefreshToken expiredToken = new RefreshToken(11L, "user", 30L);
             expiredToken.setIsRevoked(false);
             // Force expiry: set expiryDate to the past
             expiredToken.setExpiryDate(LocalDateTime.now().minusDays(1));
@@ -189,7 +187,7 @@ class RefreshTokenServiceTest {
         @Test
         @DisplayName("Marks old token as revoked and sets lastUsedAt")
         void revokesOldToken() {
-            RefreshToken oldToken = new RefreshToken(20L, "client", 30L);
+            RefreshToken oldToken = new RefreshToken(20L, "user", 30L);
             oldToken.setIsRevoked(false);
 
             when(jwtUtils.getRefreshTokenExpirationDays()).thenReturn(30L);
@@ -200,7 +198,7 @@ class RefreshTokenServiceTest {
             when(httpRequest.getHeader("WL-Proxy-Client-IP")).thenReturn(null);
             when(httpRequest.getRemoteAddr()).thenReturn("1.2.3.4");
 
-            RefreshToken newSaved = new RefreshToken(20L, "client", 30L);
+            RefreshToken newSaved = new RefreshToken(20L, "user", 30L);
             when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(newSaved);
 
             refreshTokenService.rotateRefreshToken(oldToken, httpRequest);
@@ -212,7 +210,7 @@ class RefreshTokenServiceTest {
         @Test
         @DisplayName("Creates and returns a new token for the same user")
         void createsNewToken_forSameUser() {
-            RefreshToken oldToken = new RefreshToken(21L, "coach", 30L);
+            RefreshToken oldToken = new RefreshToken(21L, "user", 30L);
             oldToken.setIsRevoked(false);
 
             when(jwtUtils.getRefreshTokenExpirationDays()).thenReturn(30L);
@@ -223,7 +221,7 @@ class RefreshTokenServiceTest {
             when(httpRequest.getHeader("WL-Proxy-Client-IP")).thenReturn(null);
             when(httpRequest.getRemoteAddr()).thenReturn("1.2.3.4");
 
-            RefreshToken newToken = new RefreshToken(21L, "coach", 30L);
+            RefreshToken newToken = new RefreshToken(21L, "user", 30L);
             // save called twice: once for oldToken (revoke), once for newToken
             when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(oldToken).thenReturn(newToken);
 
@@ -245,7 +243,7 @@ class RefreshTokenServiceTest {
         @Test
         @DisplayName("Found token is revoked and method returns true")
         void found_revokesAndReturnsTrue() {
-            RefreshToken token = new RefreshToken(30L, "client", 30L);
+            RefreshToken token = new RefreshToken(30L, "user", 30L);
             token.setIsRevoked(false);
             when(refreshTokenRepository.findByToken("some-token")).thenReturn(Optional.of(token));
 
@@ -279,12 +277,12 @@ class RefreshTokenServiceTest {
         @Test
         @DisplayName("Delegates to repository and returns row count")
         void delegatesToRepository() {
-            when(refreshTokenRepository.revokeAllUserTokens(5L, "client")).thenReturn(3);
+            when(refreshTokenRepository.revokeAllUserTokens(5L, "user")).thenReturn(3);
 
-            int result = refreshTokenService.revokeAllUserTokens(5L, "client");
+            int result = refreshTokenService.revokeAllUserTokens(5L, "user");
 
             assertThat(result).isEqualTo(3);
-            verify(refreshTokenRepository).revokeAllUserTokens(5L, "client");
+            verify(refreshTokenRepository).revokeAllUserTokens(5L, "user");
         }
     }
 

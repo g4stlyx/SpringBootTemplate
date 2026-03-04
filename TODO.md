@@ -10,3 +10,9 @@
     * [x] controller testing
     * [x] Integration tests (Full auth flow)
 * [x] Java version is set to 21 from 17.
+* [x] user (with usertype in it) in, coach & client out everywhere. "role" field to seperate user and admin.
+* [ ] specific thread pool executors for email sending and activity logging (also use web mvc interceptors for auto. user activity logging)
+* [ ] user profile endpoints (get,update profile; change password; deactivate account)
+    * [ ] `DELETE /api/v1/profile` — let a user soft-delete their own account (set `active = false`); admins can hard-delete but users have no self-closure option
+    * [ ] Account reactivation grace period (30-day) — auto-reactivate on login within grace period, permanent closure + PII anonymization after expiry via AccountCleanupScheduledService
+* [ ] admin user management (level 0 & 1)

@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.services;
+package com.g4stly.templateApp.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

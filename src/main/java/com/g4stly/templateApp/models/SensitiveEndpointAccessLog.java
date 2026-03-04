@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "sensitive_endpoint_access_logs", indexes = {
     @Index(name = "idx_sensitive_access_user_id", columnList = "user_id"),
-    @Index(name = "idx_sensitive_access_user_type", columnList = "user_type"),
+    @Index(name = "idx_sensitive_access_role", columnList = "role"),
     @Index(name = "idx_sensitive_access_endpoint", columnList = "endpoint"),
     @Index(name = "idx_sensitive_access_created_at", columnList = "created_at"),
     @Index(name = "idx_sensitive_access_ip_address", columnList = "ip_address"),
@@ -38,8 +38,8 @@ public class SensitiveEndpointAccessLog {
     @Column(name = "user_id")
     private Long userId;
     
-    @Column(name = "user_type", length = 20)
-    private String userType;
+    @Column(name = "role", length = 20)
+    private String role;
     
     @Column(name = "username", length = 100)
     private String username;

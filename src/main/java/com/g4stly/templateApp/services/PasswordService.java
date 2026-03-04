@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.services;
+package com.g4stly.templateApp.services;
 
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;

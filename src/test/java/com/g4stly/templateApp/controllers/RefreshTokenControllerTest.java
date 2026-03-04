@@ -77,12 +77,12 @@ class RefreshTokenControllerTest extends BaseControllerTest {
         RefreshToken oldToken = new RefreshToken();
         oldToken.setToken("old-refresh-token");
         oldToken.setUserId(1L);
-        oldToken.setUserType("admin");
+        oldToken.setRole("admin");
 
         RefreshToken newToken = new RefreshToken();
         newToken.setToken("new-refresh-token");
         newToken.setUserId(1L);
-        newToken.setUserType("admin");
+        newToken.setRole("admin");
 
         Admin admin = new Admin();
         admin.setId(1L);
@@ -92,7 +92,7 @@ class RefreshTokenControllerTest extends BaseControllerTest {
         when(refreshTokenService.rotateRefreshToken(eq(oldToken), any())).thenReturn(newToken);
         when(adminRepository.findById(1L)).thenReturn(Optional.of(admin));
         // resolveUsername returns "admin_1" for admin type
-        when(jwtUtils.generateToken(anyString(), eq(1L), eq("admin"), eq(0)))
+        when(jwtUtils.generateAdminToken(anyString(), eq(1L), eq(0)))
                 .thenReturn("new-access-token");
         when(jwtUtils.getAccessTokenExpiration()).thenReturn(900L);
 
@@ -133,7 +133,7 @@ class RefreshTokenControllerTest extends BaseControllerTest {
     void logoutAll_nullUserIdFromToken_returns401() throws Exception {
         // Header present but extractUserIdAsLong returns null
         when(jwtUtils.extractUserIdAsLong("some-access-token")).thenReturn(null);
-        when(jwtUtils.extractUserType("some-access-token")).thenReturn("admin");
+        when(jwtUtils.extractRole("some-access-token")).thenReturn("admin");
 
         mockMvc.perform(post("/api/v1/auth/logout-all")
                         .header("Authorization", "Bearer some-access-token"))
@@ -144,7 +144,7 @@ class RefreshTokenControllerTest extends BaseControllerTest {
     @Test
     void logoutAll_validToken_returns200WithRevokedCount() throws Exception {
         when(jwtUtils.extractUserIdAsLong("valid-access-token")).thenReturn(1L);
-        when(jwtUtils.extractUserType("valid-access-token")).thenReturn("admin");
+        when(jwtUtils.extractRole("valid-access-token")).thenReturn("admin");
         when(refreshTokenService.revokeAllUserTokens(1L, "admin")).thenReturn(3);
 
         mockMvc.perform(post("/api/v1/auth/logout-all")

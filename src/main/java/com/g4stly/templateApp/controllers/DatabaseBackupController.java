@@ -1,6 +1,6 @@
-package  com.g4stly.templateApp.controllers;
+package com.g4stly.templateApp.controllers;
 
-import  com.g4stly.templateApp.services.DatabaseBackupService;
+import com.g4stly.templateApp.services.DatabaseBackupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

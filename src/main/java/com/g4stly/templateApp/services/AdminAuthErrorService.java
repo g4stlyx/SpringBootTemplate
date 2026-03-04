@@ -1,11 +1,11 @@
-package  com.g4stly.templateApp.services;
+package com.g4stly.templateApp.services;
 
-import  com.g4stly.templateApp.dto.admin.AuthErrorLogListResponse;
-import  com.g4stly.templateApp.dto.admin.AuthErrorLogResponse;
-import  com.g4stly.templateApp.dto.admin.AuthErrorStatisticsResponse;
-import  com.g4stly.templateApp.exception.ResourceNotFoundException;
-import  com.g4stly.templateApp.models.AuthenticationErrorLog;
-import  com.g4stly.templateApp.repos.AuthenticationErrorLogRepository;
+import com.g4stly.templateApp.dto.admin.AuthErrorLogListResponse;
+import com.g4stly.templateApp.dto.admin.AuthErrorLogResponse;
+import com.g4stly.templateApp.dto.admin.AuthErrorStatisticsResponse;
+import com.g4stly.templateApp.exception.ResourceNotFoundException;
+import com.g4stly.templateApp.models.AuthenticationErrorLog;
+import com.g4stly.templateApp.repos.AuthenticationErrorLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,14 +45,14 @@ public class AdminAuthErrorService {
             String sortBy, 
             String sortDirection,
             Long userId,
-            String userType,
+            String role,
             String errorType,
             String ipAddress,
             LocalDateTime startDate,
             HttpServletRequest request) {
         
-        log.info("Admin {} retrieving auth error logs - page: {}, size: {}, sortBy: {}, filters: userId={}, userType={}, errorType={}, ipAddress={}", 
-                adminId, page, size, sortBy, userId, userType, errorType, ipAddress);
+        log.info("Admin {} retrieving auth error logs - page: {}, size: {}, sortBy: {}, filters: userId={}, role={}, errorType={}, ipAddress={}", 
+                adminId, page, size, sortBy, userId, role, errorType, ipAddress);
         
         // Create sort
         Sort sort = sortDirection.equalsIgnoreCase("desc") 
@@ -66,8 +66,8 @@ public class AdminAuthErrorService {
         
         if (userId != null) {
             logsPage = authErrorLogRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
-        } else if (userType != null && !userType.isEmpty()) {
-            logsPage = authErrorLogRepository.findByUserTypeOrderByCreatedAtDesc(userType, pageable);
+        } else if (role != null && !role.isEmpty()) {
+            logsPage = authErrorLogRepository.findByRoleOrderByCreatedAtDesc(role, pageable);
         } else if (errorType != null && !errorType.isEmpty()) {
             try {
                 AuthenticationErrorLog.ErrorType type = AuthenticationErrorLog.ErrorType.valueOf(errorType);
@@ -94,7 +94,7 @@ public class AdminAuthErrorService {
         details.put("resultCount", logs.size());
         details.put("totalElements", logsPage.getTotalElements());
         if (userId != null) details.put("filterUserId", userId);
-        if (userType != null) details.put("filterUserType", userType);
+        if (role != null) details.put("filterRole", role);
         if (errorType != null) details.put("filterErrorType", errorType);
         if (ipAddress != null) details.put("filterIpAddress", ipAddress);
         

@@ -140,13 +140,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/admin/activity-logs?resourceType=Coach&page=0&size=20",
+					"raw": "{{base_url}}/api/v1/admin/activity-logs?resourceType=User&page=0&size=20",
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "activity-logs"],
 					"query": [
 						{
 							"key": "resourceType",
-							"value": "Coach",
+							"value": "User",
 							"description": "Filter by resource type"
 						},
 						{

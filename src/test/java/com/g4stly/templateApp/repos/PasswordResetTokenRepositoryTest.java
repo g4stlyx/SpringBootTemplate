@@ -27,9 +27,9 @@ class PasswordResetTokenRepositoryTest {
 
     private final LocalDateTime NOW = LocalDateTime.now();
 
-    private PasswordResetToken buildToken(Long userId, String userType,
+    private PasswordResetToken buildToken(Long userId, String role,
                                           String requestingIp, LocalDateTime expiryDate) {
-        PasswordResetToken t = new PasswordResetToken(userId, userType, requestingIp);
+        PasswordResetToken t = new PasswordResetToken(userId, role, requestingIp);
         t.setExpiryDate(expiryDate);
         return t;
     }
@@ -38,9 +38,9 @@ class PasswordResetTokenRepositoryTest {
     void setUp() {
         tokenRepository.deleteAll();
         tokenRepository.saveAll(List.of(
-            buildToken(1L, "client", "1.1.1.1", NOW.plusMinutes(15)),  // valid
-            buildToken(1L, "client", "1.1.1.1", NOW.minusMinutes(5)),  // expired (same user)
-            buildToken(2L, "coach",  "2.2.2.2", NOW.plusMinutes(15)),  // valid
+            buildToken(1L, "user", "1.1.1.1", NOW.plusMinutes(15)),  // valid
+            buildToken(1L, "user", "1.1.1.1", NOW.minusMinutes(5)),  // expired (same user)
+            buildToken(2L, "user",  "2.2.2.2", NOW.plusMinutes(15)),  // valid
             buildToken(3L, "admin",  "3.3.3.3", NOW.minusMinutes(10))  // expired
         ));
     }
@@ -69,13 +69,13 @@ class PasswordResetTokenRepositoryTest {
     }
 
     @Nested
-    @DisplayName("findByUserIdAndUserType")
+    @DisplayName("findByUserIdAndRole")
     class FindByUserTests {
 
         @Test
         @DisplayName("returns ALL tokens for user regardless of expiry")
         void returnsAllUserTokens() {
-            List<PasswordResetToken> tokens = tokenRepository.findByUserIdAndUserType(1L, "client");
+            List<PasswordResetToken> tokens = tokenRepository.findByUserIdAndRole(1L, "user");
             // Both the valid and expired token for userId=1 should appear
             assertThat(tokens).hasSize(2);
         }
@@ -83,7 +83,7 @@ class PasswordResetTokenRepositoryTest {
         @Test
         @DisplayName("returns empty for unknown user")
         void returnsEmptyForUnknownUser() {
-            assertThat(tokenRepository.findByUserIdAndUserType(99L, "client")).isEmpty();
+            assertThat(tokenRepository.findByUserIdAndRole(99L, "user")).isEmpty();
         }
     }
 
@@ -148,21 +148,21 @@ class PasswordResetTokenRepositoryTest {
     }
 
     @Nested
-    @DisplayName("deleteByUserIdAndUserType")
+    @DisplayName("deleteByUserIdAndRole")
     class DeleteByUserTests {
 
         @Test
         @DisplayName("deletes all tokens for a given user")
         void deletesUserTokens() {
-            tokenRepository.deleteByUserIdAndUserType(1L, "client");
-            assertThat(tokenRepository.findByUserIdAndUserType(1L, "client")).isEmpty();
+            tokenRepository.deleteByUserIdAndRole(1L, "user");
+            assertThat(tokenRepository.findByUserIdAndRole(1L, "user")).isEmpty();
         }
 
         @Test
         @DisplayName("does not affect other users")
         void doesNotAffectOthers() {
-            tokenRepository.deleteByUserIdAndUserType(1L, "client");
-            assertThat(tokenRepository.findByUserIdAndUserType(2L, "coach")).hasSize(1);
+            tokenRepository.deleteByUserIdAndRole(1L, "user");
+            assertThat(tokenRepository.findByUserIdAndRole(2L, "user")).hasSize(1);
         }
     }
 
@@ -193,22 +193,22 @@ class PasswordResetTokenRepositoryTest {
     }
 
     @Nested
-    @DisplayName("findByUserTypeOrderByCreatedDateDesc (paginated)")
-    class FindByUserTypeTests {
+    @DisplayName("findByRoleOrderByCreatedDateDesc (paginated)")
+    class FindByRoleTests {
 
         @Test
-        @DisplayName("returns tokens for given user type")
-        void returnsForUserType() {
+        @DisplayName("returns tokens for given role")
+        void returnsForRole() {
             Page<PasswordResetToken> page = tokenRepository
-                    .findByUserTypeOrderByCreatedDateDesc("client", PageRequest.of(0, 10));
-            assertThat(page.getTotalElements()).isEqualTo(2L);
+                    .findByRoleOrderByCreatedDateDesc("user", PageRequest.of(0, 10));
+            assertThat(page.getTotalElements()).isEqualTo(3L);
         }
 
         @Test
         @DisplayName("returns empty for unknown user type")
         void returnsEmpty() {
             Page<PasswordResetToken> page = tokenRepository
-                    .findByUserTypeOrderByCreatedDateDesc("unknown", PageRequest.of(0, 10));
+                    .findByRoleOrderByCreatedDateDesc("unknown", PageRequest.of(0, 10));
             assertThat(page.getTotalElements()).isEqualTo(0L);
         }
     }

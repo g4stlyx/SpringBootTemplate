@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.admin;
+package com.g4stly.templateApp.dto.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +15,7 @@ public class VerificationTokenDTO {
     private Long id;
     private String token;
     private Long userId;
-    private String userType;
+    private String role;
     private String username;
     private String email;
     private LocalDateTime expiryDate;

@@ -38,7 +38,7 @@ public class AdminUserActivityLogController {
      *
      * @param token Authorization header with JWT token
      * @param userId Optional filter by user ID
-     * @param userType Optional filter by user type (client/coach)
+     * @param role Optional filter by role (user/admin)
      * @param action Optional filter by action (LOGIN, REGISTER, LOGOUT, etc.)
      * @param resourceType Optional filter by resource type
      * @param success Optional filter by success status
@@ -56,7 +56,7 @@ public class AdminUserActivityLogController {
     public ResponseEntity<?> getAllUserActivityLogs(
             @RequestHeader("Authorization") String token,
             @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String userType,
+            @RequestParam(required = false) String role,
             @RequestParam(required = false) String action,
             @RequestParam(required = false) String resourceType,
             @RequestParam(required = false) Boolean success,
@@ -83,7 +83,7 @@ public class AdminUserActivityLogController {
             }
             
             UserActivityLogListResponse response = userActivityLogService.getAllUserActivityLogs(
-                    userId, userType, action, resourceType, success,
+                    userId, role, action, resourceType, success,
                     startDate, endDate, ipAddress,
                     page, size, sortBy, sortDirection,
                     currentAdminId, httpRequest
@@ -165,7 +165,7 @@ public class AdminUserActivityLogController {
      *
      * @param token Authorization header with JWT token
      * @param userId User ID
-     * @param userType User type (client/coach)
+     * @param role Role (user/admin)
      * @param page Page number (default: 0)
      * @param size Page size (default: 20)
      * @param sortBy Sort field (default: createdAt)
@@ -177,7 +177,7 @@ public class AdminUserActivityLogController {
     public ResponseEntity<?> getUserActivityLogsByUser(
             @RequestHeader("Authorization") String token,
             @PathVariable Long userId,
-            @RequestParam(defaultValue = "client") String userType,
+            @RequestParam(defaultValue = "user") String role,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -198,7 +198,7 @@ public class AdminUserActivityLogController {
             }
             
             UserActivityLogListResponse response = userActivityLogService.getUserActivityLogsByUser(
-                    userId, userType,
+                    userId, role,
                     page, size, sortBy, sortDirection,
                     currentAdminId, httpRequest
             );

@@ -53,9 +53,9 @@
 							"disabled": true
 						},
 						{
-							"key": "userType",
+							"key": "role",
 							"value": "",
-							"description": "Filter by user type (client/coach)",
+							"description": "Filter by user type",
 							"disabled": true
 						},
 						{
@@ -96,7 +96,7 @@
 						}
 					]
 				},
-				"description": "Get all user activity logs with pagination and optional filtering.\n\n**Access:** Level 0 Super Admins only\n\n**Query Parameters:**\n- page (optional): Page number (default: 0)\n- size (optional): Page size (default: 20)\n- sortBy (optional): Sort field (default: createdAt)\n- sortDirection (optional): asc or desc (default: desc)\n- userId (optional): Filter by specific user ID\n- userType (optional): Filter by user type (client/coach)\n- action (optional): Filter by action type (LOGIN, REGISTER, LOGOUT, etc.)\n- resourceType (optional): Filter by resource type\n- success (optional): Filter by success status (true/false)\n- startDate (optional): Filter logs after this date (ISO format)\n- endDate (optional): Filter logs before this date (ISO format)\n- ipAddress (optional): Filter by IP address\n\n**Response:**\n- logs: Array of activity log entries\n- currentPage, totalPages, totalElements, pageSize\n- hasNext, hasPrevious"
+				"description": "Get all user activity logs with pagination and optional filtering.\n\n**Access:** Level 0 Super Admins only\n\n**Query Parameters:**\n- page (optional): Page number (default: 0)\n- size (optional): Page size (default: 20)\n- sortBy (optional): Sort field (default: createdAt)\n- sortDirection (optional): asc or desc (default: desc)\n- userId (optional): Filter by specific user ID\n- role (optional): Filter by user type\n- action (optional): Filter by action type (LOGIN, REGISTER, LOGOUT, etc.)\n- resourceType (optional): Filter by resource type\n- success (optional): Filter by success status (true/false)\n- startDate (optional): Filter logs after this date (ISO format)\n- endDate (optional): Filter logs before this date (ISO format)\n- ipAddress (optional): Filter by IP address\n\n**Response:**\n- logs: Array of activity log entries\n- currentPage, totalPages, totalElements, pageSize\n- hasNext, hasPrevious"
 			},
 			"response": []
 		},
@@ -106,13 +106,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?userType=client&page=0&size=20",
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?role=client&page=0&size=20",
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "user-activity-logs"],
 					"query": [
 						{
-							"key": "userType",
-							"value": "client",
+							"key": "role",
+							"value": "user",
 							"description": "Filter by user type"
 						},
 						{
@@ -125,7 +125,7 @@
 						}
 					]
 				},
-				"description": "Get activity logs filtered by user type (clients only).\n\n**Access:** Level 0 Super Admins only"
+				"description": "Get activity logs filtered by user type (users only).\n\n**Access:** Level 0 Super Admins only"
 			},
 			"response": []
 		},
@@ -135,13 +135,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?userType=coach&page=0&size=20",
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?role=coach&page=0&size=20",
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "user-activity-logs"],
 					"query": [
 						{
-							"key": "userType",
-							"value": "coach",
+							"key": "role",
+							"value": "user",
 							"description": "Filter by user type"
 						},
 						{
@@ -154,7 +154,7 @@
 						}
 					]
 				},
-				"description": "Get activity logs filtered by user type (coaches only).\n\n**Access:** Level 0 Super Admins only"
+				"description": "Get activity logs filtered by user type (users only).\n\n**Access:** Level 0 Super Admins only"
 			},
 			"response": []
 		},
@@ -318,7 +318,7 @@
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "user-activity-logs", "1"]
 				},
-				"description": "Get a specific user activity log entry by ID.\n\n**Access:** Level 0 Super Admins only\n\n**Response:**\n- id: Log entry ID\n- userId: ID of the user who performed the action\n- userType: Type of user (client/coach)\n- username: Username of the user\n- email: Email of the user\n- action: Action type (LOGIN, REGISTER, etc.)\n- resourceType: Type of resource affected\n- resourceId: ID of the affected resource\n- details: JSON string with additional action details\n- ipAddress: IP address of the request\n- userAgent: User agent of the request\n- success: Whether the action was successful\n- failureReason: Reason for failure if unsuccessful\n- createdAt: Timestamp of the action"
+				"description": "Get a specific user activity log entry by ID.\n\n**Access:** Level 0 Super Admins only\n\n**Response:**\n- id: Log entry ID\n- userId: ID of the user who performed the action\n- role: Type of user\n- username: Username of the user\n- email: Email of the user\n- action: Action type (LOGIN, REGISTER, etc.)\n- resourceType: Type of resource affected\n- resourceId: ID of the affected resource\n- details: JSON string with additional action details\n- ipAddress: IP address of the request\n- userAgent: User agent of the request\n- success: Whether the action was successful\n- failureReason: Reason for failure if unsuccessful\n- createdAt: Timestamp of the action"
 			},
 			"response": []
 		},
@@ -328,14 +328,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/admin/user-activity-logs/user/1?userType=client&page=0&size=20",
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs/user/1?role=client&page=0&size=20",
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "user-activity-logs", "user", "1"],
 					"query": [
 						{
-							"key": "userType",
-							"value": "client",
-							"description": "User type (client/coach)"
+							"key": "role",
+							"value": "user",
+							"description": "User type"
 						},
 						{
 							"key": "page",
@@ -347,7 +347,7 @@
 						}
 					]
 				},
-				"description": "Get all activity logs for a specific client user.\n\n**Access:** Level 0 Super Admins only\n\n**URL Parameters:**\n- userId: The ID of the user whose logs to retrieve\n\n**Query Parameters:**\n- userType: User type (client/coach) - default: client"
+				"description": "Get all activity logs for a specific user.\n\n**Access:** Level 0 Super Admins only\n\n**URL Parameters:**\n- userId: The ID of the user whose logs to retrieve\n\n**Query Parameters:**\n- role: User type - default: user"
 			},
 			"response": []
 		},
@@ -357,14 +357,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/admin/user-activity-logs/user/1?userType=coach&page=0&size=20",
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs/user/1?role=coach&page=0&size=20",
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "user-activity-logs", "user", "1"],
 					"query": [
 						{
-							"key": "userType",
-							"value": "coach",
-							"description": "User type (client/coach)"
+							"key": "role",
+							"value": "user",
+							"description": "User type"
 						},
 						{
 							"key": "page",
@@ -376,7 +376,7 @@
 						}
 					]
 				},
-				"description": "Get all activity logs for a specific coach user.\n\n**Access:** Level 0 Super Admins only\n\n**URL Parameters:**\n- userId: The ID of the user whose logs to retrieve\n\n**Query Parameters:**\n- userType: User type (client/coach) - default: client"
+				"description": "Get all activity logs for a specific user.\n\n**Access:** Level 0 Super Admins only\n\n**URL Parameters:**\n- userId: The ID of the user whose logs to retrieve\n\n**Query Parameters:**\n- role: User type - default: user"
 			},
 			"response": []
 		},
@@ -421,13 +421,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?userType=client&action=LOGIN&success=false&startDate=2024-01-01T00:00:00&page=0&size=50",
+					"raw": "{{base_url}}/api/v1/admin/user-activity-logs?role=client&action=LOGIN&success=false&startDate=2024-01-01T00:00:00&page=0&size=50",
 					"host": ["{{base_url}}"],
 					"path": ["api", "v1", "admin", "user-activity-logs"],
 					"query": [
 						{
-							"key": "userType",
-							"value": "client",
+							"key": "role",
+							"value": "user",
 							"description": "Filter by user type"
 						},
 						{
@@ -455,7 +455,7 @@
 						}
 					]
 				},
-				"description": "Example of combining multiple filters to find failed client login attempts since a specific date.\n\nUseful for security auditing and detecting brute force attacks.\n\n**Access:** Level 0 Super Admins only"
+				"description": "Example of combining multiple filters to find failed user login attempts since a specific date.\n\nUseful for security auditing and detecting brute force attacks.\n\n**Access:** Level 0 Super Admins only"
 			},
 			"response": []
 		}

@@ -23,14 +23,14 @@ class RefreshTokenRepositoryTest {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
-    private RefreshToken buildToken(Long userId, String userType, boolean revoked, long expiryDays) {
-        RefreshToken t = new RefreshToken(userId, userType, expiryDays);
+    private RefreshToken buildToken(Long userId, String role, boolean revoked, long expiryDays) {
+        RefreshToken t = new RefreshToken(userId, role, expiryDays);
         t.setIsRevoked(revoked);
         return t;
     }
 
-    private RefreshToken buildTokenWithIp(Long userId, String userType, boolean revoked, long expiryDays, String ip) {
-        RefreshToken t = buildToken(userId, userType, revoked, expiryDays);
+    private RefreshToken buildTokenWithIp(Long userId, String role, boolean revoked, long expiryDays, String ip) {
+        RefreshToken t = buildToken(userId, role, revoked, expiryDays);
         t.setIpAddress(ip);
         return t;
     }
@@ -39,10 +39,10 @@ class RefreshTokenRepositoryTest {
     void setUp() {
         refreshTokenRepository.deleteAll();
         refreshTokenRepository.saveAll(List.of(
-            buildTokenWithIp(1L, "client", false, 30, "192.168.1.1"),  // active
-            buildTokenWithIp(1L, "client", true,  30, "192.168.1.1"),  // revoked
-            buildTokenWithIp(2L, "coach",  false, 30, "10.0.0.1"),     // active
-            buildToken(3L, "admin",  false, -1)                         // expired
+            buildTokenWithIp(1L, "user", false, 30, "192.168.1.1"),  // active
+            buildTokenWithIp(1L, "user", true,  30, "192.168.1.1"),  // revoked
+            buildTokenWithIp(2L, "user",  false, 30, "10.0.0.1"),    // active
+            buildToken(3L, "admin",  false, -1)                        // expired
         ));
     }
 
@@ -70,32 +70,32 @@ class RefreshTokenRepositoryTest {
     }
 
     @Nested
-    @DisplayName("findByUserIdAndUserType")
+    @DisplayName("findByUserIdAndRole")
     class FindByUserTests {
 
         @Test
         @DisplayName("returns all tokens (revoked + active) for user")
         void returnsAllUserTokens() {
-            List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndUserType(1L, "client");
+            List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndRole(1L, "user");
             assertThat(tokens).hasSize(2);
         }
 
         @Test
         @DisplayName("returns empty for unknown user")
         void returnsEmptyForUnknownUser() {
-            List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndUserType(99L, "client");
+            List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndRole(99L, "user");
             assertThat(tokens).isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("findByUserIdAndUserTypeAndIsRevokedFalse")
+    @DisplayName("findByUserIdAndRoleAndIsRevokedFalse")
     class FindActiveUserTokensTests {
 
         @Test
         @DisplayName("returns only non-revoked tokens for user")
         void returnsOnlyActive() {
-            List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndUserTypeAndIsRevokedFalse(1L, "client");
+            List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndRoleAndIsRevokedFalse(1L, "user");
             assertThat(tokens).hasSize(1);
             assertThat(tokens).allMatch(t -> !t.getIsRevoked());
         }
@@ -103,9 +103,9 @@ class RefreshTokenRepositoryTest {
         @Test
         @DisplayName("returns empty when all user tokens are revoked")
         void returnsEmptyWhenAllRevoked() {
-            refreshTokenRepository.findByUserIdAndUserType(1L, "client")
+            refreshTokenRepository.findByUserIdAndRole(1L, "user")
                     .forEach(t -> { t.setIsRevoked(true); refreshTokenRepository.save(t); });
-            List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndUserTypeAndIsRevokedFalse(1L, "client");
+            List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndRoleAndIsRevokedFalse(1L, "user");
             assertThat(tokens).isEmpty();
         }
     }
@@ -162,26 +162,26 @@ class RefreshTokenRepositoryTest {
         @Test
         @DisplayName("marks all active tokens for user as revoked")
         void revokesAllActive() {
-            int affected = refreshTokenRepository.revokeAllUserTokens(1L, "client");
-            // User 1/client has 1 non-revoked token
+            int affected = refreshTokenRepository.revokeAllUserTokens(1L, "user");
+            // User 1/user has 1 non-revoked token
             assertThat(affected).isEqualTo(1);
-            List<RefreshToken> remaining = refreshTokenRepository.findByUserIdAndUserTypeAndIsRevokedFalse(1L, "client");
+            List<RefreshToken> remaining = refreshTokenRepository.findByUserIdAndRoleAndIsRevokedFalse(1L, "user");
             assertThat(remaining).isEmpty();
         }
 
         @Test
         @DisplayName("returns 0 when user has no active tokens")
         void returnsZeroWhenNoneActive() {
-            int affected = refreshTokenRepository.revokeAllUserTokens(99L, "client");
+            int affected = refreshTokenRepository.revokeAllUserTokens(99L, "user");
             assertThat(affected).isEqualTo(0);
         }
 
         @Test
         @DisplayName("does not affect tokens of other users")
         void doesNotAffectOtherUsers() {
-            refreshTokenRepository.revokeAllUserTokens(1L, "client");
-            List<RefreshToken> coachTokens = refreshTokenRepository.findByUserIdAndUserTypeAndIsRevokedFalse(2L, "coach");
-            assertThat(coachTokens).hasSize(1);
+            refreshTokenRepository.revokeAllUserTokens(1L, "user");
+            List<RefreshToken> otherUserTokens = refreshTokenRepository.findByUserIdAndRoleAndIsRevokedFalse(2L, "user");
+            assertThat(otherUserTokens).hasSize(1);
         }
     }
 
@@ -215,9 +215,9 @@ class RefreshTokenRepositoryTest {
     class CountTests {
 
         @Test
-        @DisplayName("countByUserIdAndUserType returns all tokens for user")
+        @DisplayName("countByUserIdAndRole returns all tokens for user")
         void countByUser() {
-            long count = refreshTokenRepository.countByUserIdAndUserType(1L, "client");
+            long count = refreshTokenRepository.countByUserIdAndRole(1L, "user");
             assertThat(count).isEqualTo(2L);
         }
 
@@ -239,11 +239,11 @@ class RefreshTokenRepositoryTest {
     class FilterTests {
 
         @Test
-        @DisplayName("filters by userType")
-        void filterByUserType() {
-            List<RefreshToken> result = refreshTokenRepository.findWithFilters("coach", null, null, null);
+        @DisplayName("filters by role")
+        void filterByRole() {
+            List<RefreshToken> result = refreshTokenRepository.findWithFilters("admin", null, null, null);
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getUserId()).isEqualTo(2L);
+            assertThat(result.get(0).getUserId()).isEqualTo(3L);
         }
 
         @Test

@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.security;
+package com.g4stly.templateApp.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -49,19 +49,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (jwtUtils.validateToken(token)) {
                 String username = jwtUtils.extractUsername(token);
                 Long userId = jwtUtils.extractUserIdAsLong(token);
+                String role = jwtUtils.extractRole(token);
                 String userType = jwtUtils.extractUserType(token);
                 // Create authentication object with authorities
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     username, 
                     null, 
-                    Collections.singleton(new SimpleGrantedAuthority("ROLE_" + userType.toUpperCase(Locale.ENGLISH)))
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase(Locale.ENGLISH)))
                 );
                 
-                // Store user ID and type in the authentication details
+                // Store user ID in the authentication details
                 authentication.setDetails(userId);
                 
-                // Set userId and userType as request attributes for controllers
+                // Set userId, role and userType as request attributes for controllers
                 request.setAttribute("userId", userId);
+                request.setAttribute("role", role);
                 request.setAttribute("userType", userType);
                 
                 // Set authentication in security context

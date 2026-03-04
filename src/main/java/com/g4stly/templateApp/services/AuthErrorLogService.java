@@ -31,7 +31,7 @@ public class AuthErrorLogService {
     public void logAuthError(
             AuthenticationErrorLog.ErrorType errorType,
             Long userId,
-            String userType,
+            String role,
             String username,
             String ipAddress,
             String userAgent,
@@ -48,7 +48,7 @@ public class AuthErrorLogService {
             AuthenticationErrorLog errorLog = AuthenticationErrorLog.builder()
                     .errorType(errorType)
                     .userId(userId)
-                    .userType(userType)
+                    .role(role)
                     .username(username)
                     .ipAddress(ipAddress)
                     .userAgent(userAgent)
@@ -94,12 +94,12 @@ public class AuthErrorLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void log403(Long userId, String userType, String username, String ipAddress, String userAgent, 
+    public void log403(Long userId, String role, String username, String ipAddress, String userAgent, 
                        String endpoint, String httpMethod, String errorMessage, String attemptedAction) {
         logAuthError(
                 AuthenticationErrorLog.ErrorType.FORBIDDEN_403,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -115,12 +115,12 @@ public class AuthErrorLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void log404(Long userId, String userType, String username, String ipAddress, String userAgent, 
+    public void log404(Long userId, String role, String username, String ipAddress, String userAgent, 
                        String endpoint, String httpMethod, String resourceType) {
         logAuthError(
                 AuthenticationErrorLog.ErrorType.NOT_FOUND_404,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -136,12 +136,12 @@ public class AuthErrorLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void log400(Long userId, String userType, String username, String ipAddress, String userAgent, 
+    public void log400(Long userId, String role, String username, String ipAddress, String userAgent, 
                        String endpoint, String httpMethod, String errorMessage) {
         logAuthError(
                 AuthenticationErrorLog.ErrorType.BAD_REQUEST_400,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -157,12 +157,12 @@ public class AuthErrorLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void log500(Long userId, String userType, String username, String ipAddress, String userAgent, 
+    public void log500(Long userId, String role, String username, String ipAddress, String userAgent, 
                        String endpoint, String httpMethod, String errorMessage) {
         logAuthError(
                 AuthenticationErrorLog.ErrorType.INTERNAL_SERVER_ERROR_500,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -198,12 +198,12 @@ public class AuthErrorLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logAccessDenied(Long userId, String userType, String username, String ipAddress, String userAgent, 
+    public void logAccessDenied(Long userId, String role, String username, String ipAddress, String userAgent, 
                                 String endpoint, String httpMethod, String reason) {
         logAuthError(
                 AuthenticationErrorLog.ErrorType.ACCESS_DENIED,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,

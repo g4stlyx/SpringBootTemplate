@@ -1,12 +1,12 @@
-package  com.g4stly.templateApp.services;
+package com.g4stly.templateApp.services;
 
-import  com.g4stly.templateApp.dto.profile.AdminProfileDTO;
-import  com.g4stly.templateApp.dto.profile.ChangePasswordRequest;
-import  com.g4stly.templateApp.dto.profile.UpdateAdminProfileRequest;
-import  com.g4stly.templateApp.exception.BadRequestException;
-import  com.g4stly.templateApp.exception.ResourceNotFoundException;
-import  com.g4stly.templateApp.models.Admin;
-import  com.g4stly.templateApp.repos.AdminRepository;
+import com.g4stly.templateApp.dto.profile.AdminProfileDTO;
+import com.g4stly.templateApp.dto.profile.ChangePasswordRequest;
+import com.g4stly.templateApp.dto.profile.UpdateAdminProfileRequest;
+import com.g4stly.templateApp.exception.BadRequestException;
+import com.g4stly.templateApp.exception.ResourceNotFoundException;
+import com.g4stly.templateApp.models.Admin;
+import com.g4stly.templateApp.repos.AdminRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

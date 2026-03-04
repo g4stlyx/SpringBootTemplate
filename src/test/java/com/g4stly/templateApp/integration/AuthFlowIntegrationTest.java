@@ -30,14 +30,14 @@ class AuthFlowIntegrationTest extends BaseIntegrationTest {
     // ------------------------------------------------------------------ //
 
     @Test
-    @DisplayName("register client, verify email, then login returns 200 with accessToken")
+    @DisplayName("register user, verify email, then login returns 200 with accessToken")
     void register_verifyEmail_login_returnsToken() {
-        // Step 1: register a new client
+        // Step 1: register a new user
         Map<String, Object> registerBody = Map.of(
                 "username", "integclient",
                 "email", "integclient@test.com",
                 "password", "Passw0rd!",
-                "userType", "client"
+                "userType", "waiter"
         );
 
         ResponseEntity<Map<String, Object>> registerResp = restTemplate.exchange(
@@ -48,12 +48,12 @@ class AuthFlowIntegrationTest extends BaseIntegrationTest {
         assertThat(registerResp.getBody().get("success")).isEqualTo(true);
 
         // Step 2: retrieve the verification token stored in DB
-        Long clientId = clientRepository.findByUsername("integclient")
-                .orElseThrow(() -> new AssertionError("Client not found after registration"))
+        Long userId = userRepository.findByUsername("integclient")
+                .orElseThrow(() -> new AssertionError("User not found after registration"))
                 .getId();
 
         String verificationToken = verificationTokenRepository
-                .findByUserIdAndUserType(clientId, "client")
+                .findByUserIdAndRole(userId, "user")
                 .orElseThrow(() -> new AssertionError("Verification token not found"))
                 .getToken();
 
@@ -65,7 +65,7 @@ class AuthFlowIntegrationTest extends BaseIntegrationTest {
         assertThat(verifyResp.getBody().get("success")).isEqualTo(true);
 
         // Step 4: login should now succeed and return an access token
-        ResponseEntity<Map<String, Object>> loginResp = login("integclient", "Passw0rd!", "client");
+        ResponseEntity<Map<String, Object>> loginResp = login("integclient", "Passw0rd!", "user");
 
         assertThat(loginResp.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(loginResp.getBody().get("success")).isEqualTo(true);
@@ -81,9 +81,9 @@ class AuthFlowIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("login with wrong password returns 401")
     void login_wrongPassword_returns401() {
-        createVerifiedClient("locktest", "locktest@test.com", "Correct1!");
+        createVerifiedUser("locktest", "locktest@test.com", "Correct1!");
 
-        ResponseEntity<Map<String, Object>> response = login("locktest", "WrongPass9!", "client");
+        ResponseEntity<Map<String, Object>> response = login("locktest", "WrongPass9!", "user");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody().get("success")).isEqualTo(false);
@@ -96,9 +96,9 @@ class AuthFlowIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("/me with valid bearer token returns 200 with correct username")
     void getCurrentUser_withValidToken_returns200() {
-        createVerifiedClient("meuser", "meuser@test.com", "Passw0rd!");
+        createVerifiedUser("meuser", "meuser@test.com", "Passw0rd!");
 
-        ResponseEntity<Map<String, Object>> loginResp = login("meuser", "Passw0rd!", "client");
+        ResponseEntity<Map<String, Object>> loginResp = login("meuser", "Passw0rd!", "user");
         assertThat(loginResp.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         String token = extractAccessToken(loginResp);
@@ -108,6 +108,6 @@ class AuthFlowIntegrationTest extends BaseIntegrationTest {
 
         assertThat(meResp.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(meResp.getBody()).containsKey("role");
-        assertThat(meResp.getBody().get("role")).isEqualTo("CLIENT");
+        assertThat(meResp.getBody().get("role")).isEqualTo("USER");
     }
 }

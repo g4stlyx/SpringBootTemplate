@@ -1,7 +1,7 @@
-package  com.g4stly.templateApp.controllers;
+package com.g4stly.templateApp.controllers;
 
-import  com.g4stly.templateApp.dto.admin.*;
-import  com.g4stly.templateApp.services.AdminManagementService;
+import com.g4stly.templateApp.dto.admin.*;
+import com.g4stly.templateApp.services.AdminManagementService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;

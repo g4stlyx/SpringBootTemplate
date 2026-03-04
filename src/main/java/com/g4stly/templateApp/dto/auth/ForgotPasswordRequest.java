@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.auth;
+package com.g4stly.templateApp.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -17,6 +17,6 @@ public class ForgotPasswordRequest {
     @Size(max = 255, message = "Email must not exceed 255 characters")
     private String email;
     
-    @Pattern(regexp = "^(client|coach|admin)?$", message = "User type must be 'client', 'coach', or 'admin'")
-    private String userType; // Optional: "client", "coach", or "admin"
+    @Pattern(regexp = "^(user|admin)?$", message = "Role must be 'user' or 'admin'")
+    private String role; // Optional: "user" or "admin"
 }

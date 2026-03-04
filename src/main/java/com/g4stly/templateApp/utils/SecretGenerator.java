@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.utils;
+package com.g4stly.templateApp.utils;
 
 import java.security.SecureRandom;
 import java.util.Base64;

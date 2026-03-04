@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.controllers;
+package com.g4stly.templateApp.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,16 +13,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import  com.g4stly.templateApp.dto.auth.AuthResponse;
-import  com.g4stly.templateApp.dto.auth.ForgotPasswordRequest;
-import  com.g4stly.templateApp.dto.auth.LoginRequest;
-import  com.g4stly.templateApp.dto.auth.RegisterRequest;
-import  com.g4stly.templateApp.dto.auth.ResendVerificationRequest;
-import  com.g4stly.templateApp.dto.auth.ResetPasswordRequest;
-import  com.g4stly.templateApp.dto.auth.UserSessionDTO;
-import  com.g4stly.templateApp.dto.two_factor.TwoFactorRequiredResponse;
-import  com.g4stly.templateApp.services.AuthService;
-import  com.g4stly.templateApp.services.CaptchaService;
+import com.g4stly.templateApp.dto.auth.AuthResponse;
+import com.g4stly.templateApp.dto.auth.ForgotPasswordRequest;
+import com.g4stly.templateApp.dto.auth.LoginRequest;
+import com.g4stly.templateApp.dto.auth.RegisterRequest;
+import com.g4stly.templateApp.dto.auth.ResendVerificationRequest;
+import com.g4stly.templateApp.dto.auth.ResetPasswordRequest;
+import com.g4stly.templateApp.dto.auth.UserSessionDTO;
+import com.g4stly.templateApp.dto.two_factor.TwoFactorRequiredResponse;
+import com.g4stly.templateApp.services.AuthService;
+import com.g4stly.templateApp.services.CaptchaService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -77,7 +77,7 @@ public class AuthController {
         log.info("Login attempt for username: {}", request.getUsername());
 
         // Verify CAPTCHA if enabled AND user is admin
-        boolean isAdminLogin = "admin".equalsIgnoreCase(request.getUserType());
+        boolean isAdminLogin = "admin".equalsIgnoreCase(request.getRole());
         
         if (captchaEnabled && isAdminLogin) {
             // CAPTCHA is REQUIRED for admin logins

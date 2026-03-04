@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.auth;
+package com.g4stly.templateApp.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +18,7 @@ public class UserSessionDTO {
     private String firstName;
     private String lastName;
     private String profilePicture;
-    private String role; // "CLIENT", "COACH", "ADMIN"
+    private String role;      // "USER" or "ADMIN"
+    private String userType;  // App-level type, e.g. "WAITER", "CHEF" — null for admins
     private Integer adminLevel; // Only for admins
 }

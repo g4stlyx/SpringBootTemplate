@@ -1,7 +1,7 @@
-package  com.g4stly.templateApp.security;
+package com.g4stly.templateApp.security;
 
 import tools.jackson.databind.ObjectMapper;
-import  com.g4stly.templateApp.services.AuthErrorLogService;
+import com.g4stly.templateApp.services.AuthErrorLogService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

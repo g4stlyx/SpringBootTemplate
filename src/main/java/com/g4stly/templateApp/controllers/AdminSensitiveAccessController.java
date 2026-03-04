@@ -49,7 +49,7 @@ public class AdminSensitiveAccessController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection,
             @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String userType,
+            @RequestParam(required = false) String role,
             @RequestParam(required = false) String severity,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String ipAddress,
@@ -62,7 +62,7 @@ public class AdminSensitiveAccessController {
             log.info("Admin {} requesting sensitive access logs", adminId);
             
             SensitiveAccessLogListResponse response = adminSensitiveAccessService.getAllLogs(
-                    adminId, page, size, sortBy, sortDirection, userId, userType, severity, category, ipAddress, startDate, request
+                    adminId, page, size, sortBy, sortDirection, userId, role, severity, category, ipAddress, startDate, request
             );
             
             return ResponseEntity.ok(Map.of(

@@ -45,15 +45,15 @@ public class AdminSensitiveAccessService {
             String sortBy, 
             String sortDirection,
             Long userId,
-            String userType,
+            String role,
             String severity,
             String category,
             String ipAddress,
             LocalDateTime startDate,
             HttpServletRequest request) {
         
-        log.info("Admin {} retrieving sensitive access logs - page: {}, size: {}, sortBy: {}, filters: userId={}, userType={}, severity={}, category={}, ipAddress={}", 
-                adminId, page, size, sortBy, userId, userType, severity, category, ipAddress);
+        log.info("Admin {} retrieving sensitive access logs - page: {}, size: {}, sortBy: {}, filters: userId={}, role={}, severity={}, category={}, ipAddress={}", 
+                adminId, page, size, sortBy, userId, role, severity, category, ipAddress);
         
         // Create sort
         Sort sort = sortDirection.equalsIgnoreCase("desc") 
@@ -67,8 +67,8 @@ public class AdminSensitiveAccessService {
         
         if (userId != null) {
             logsPage = accessLogRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
-        } else if (userType != null && !userType.isEmpty()) {
-            logsPage = accessLogRepository.findByUserTypeOrderByCreatedAtDesc(userType, pageable);
+        } else if (role != null && !role.isEmpty()) {
+            logsPage = accessLogRepository.findByRoleOrderByCreatedAtDesc(role, pageable);
         } else if (severity != null && !severity.isEmpty()) {
             try {
                 SensitiveEndpointAccessLog.SeverityLevel severityLevel = SensitiveEndpointAccessLog.SeverityLevel.valueOf(severity);
@@ -97,7 +97,7 @@ public class AdminSensitiveAccessService {
         details.put("resultCount", logs.size());
         details.put("totalElements", logsPage.getTotalElements());
         if (userId != null) details.put("filterUserId", userId);
-        if (userType != null) details.put("filterUserType", userType);
+        if (role != null) details.put("filterRole", role);
         if (severity != null) details.put("filterSeverity", severity);
         if (category != null) details.put("filterCategory", category);
         if (ipAddress != null) details.put("filterIpAddress", ipAddress);

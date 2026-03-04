@@ -17,18 +17,18 @@ import java.util.List;
 public interface UserActivityLogRepository extends JpaRepository<UserActivityLog, Long>, JpaSpecificationExecutor<UserActivityLog> {
     
     // Find by user
-    Page<UserActivityLog> findByUserIdAndUserTypeOrderByCreatedAtDesc(Long userId, String userType, Pageable pageable);
+    Page<UserActivityLog> findByUserIdAndRoleOrderByCreatedAtDesc(Long userId, String role, Pageable pageable);
     
-    List<UserActivityLog> findByUserIdAndUserTypeOrderByCreatedAtDesc(Long userId, String userType);
+    List<UserActivityLog> findByUserIdAndRoleOrderByCreatedAtDesc(Long userId, String role);
     
-    // Find by user type only
-    Page<UserActivityLog> findByUserTypeOrderByCreatedAtDesc(String userType, Pageable pageable);
+    // Find by role only
+    Page<UserActivityLog> findByRoleOrderByCreatedAtDesc(String role, Pageable pageable);
     
     // Find by action
     Page<UserActivityLog> findByActionOrderByCreatedAtDesc(String action, Pageable pageable);
     
-    // Find by action and user type
-    Page<UserActivityLog> findByActionAndUserTypeOrderByCreatedAtDesc(String action, String userType, Pageable pageable);
+    // Find by action and role
+    Page<UserActivityLog> findByActionAndRoleOrderByCreatedAtDesc(String action, String role, Pageable pageable);
     
     // Find all ordered by created date
     Page<UserActivityLog> findAllByOrderByCreatedAtDesc(Pageable pageable);
@@ -37,33 +37,33 @@ public interface UserActivityLogRepository extends JpaRepository<UserActivityLog
     @Query("SELECT ual FROM UserActivityLog ual WHERE ual.createdAt >= :startDate ORDER BY ual.createdAt DESC")
     Page<UserActivityLog> findByCreatedAtAfterOrderByCreatedAtDesc(@Param("startDate") LocalDateTime startDate, Pageable pageable);
     
-    // Find by date range and user type
-    @Query("SELECT ual FROM UserActivityLog ual WHERE ual.userType = :userType AND ual.createdAt >= :startDate ORDER BY ual.createdAt DESC")
-    Page<UserActivityLog> findByUserTypeAndCreatedAtAfterOrderByCreatedAtDesc(
-            @Param("userType") String userType,
+    // Find by date range and role
+    @Query("SELECT ual FROM UserActivityLog ual WHERE ual.role = :role AND ual.createdAt >= :startDate ORDER BY ual.createdAt DESC")
+    Page<UserActivityLog> findByRoleAndCreatedAtAfterOrderByCreatedAtDesc(
+            @Param("role") String role,
             @Param("startDate") LocalDateTime startDate,
             Pageable pageable
     );
     
     // Find by user and date range
-    @Query("SELECT ual FROM UserActivityLog ual WHERE ual.userId = :userId AND ual.userType = :userType AND ual.createdAt >= :startDate ORDER BY ual.createdAt DESC")
-    Page<UserActivityLog> findByUserIdAndUserTypeAndCreatedAtAfterOrderByCreatedAtDesc(
+    @Query("SELECT ual FROM UserActivityLog ual WHERE ual.userId = :userId AND ual.role = :role AND ual.createdAt >= :startDate ORDER BY ual.createdAt DESC")
+    Page<UserActivityLog> findByUserIdAndRoleAndCreatedAtAfterOrderByCreatedAtDesc(
             @Param("userId") Long userId,
-            @Param("userType") String userType,
+            @Param("role") String role,
             @Param("startDate") LocalDateTime startDate,
             Pageable pageable
     );
     
     // Count by user and date
-    @Query("SELECT COUNT(ual) FROM UserActivityLog ual WHERE ual.userId = :userId AND ual.userType = :userType AND ual.createdAt >= :date")
-    long countByUserIdAndUserTypeAndCreatedAtAfter(
+    @Query("SELECT COUNT(ual) FROM UserActivityLog ual WHERE ual.userId = :userId AND ual.role = :role AND ual.createdAt >= :date")
+    long countByUserIdAndRoleAndCreatedAtAfter(
             @Param("userId") Long userId,
-            @Param("userType") String userType,
+            @Param("role") String role,
             @Param("date") LocalDateTime date
     );
     
     // Find failed actions for a user
-    Page<UserActivityLog> findByUserIdAndUserTypeAndSuccessFalseOrderByCreatedAtDesc(Long userId, String userType, Pageable pageable);
+    Page<UserActivityLog> findByUserIdAndRoleAndSuccessFalseOrderByCreatedAtDesc(Long userId, String role, Pageable pageable);
     
     // Find by IP address
     Page<UserActivityLog> findByIpAddressOrderByCreatedAtDesc(String ipAddress, Pageable pageable);

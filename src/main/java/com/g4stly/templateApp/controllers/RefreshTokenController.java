@@ -4,6 +4,7 @@ import com.g4stly.templateApp.dto.refresh_token.RefreshTokenRequest;
 import com.g4stly.templateApp.models.Admin;
 import com.g4stly.templateApp.models.RefreshToken;
 import com.g4stly.templateApp.repos.AdminRepository;
+import com.g4stly.templateApp.repos.UserRepository;
 import com.g4stly.templateApp.security.JwtUtils;
 import com.g4stly.templateApp.services.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
@@ -38,6 +39,9 @@ public class RefreshTokenController {
 
     @Autowired
     private AdminRepository adminRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Value("${app.refresh-token.cookie-name:refreshToken}")
     private String cookieName;
@@ -84,35 +88,30 @@ public class RefreshTokenController {
             }
 
             RefreshToken oldRefreshToken = refreshTokenOpt.get();
-            log.info("Refreshing token for userId={}, userType={}", 
-                    oldRefreshToken.getUserId(), oldRefreshToken.getUserType());
+            log.info("Refreshing token for userId={}, role={}", 
+                    oldRefreshToken.getUserId(), oldRefreshToken.getRole());
 
             // Rotate refresh token (revoke old, create new)
             RefreshToken newRefreshToken = refreshTokenService.rotateRefreshToken(oldRefreshToken, httpRequest);
 
-            // Generate new access token with admin level if applicable
-            String username = resolveUsername(oldRefreshToken.getUserId(), oldRefreshToken.getUserType());
+            // Generate new access token based on role
+            String username = resolveUsername(oldRefreshToken.getUserId(), oldRefreshToken.getRole());
             String accessToken;
             
-            if ("admin".equals(oldRefreshToken.getUserType())) {
+            if ("admin".equals(oldRefreshToken.getRole())) {
                 // Fetch admin level from database
                 Integer adminLevel = adminRepository.findById(oldRefreshToken.getUserId())
                         .map(Admin::getLevel)
                         .orElse(null);
-                
-                accessToken = jwtUtils.generateToken(
-                        username, 
-                        oldRefreshToken.getUserId(), 
-                        oldRefreshToken.getUserType(),
-                        adminLevel
-                );
-                log.debug("Generated access token with admin level: {}", adminLevel);
+                accessToken = jwtUtils.generateAdminToken(username, oldRefreshToken.getUserId(), adminLevel);
+                log.debug("Generated admin access token with adminLevel: {}", adminLevel);
             } else {
-                accessToken = jwtUtils.generateToken(
-                        username, 
-                        oldRefreshToken.getUserId(), 
-                        oldRefreshToken.getUserType()
-                );
+                // Fetch user's app-level type from database
+                String userType = userRepository.findById(oldRefreshToken.getUserId())
+                        .map(u -> u.getUserType().name().toLowerCase())
+                        .orElse("waiter");
+                accessToken = jwtUtils.generateUserToken(username, oldRefreshToken.getUserId(), userType);
+                log.debug("Generated user access token with userType: {}", userType);
             }
 
             // Set new refresh token in cookie if using cookies
@@ -199,15 +198,15 @@ public class RefreshTokenController {
 
             String accessToken = authHeader.substring(7);
             Long userId = jwtUtils.extractUserIdAsLong(accessToken);
-            String userType = jwtUtils.extractUserType(accessToken);
+            String role = jwtUtils.extractRole(accessToken);
 
-            if (userId == null || userType == null) {
+            if (userId == null || role == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("error", "Invalid access token"));
             }
 
             // Revoke all tokens for this user
-            int revokedCount = refreshTokenService.revokeAllUserTokens(userId, userType);
+            int revokedCount = refreshTokenService.revokeAllUserTokens(userId, role);
 
             // Clear current cookie
             clearRefreshTokenCookie(httpResponse);
@@ -217,8 +216,8 @@ public class RefreshTokenController {
             response.put("revokedTokens", revokedCount);
             response.put("success", true);
 
-            log.info("User userId={}, userType={} logged out from all devices. {} tokens revoked.", 
-                    userId, userType, revokedCount);
+            log.info("User userId={}, role={} logged out from all devices. {} tokens revoked.", 
+                    userId, role, revokedCount);
 
             return ResponseEntity.ok(response);
 
@@ -278,12 +277,12 @@ public class RefreshTokenController {
     }
 
     /**
-     * Resolve username by userId and userType.
+     * Resolve username by userId and role.
      * This is a simple fallback - in production, you might want to inject repositories.
      */
-    private String resolveUsername(Long userId, String userType) {
+    private String resolveUsername(Long userId, String role) {
         // For simplicity, we return a generic username
         // In a real implementation, you'd query the appropriate repository
-        return userType + "_" + userId;
+        return role + "_" + userId;
     }
 }

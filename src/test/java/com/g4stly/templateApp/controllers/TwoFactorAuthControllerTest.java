@@ -229,7 +229,7 @@ class TwoFactorAuthControllerTest extends BaseControllerTest {
         when(twoFactorAuthService.verifyCodeByUsername(eq("adminUser"), eq("123456"), eq("valid-challenge")))
                 .thenReturn(true);
         when(twoFactorAuthService.getAdminByUsername("adminUser")).thenReturn(admin);
-        when(jwtUtils.generateToken(eq("adminUser"), eq(1L), eq("admin"), eq(0)))
+        when(jwtUtils.generateAdminToken(eq("adminUser"), eq(1L), eq(0)))
                 .thenReturn("access-token-value");
         when(jwtUtils.getAccessTokenExpiration()).thenReturn(900L);
         when(refreshTokenService.createRefreshToken(eq(1L), eq("admin"), any()))

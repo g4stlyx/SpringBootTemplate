@@ -45,7 +45,7 @@ public class SensitiveEndpointAccessLogService {
     public void logAccess(
             SensitiveEndpointAccessLog.SeverityLevel severity,
             Long userId,
-            String userType,
+            String role,
             String username,
             String ipAddress,
             String userAgent,
@@ -66,7 +66,7 @@ public class SensitiveEndpointAccessLogService {
             SensitiveEndpointAccessLog accessLog = SensitiveEndpointAccessLog.builder()
                     .severity(severity)
                     .userId(userId)
-                    .userType(userType)
+                    .role(role)
                     .username(username)
                     .ipAddress(ipAddress)
                     .userAgent(userAgent)
@@ -104,13 +104,13 @@ public class SensitiveEndpointAccessLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logDatabaseBackupAccess(Long userId, String userType, String username, 
+    public void logDatabaseBackupAccess(Long userId, String role, String username, 
                                         String ipAddress, String userAgent, String endpoint, 
                                         String httpMethod, Integer responseStatus) {
         logAccess(
                 SensitiveEndpointAccessLog.SeverityLevel.CRITICAL,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -127,13 +127,13 @@ public class SensitiveEndpointAccessLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logAdminManagementAccess(Long userId, String userType, String username, 
+    public void logAdminManagementAccess(Long userId, String role, String username, 
                                          String ipAddress, String userAgent, String endpoint, 
                                          String httpMethod, Integer responseStatus) {
         logAccess(
                 SensitiveEndpointAccessLog.SeverityLevel.HIGH,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -150,13 +150,13 @@ public class SensitiveEndpointAccessLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logTokenManagementAccess(Long userId, String userType, String username, 
+    public void logTokenManagementAccess(Long userId, String role, String username, 
                                          String ipAddress, String userAgent, String endpoint, 
                                          String httpMethod, Integer responseStatus) {
         logAccess(
                 SensitiveEndpointAccessLog.SeverityLevel.HIGH,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -173,13 +173,13 @@ public class SensitiveEndpointAccessLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void log2FASettingsAccess(Long userId, String userType, String username, 
+    public void log2FASettingsAccess(Long userId, String role, String username, 
                                      String ipAddress, String userAgent, String endpoint, 
                                      String httpMethod, Integer responseStatus) {
         logAccess(
                 SensitiveEndpointAccessLog.SeverityLevel.MEDIUM,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -196,13 +196,13 @@ public class SensitiveEndpointAccessLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logActivityLogsAccess(Long userId, String userType, String username, 
+    public void logActivityLogsAccess(Long userId, String role, String username, 
                                       String ipAddress, String userAgent, String endpoint, 
                                       String httpMethod, Integer responseStatus) {
         logAccess(
                 SensitiveEndpointAccessLog.SeverityLevel.MEDIUM,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -219,13 +219,13 @@ public class SensitiveEndpointAccessLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logErrorLogsAccess(Long userId, String userType, String username, 
+    public void logErrorLogsAccess(Long userId, String role, String username, 
                                    String ipAddress, String userAgent, String endpoint, 
                                    String httpMethod, Integer responseStatus) {
         logAccess(
                 SensitiveEndpointAccessLog.SeverityLevel.MEDIUM,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -243,7 +243,7 @@ public class SensitiveEndpointAccessLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logSuspiciousFileAccess(Long userId, String userType, String username, 
+    public void logSuspiciousFileAccess(Long userId, String role, String username, 
                                         String ipAddress, String userAgent, String endpoint, 
                                         String httpMethod, Integer responseStatus,
                                         SensitiveEndpointAccessLog.SeverityLevel severity) {
@@ -251,7 +251,7 @@ public class SensitiveEndpointAccessLogService {
         logAccess(
                 severity,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -269,7 +269,7 @@ public class SensitiveEndpointAccessLogService {
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logSuspiciousPathProbe(Long userId, String userType, String username, 
+    public void logSuspiciousPathProbe(Long userId, String role, String username, 
                                        String ipAddress, String userAgent, String endpoint, 
                                        String httpMethod, Integer responseStatus,
                                        SensitiveEndpointAccessLog.SeverityLevel severity) {
@@ -277,7 +277,7 @@ public class SensitiveEndpointAccessLogService {
         logAccess(
                 severity,
                 userId,
-                userType,
+                role,
                 username,
                 ipAddress,
                 userAgent,
@@ -369,10 +369,10 @@ public class SensitiveEndpointAccessLogService {
             sb.append("</div>");
         }
         
-        if (accessLog.getUserType() != null) {
+        if (accessLog.getRole() != null) {
             sb.append("<div class='field'>");
-            sb.append("<div class='field-label'>User Type</div>");
-            sb.append("<div class='field-value'>").append(accessLog.getUserType()).append("</div>");
+            sb.append("<div class='field-label'>Role</div>");
+            sb.append("<div class='field-value'>").append(accessLog.getRole()).append("</div>");
             sb.append("</div>");
         }
         

@@ -1,12 +1,12 @@
-package  com.g4stly.templateApp.controllers;
+package com.g4stly.templateApp.controllers;
 
-import  com.g4stly.templateApp.dto.admin.AuthErrorLogListResponse;
-import  com.g4stly.templateApp.dto.admin.AuthErrorLogResponse;
-import  com.g4stly.templateApp.dto.admin.AuthErrorStatisticsResponse;
-import  com.g4stly.templateApp.models.Admin;
-import  com.g4stly.templateApp.repos.AdminRepository;
-import  com.g4stly.templateApp.security.JwtUtils;
-import  com.g4stly.templateApp.services.AdminAuthErrorService;
+import com.g4stly.templateApp.dto.admin.AuthErrorLogListResponse;
+import com.g4stly.templateApp.dto.admin.AuthErrorLogResponse;
+import com.g4stly.templateApp.dto.admin.AuthErrorStatisticsResponse;
+import com.g4stly.templateApp.models.Admin;
+import com.g4stly.templateApp.repos.AdminRepository;
+import com.g4stly.templateApp.security.JwtUtils;
+import com.g4stly.templateApp.services.AdminAuthErrorService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public class AdminAuthErrorController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection,
             @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String userType,
+            @RequestParam(required = false) String role,
             @RequestParam(required = false) String errorType,
             @RequestParam(required = false) String ipAddress,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -62,7 +62,7 @@ public class AdminAuthErrorController {
             log.info("Admin {} requesting auth error logs", adminId);
             
             AuthErrorLogListResponse response = adminAuthErrorService.getAllLogs(
-                    adminId, page, size, sortBy, sortDirection, userId, userType, errorType, ipAddress, startDate, request
+                    adminId, page, size, sortBy, sortDirection, userId, role, errorType, ipAddress, startDate, request
             );
             
             return ResponseEntity.ok(Map.of(

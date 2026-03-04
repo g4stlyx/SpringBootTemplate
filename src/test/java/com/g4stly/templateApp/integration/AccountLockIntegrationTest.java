@@ -27,18 +27,18 @@ class AccountLockIntegrationTest extends BaseIntegrationTest {
         final String username = "bruteuser";
         final String correctPassword = "Correct1!";
 
-        createVerifiedClient(username, "bruteuser@test.com", correctPassword);
+        createVerifiedUser(username, "bruteuser@test.com", correctPassword);
 
         // 5 failed login attempts with wrong password
         for (int i = 0; i < 5; i++) {
-            ResponseEntity<Map<String, Object>> failResp = login(username, "WrongPass" + i + "!", "client");
+            ResponseEntity<Map<String, Object>> failResp = login(username, "WrongPass" + i + "!", "user");
             assertThat(failResp.getStatusCode())
                     .as("Attempt %d should return 401", i + 1)
                     .isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
         // 6th attempt with correct password — account must now be locked
-        ResponseEntity<Map<String, Object>> lockedResp = login(username, correctPassword, "client");
+        ResponseEntity<Map<String, Object>> lockedResp = login(username, correctPassword, "user");
 
         assertThat(lockedResp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(lockedResp.getBody()).containsKey("message");

@@ -1,8 +1,8 @@
-package  com.g4stly.templateApp.controllers;
+package com.g4stly.templateApp.controllers;
 
-import  com.g4stly.templateApp.security.JwtUtils;
-import  com.g4stly.templateApp.services.AdminProfileService;
-import  com.g4stly.templateApp.services.ImageUploadService;
+import com.g4stly.templateApp.security.JwtUtils;
+import com.g4stly.templateApp.services.AdminProfileService;
+import com.g4stly.templateApp.services.ImageUploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -126,86 +126,6 @@ public class AdminImageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     "success", false,
                     "message", "Profil resmi silinirken hata oluştu: " + e.getMessage()
-            ));
-        }
-    }
-
-    /**
-     * Upload book cover image
-     */
-    @PostMapping("/book-cover/{bookId}")
-    public ResponseEntity<?> uploadBookCover(
-            @PathVariable Long bookId,
-            @RequestParam("file") MultipartFile file) {
-        try {
-            String imageUrl = imageUploadService.uploadBookCover(file, bookId);
-            
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Kitap kapağı başarıyla yüklendi",
-                    "imageUrl", imageUrl
-            ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-            ));
-        } catch (Exception e) {
-            log.error("Error uploading book cover", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "message", "Kitap kapağı yüklenirken hata oluştu: " + e.getMessage()
-            ));
-        }
-    }
-
-    /**
-     * Update book cover image
-     */
-    @PutMapping("/book-cover/{bookId}")
-    public ResponseEntity<?> updateBookCover(
-            @PathVariable Long bookId,
-            @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "oldImageUrl", required = false) String oldImageUrl) {
-        try {
-            String imageUrl = imageUploadService.updateBookCover(file, bookId, oldImageUrl);
-            
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Kitap kapağı başarıyla güncellendi",
-                    "imageUrl", imageUrl
-            ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-            ));
-        } catch (Exception e) {
-            log.error("Error updating book cover", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "message", "Kitap kapağı güncellenirken hata oluştu: " + e.getMessage()
-            ));
-        }
-    }
-
-    /**
-     * Delete book cover image
-     */
-    @DeleteMapping("/book-cover")
-    public ResponseEntity<?> deleteBookCover(@RequestParam("imageUrl") String imageUrl) {
-        try {
-            imageUploadService.deleteImage(imageUrl);
-            
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Kitap kapağı başarıyla silindi"
-            ));
-        } catch (Exception e) {
-            log.error("Error deleting book cover", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "message", "Kitap kapağı silinirken hata oluştu: " + e.getMessage()
             ));
         }
     }

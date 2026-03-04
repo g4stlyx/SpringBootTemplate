@@ -6,8 +6,7 @@ import com.g4stly.templateApp.exception.ResourceNotFoundException;
 import com.g4stly.templateApp.exception.UnauthorizedException;
 import com.g4stly.templateApp.models.Admin;
 import com.g4stly.templateApp.repos.AdminRepository;
-import com.g4stly.templateApp.repos.ClientRepository;
-import com.g4stly.templateApp.repos.CoachRepository;
+import com.g4stly.templateApp.repos.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -46,10 +45,7 @@ public class AdminManagementService {
     private AdminActivityLogger activityLogger;
     
     @Autowired
-    private ClientRepository clientRepository;
-
-    @Autowired
-    private CoachRepository coachRepository;
+    private UserRepository userRepository;
 
     /**
      * Check if requesting admin has permission to manage target admin
@@ -219,18 +215,14 @@ public class AdminManagementService {
             throw new BadRequestException("Cannot create super admin via API. Super admins must be created manually.");
         }
         
-        // Check if username already exists (across clients, coaches, and admins)
-        //TODO: Re-add cross-entity username check when needed based on the user types
-        if (clientRepository.existsByUsername(request.getUsername()) || 
-            coachRepository.existsByUsername(request.getUsername()) ||
+        // Check username uniqueness across users and admins tables
+        if (userRepository.existsByUsername(request.getUsername()) || 
             adminRepository.existsByUsername(request.getUsername())) {
             throw new BadRequestException("Username already exists");
         }
         
-        // Check if email already exists (across clients, coaches, and admins)
-        //TODO: Re-add cross-entity email check when needed based on the user types
-        if (clientRepository.existsByEmail(request.getEmail()) || 
-            coachRepository.existsByEmail(request.getEmail()) ||
+        // Check email uniqueness across users and admins tables
+        if (userRepository.existsByEmail(request.getEmail()) || 
             adminRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already exists");
         }
@@ -285,11 +277,9 @@ public class AdminManagementService {
         // Track changes for logging
         Map<String, Object> changes = new HashMap<>();
         
-        // Check if email is being changed and if it's already taken
-        //TODO: Re-add cross-entity email check when needed based on the user types
+        // Check email uniqueness across users and admins tables
         if (request.getEmail() != null && !request.getEmail().equals(targetAdmin.getEmail())) {
-            if (clientRepository.existsByEmail(request.getEmail()) || 
-                coachRepository.existsByEmail(request.getEmail()) ||
+            if (userRepository.existsByEmail(request.getEmail()) || 
                 adminRepository.existsByEmail(request.getEmail())) {
                 throw new BadRequestException("Email is already in use");
             }

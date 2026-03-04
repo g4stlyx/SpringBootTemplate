@@ -28,8 +28,8 @@ class VerificationTokenRepositoryTest {
     private final LocalDateTime NOW = LocalDateTime.now();
 
     /** Saves a token with overridden expiryDate for expiry tests. */
-    private VerificationToken buildToken(Long userId, String userType, LocalDateTime expiryDate) {
-        VerificationToken t = new VerificationToken(userId, userType);
+    private VerificationToken buildToken(Long userId, String role, LocalDateTime expiryDate) {
+        VerificationToken t = new VerificationToken(userId, role);
         t.setExpiryDate(expiryDate);
         return t;
     }
@@ -38,9 +38,9 @@ class VerificationTokenRepositoryTest {
     void setUp() {
         tokenRepository.deleteAll();
         tokenRepository.saveAll(List.of(
-            buildToken(1L, "client", NOW.plusHours(24)),   // valid
-            buildToken(2L, "coach",  NOW.plusHours(24)),   // valid
-            buildToken(3L, "client", NOW.minusHours(1)),   // expired
+            buildToken(1L, "user", NOW.plusHours(24)),   // valid
+            buildToken(2L, "user",  NOW.plusHours(24)),   // valid
+            buildToken(3L, "user", NOW.minusHours(1)),   // expired
             buildToken(4L, "admin",  NOW.minusHours(2))    // expired
         ));
     }
@@ -69,13 +69,13 @@ class VerificationTokenRepositoryTest {
     }
 
     @Nested
-    @DisplayName("findByUserIdAndUserType")
+    @DisplayName("findByUserIdAndRole")
     class FindByUserTests {
 
         @Test
         @DisplayName("returns token for known user")
         void found() {
-            Optional<VerificationToken> result = tokenRepository.findByUserIdAndUserType(1L, "client");
+            Optional<VerificationToken> result = tokenRepository.findByUserIdAndRole(1L, "user");
             assertThat(result).isPresent();
             assertThat(result.get().getUserId()).isEqualTo(1L);
         }
@@ -83,30 +83,30 @@ class VerificationTokenRepositoryTest {
         @Test
         @DisplayName("returns empty for unknown user")
         void notFound() {
-            Optional<VerificationToken> result = tokenRepository.findByUserIdAndUserType(99L, "client");
+            Optional<VerificationToken> result = tokenRepository.findByUserIdAndRole(99L, "user");
             assertThat(result).isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("findFirstByUserTypeOrderByCreatedDateDesc")
-    class FindFirstByUserTypeTests {
+    @DisplayName("findFirstByRoleOrderByCreatedDateDesc")
+    class FindFirstByRoleTests {
 
         @Test
         @DisplayName("returns the most recent token for user type")
         void returnsLatest() {
-            // Save a second client token
-            VerificationToken newer = buildToken(5L, "client", NOW.plusHours(24));
+            // Save a second user token
+            VerificationToken newer = buildToken(5L, "user", NOW.plusHours(24));
             tokenRepository.save(newer);
 
-            Optional<VerificationToken> result = tokenRepository.findFirstByUserTypeOrderByCreatedDateDesc("client");
+            Optional<VerificationToken> result = tokenRepository.findFirstByRoleOrderByCreatedDateDesc("user");
             assertThat(result).isPresent();
         }
 
         @Test
         @DisplayName("returns empty for user type with no tokens")
         void returnsEmpty() {
-            Optional<VerificationToken> result = tokenRepository.findFirstByUserTypeOrderByCreatedDateDesc("unknown_type");
+            Optional<VerificationToken> result = tokenRepository.findFirstByRoleOrderByCreatedDateDesc("unknown_type");
             assertThat(result).isEmpty();
         }
     }
@@ -116,23 +116,23 @@ class VerificationTokenRepositoryTest {
     // -----------------------------------------------------------------------
 
     @Nested
-    @DisplayName("deleteByUserIdAndUserType")
+    @DisplayName("deleteByUserIdAndRole")
     class DeleteTests {
 
         @Test
         @DisplayName("deletes token for given user")
         void deletesUserToken() {
             long countBefore = tokenRepository.count();
-            tokenRepository.deleteByUserIdAndUserType(1L, "client");
+            tokenRepository.deleteByUserIdAndRole(1L, "user");
             assertThat(tokenRepository.count()).isEqualTo(countBefore - 1);
-            assertThat(tokenRepository.findByUserIdAndUserType(1L, "client")).isEmpty();
+            assertThat(tokenRepository.findByUserIdAndRole(1L, "user")).isEmpty();
         }
 
         @Test
         @DisplayName("does not delete tokens of other users")
         void doesNotDeleteOthers() {
-            tokenRepository.deleteByUserIdAndUserType(1L, "client");
-            assertThat(tokenRepository.findByUserIdAndUserType(2L, "coach")).isPresent();
+            tokenRepository.deleteByUserIdAndRole(1L, "user");
+            assertThat(tokenRepository.findByUserIdAndRole(2L, "user")).isPresent();
         }
     }
 
@@ -162,23 +162,23 @@ class VerificationTokenRepositoryTest {
     }
 
     @Nested
-    @DisplayName("findByUserTypeOrderByCreatedDateDesc (paginated)")
-    class FindByUserTypeTests {
+    @DisplayName("findByRoleOrderByCreatedDateDesc (paginated)")
+    class FindByRoleTests {
 
         @Test
-        @DisplayName("returns tokens for given user type")
-        void returnsForUserType() {
+        @DisplayName("returns tokens for given role")
+        void returnsForRole() {
             Page<VerificationToken> page = tokenRepository
-                    .findByUserTypeOrderByCreatedDateDesc("client", PageRequest.of(0, 10));
-            // userId 1 and userId 3 are both "client"
-            assertThat(page.getTotalElements()).isEqualTo(2L);
+                    .findByRoleOrderByCreatedDateDesc("user", PageRequest.of(0, 10));
+            // userId 1, 2, and 3 are all "user"
+            assertThat(page.getTotalElements()).isEqualTo(3L);
         }
 
         @Test
         @DisplayName("returns empty for unknown user type")
         void returnsEmpty() {
             Page<VerificationToken> page = tokenRepository
-                    .findByUserTypeOrderByCreatedDateDesc("unknown", PageRequest.of(0, 10));
+                    .findByRoleOrderByCreatedDateDesc("unknown", PageRequest.of(0, 10));
             assertThat(page.getTotalElements()).isEqualTo(0L);
         }
     }

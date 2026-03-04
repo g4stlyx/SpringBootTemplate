@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.services;
+package com.g4stly.templateApp.services;
 
 import tools.jackson.databind.ObjectMapper;
 import com.g4stly.templateApp.models.AdminActivityLog;

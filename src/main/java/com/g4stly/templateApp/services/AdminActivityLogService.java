@@ -1,11 +1,11 @@
-package  com.g4stly.templateApp.services;
+package com.g4stly.templateApp.services;
 
-import  com.g4stly.templateApp.dto.admin.AdminActivityLogDTO;
-import  com.g4stly.templateApp.dto.admin.AdminActivityLogListResponse;
-import  com.g4stly.templateApp.models.Admin;
-import  com.g4stly.templateApp.models.AdminActivityLog;
-import  com.g4stly.templateApp.repos.AdminActivityLogRepository;
-import  com.g4stly.templateApp.repos.AdminRepository;
+import com.g4stly.templateApp.dto.admin.AdminActivityLogDTO;
+import com.g4stly.templateApp.dto.admin.AdminActivityLogListResponse;
+import com.g4stly.templateApp.models.Admin;
+import com.g4stly.templateApp.models.AdminActivityLog;
+import com.g4stly.templateApp.repos.AdminActivityLogRepository;
+import com.g4stly.templateApp.repos.AdminRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

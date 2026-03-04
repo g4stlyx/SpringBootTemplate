@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.auth;
+package com.g4stly.templateApp.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -17,6 +17,6 @@ public class ResendVerificationRequest {
     @Size(max = 255, message = "Email must not exceed 255 characters")
     private String email;
     
-    @Pattern(regexp = "^(client|coach)?$", message = "User type must be 'client' or 'coach'")
-    private String userType; // Optional: "client" or "coach"
+    @Pattern(regexp = "^(user)?$", message = "Role must be 'user'")
+    private String role; // Optional: "user"
 }

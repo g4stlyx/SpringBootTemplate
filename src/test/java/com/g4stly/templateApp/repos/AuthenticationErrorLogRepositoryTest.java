@@ -27,12 +27,12 @@ class AuthenticationErrorLogRepositoryTest {
 
     private final LocalDateTime NOW = LocalDateTime.now();
 
-    private AuthenticationErrorLog buildLog(ErrorType type, Long userId, String userType,
+    private AuthenticationErrorLog buildLog(ErrorType type, Long userId, String role,
                                             String ipAddress, String endpoint) {
         return AuthenticationErrorLog.builder()
                 .errorType(type)
                 .userId(userId)
-                .userType(userType)
+                .role(role)
                 .ipAddress(ipAddress)
                 .endpoint(endpoint)
                 .httpMethod("POST")
@@ -44,9 +44,9 @@ class AuthenticationErrorLogRepositoryTest {
     void setUp() {
         logRepository.deleteAll();
         logRepository.saveAll(List.of(
-            buildLog(ErrorType.UNAUTHORIZED_401, 1L, "client", "1.1.1.1", "/api/v1/auth/login"),
-            buildLog(ErrorType.UNAUTHORIZED_401, 1L, "client", "1.1.1.1", "/api/v1/auth/login"),
-            buildLog(ErrorType.FORBIDDEN_403,    2L, "coach",  "2.2.2.2", "/api/v1/admin"),
+            buildLog(ErrorType.UNAUTHORIZED_401, 1L, "user",  "1.1.1.1", "/api/v1/auth/login"),
+            buildLog(ErrorType.UNAUTHORIZED_401, 1L, "user",  "1.1.1.1", "/api/v1/auth/login"),
+            buildLog(ErrorType.FORBIDDEN_403,    2L, "user",  "2.2.2.2", "/api/v1/admin"),
             buildLog(ErrorType.INVALID_TOKEN,    null, null,   "3.3.3.3", "/api/v1/resource")
         ));
     }
@@ -127,15 +127,15 @@ class AuthenticationErrorLogRepositoryTest {
     }
 
     @Nested
-    @DisplayName("findByUserTypeOrderByCreatedAtDesc")
-    class FilterByUserTypeTests {
+    @DisplayName("findByRoleOrderByCreatedAtDesc")
+    class FilterByRoleTests {
 
         @Test
-        @DisplayName("returns logs for given user type")
-        void returnsForUserType() {
+        @DisplayName("returns logs for given role")
+        void returnsForRole() {
             Page<AuthenticationErrorLog> page = logRepository
-                    .findByUserTypeOrderByCreatedAtDesc("client", PageRequest.of(0, 10));
-            assertThat(page.getTotalElements()).isEqualTo(2L);
+                    .findByRoleOrderByCreatedAtDesc("user", PageRequest.of(0, 10));
+            assertThat(page.getTotalElements()).isEqualTo(3L);
         }
     }
 

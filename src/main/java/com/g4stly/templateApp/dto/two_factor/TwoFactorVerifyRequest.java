@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.dto.two_factor;
+package com.g4stly.templateApp.dto.two_factor;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

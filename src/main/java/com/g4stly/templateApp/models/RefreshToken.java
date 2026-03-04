@@ -8,7 +8,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "refresh_tokens", indexes = {
     @Index(name = "idx_refresh_token", columnList = "token"),
-    @Index(name = "idx_refresh_user_composite", columnList = "user_id, user_type"),
+    @Index(name = "idx_refresh_user_composite", columnList = "user_id, role"),
     @Index(name = "idx_refresh_expiry_date", columnList = "expiry_date"),
     @Index(name = "idx_refresh_is_revoked", columnList = "is_revoked")
 })
@@ -24,8 +24,8 @@ public class RefreshToken {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "user_type", nullable = false, length = 20)
-    private String userType;
+    @Column(name = "role", nullable = false, length = 20)
+    private String role;
 
     @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;
@@ -50,10 +50,10 @@ public class RefreshToken {
         this.createdAt = LocalDateTime.now();
     }
 
-    public RefreshToken(Long userId, String userType, long expirationDays) {
+    public RefreshToken(Long userId, String role, long expirationDays) {
         this.token = UUID.randomUUID().toString();
         this.userId = userId;
-        this.userType = userType;
+        this.role = role;
         this.createdAt = LocalDateTime.now();
         this.expiryDate = this.createdAt.plusDays(expirationDays);
         this.isRevoked = false;

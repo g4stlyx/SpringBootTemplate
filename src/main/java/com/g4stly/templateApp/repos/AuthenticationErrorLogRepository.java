@@ -1,6 +1,6 @@
-package  com.g4stly.templateApp.repos;
+package com.g4stly.templateApp.repos;
 
-import  com.g4stly.templateApp.models.AuthenticationErrorLog;
+import com.g4stly.templateApp.models.AuthenticationErrorLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,9 +30,9 @@ public interface AuthenticationErrorLogRepository extends JpaRepository<Authenti
     Page<AuthenticationErrorLog> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
     
     /**
-     * Find logs by user type (admin, coach, client)
+     * Find logs by role (admin, user)
      */
-    Page<AuthenticationErrorLog> findByUserTypeOrderByCreatedAtDesc(String userType, Pageable pageable);
+    Page<AuthenticationErrorLog> findByRoleOrderByCreatedAtDesc(String role, Pageable pageable);
     
     /**
      * Find logs by IP address

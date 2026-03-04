@@ -1,4 +1,4 @@
-package  com.g4stly.templateApp.config;
+package com.g4stly.templateApp.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
