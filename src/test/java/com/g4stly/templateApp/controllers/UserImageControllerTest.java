@@ -108,6 +108,7 @@ class UserImageControllerTest extends BaseControllerTest {
     @Test
     @DisplayName("DELETE /profile/image → 200 with success=true")
     void deleteProfileImage_returns200() throws Exception {
+        when(userProfileService.getProfilePictureUrl(eq(1L))).thenReturn(IMAGE_URL);
         doNothing().when(imageUploadService).deleteImage(IMAGE_URL);
         when(userProfileService.updateProfilePicture(eq(1L), isNull())).thenReturn(sampleProfile(null));
 

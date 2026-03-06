@@ -136,6 +136,7 @@ class RefreshTokenControllerTest extends BaseControllerTest {
     @Test
     void logoutAll_nullUserIdFromToken_returns401() throws Exception {
         // Header present but extractUserIdAsLong returns null
+        when(jwtUtils.validateToken("some-access-token")).thenReturn(true);
         when(jwtUtils.extractUserIdAsLong("some-access-token")).thenReturn(null);
         when(jwtUtils.extractRole("some-access-token")).thenReturn("admin");
 
@@ -147,6 +148,7 @@ class RefreshTokenControllerTest extends BaseControllerTest {
 
     @Test
     void logoutAll_validToken_returns200WithRevokedCount() throws Exception {
+        when(jwtUtils.validateToken("valid-access-token")).thenReturn(true);
         when(jwtUtils.extractUserIdAsLong("valid-access-token")).thenReturn(1L);
         when(jwtUtils.extractRole("valid-access-token")).thenReturn("admin");
         when(refreshTokenService.revokeAllUserTokens(1L, "admin")).thenReturn(3);
