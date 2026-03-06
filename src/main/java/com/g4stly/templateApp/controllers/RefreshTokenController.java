@@ -79,7 +79,8 @@ public class RefreshTokenController {
                         .body(Map.of("error", "Refresh token is required"));
             }
 
-            log.info("Received refresh token: {}...", refreshTokenStr.substring(0, Math.min(8, refreshTokenStr.length())));
+            log.info("Received refresh token: {}...",
+                    refreshTokenStr.substring(0, Math.min(8, refreshTokenStr.length())));
 
             // Verify refresh token
             Optional<RefreshToken> refreshTokenOpt = refreshTokenService.verifyRefreshToken(refreshTokenStr);
@@ -91,7 +92,7 @@ public class RefreshTokenController {
             }
 
             RefreshToken oldRefreshToken = refreshTokenOpt.get();
-            log.info("Refreshing token for userId={}, role={}", 
+            log.info("Refreshing token for userId={}, role={}",
                     oldRefreshToken.getUserId(), oldRefreshToken.getRole());
 
             // Rotate refresh token (revoke old, create new)
@@ -100,7 +101,7 @@ public class RefreshTokenController {
             // Generate new access token based on role
             String username = resolveUsername(oldRefreshToken.getUserId(), oldRefreshToken.getRole());
             String accessToken;
-            
+
             if ("admin".equals(oldRefreshToken.getRole())) {
                 // Fetch admin level from database
                 Integer adminLevel = adminRepository.findById(oldRefreshToken.getUserId())
@@ -126,7 +127,7 @@ public class RefreshTokenController {
             response.put("accessToken", accessToken);
             response.put("tokenType", "Bearer");
             response.put("expiresIn", jwtUtils.getAccessTokenExpiration());
-            
+
             // Only include refresh token in response for mobile clients
             if (!useCookies || request != null) {
                 response.put("refreshToken", newRefreshToken.getToken());
@@ -200,6 +201,13 @@ public class RefreshTokenController {
             }
 
             String accessToken = authHeader.substring(7);
+
+            // Validate token before acting — reject expired/invalid tokens
+            if (!jwtUtils.validateToken(accessToken)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Invalid or expired access token"));
+            }
+
             Long userId = jwtUtils.extractUserIdAsLong(accessToken);
             String role = jwtUtils.extractRole(accessToken);
 
@@ -219,7 +227,7 @@ public class RefreshTokenController {
             response.put("revokedTokens", revokedCount);
             response.put("success", true);
 
-            log.info("User userId={}, role={} logged out from all devices. {} tokens revoked.", 
+            log.info("User userId={}, role={} logged out from all devices. {} tokens revoked.",
                     userId, role, revokedCount);
 
             return ResponseEntity.ok(response);
@@ -264,7 +272,7 @@ public class RefreshTokenController {
                 .secure(cookieSecure)
                 .path("/")
                 .maxAge(cookieMaxAge)
-                .sameSite("Lax")
+                .sameSite("Strict")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }

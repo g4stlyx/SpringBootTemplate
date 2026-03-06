@@ -1,5 +1,6 @@
 package com.g4stly.templateApp.controllers;
 
+import com.g4stly.templateApp.exception.ForbiddenException;
 import com.g4stly.templateApp.services.ImageUploadService;
 import com.g4stly.templateApp.services.UserProfileService;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +18,11 @@ import java.util.Map;
  * Handles profile image upload/update/delete for regular users.
  *
  * Security:
- * - userId is always taken from the authenticated JWT details (never from the request).
- * - The image is validated via magic-byte detection inside {@link ImageUploadService}
- *   to prevent Content-Type spoofing (e.g. a PHP script uploaded as image/jpeg).
+ * - userId is always taken from the authenticated JWT details (never from the
+ * request).
+ * - The image is validated via magic-byte detection inside
+ * {@link ImageUploadService}
+ * to prevent Content-Type spoofing (e.g. a PHP script uploaded as image/jpeg).
  */
 @RestController
 @RequestMapping("/api/v1/profile/image")
@@ -32,7 +35,7 @@ public class UserImageController {
     private final UserProfileService userProfileService;
 
     // ──────────────────────────────────────────────────────────────────────────
-    // POST /api/v1/profile/image  — upload (first time)
+    // POST /api/v1/profile/image — upload (first time)
     // ──────────────────────────────────────────────────────────────────────────
 
     @PostMapping
@@ -46,8 +49,7 @@ public class UserImageController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Profile image uploaded successfully",
-                    "imageUrl", imageUrl
-            ));
+                    "imageUrl", imageUrl));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         } catch (Exception e) {
@@ -58,7 +60,7 @@ public class UserImageController {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // PUT /api/v1/profile/image  — replace existing image
+    // PUT /api/v1/profile/image — replace existing image
     // ──────────────────────────────────────────────────────────────────────────
 
     @PutMapping
@@ -73,8 +75,7 @@ public class UserImageController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Profile image updated successfully",
-                    "imageUrl", imageUrl
-            ));
+                    "imageUrl", imageUrl));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         } catch (Exception e) {
@@ -85,7 +86,7 @@ public class UserImageController {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // DELETE /api/v1/profile/image  — remove image
+    // DELETE /api/v1/profile/image — remove image
     // ──────────────────────────────────────────────────────────────────────────
 
     @DeleteMapping
@@ -94,9 +95,18 @@ public class UserImageController {
             Authentication authentication) {
         try {
             Long userId = (Long) authentication.getDetails();
+
+            // Ownership check: ensure the URL belongs to this user's own profile picture
+            String currentImageUrl = userProfileService.getProfilePictureUrl(userId);
+            if (currentImageUrl == null || !currentImageUrl.equals(imageUrl)) {
+                throw new ForbiddenException("You can only delete your own profile image");
+            }
+
             imageUploadService.deleteImage(imageUrl);
             userProfileService.updateProfilePicture(userId, null);
             return ResponseEntity.ok(Map.of("success", true, "message", "Profile image removed successfully"));
+        } catch (ForbiddenException e) {
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", e.getMessage()));
         } catch (Exception e) {
             log.error("Error deleting user profile image", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

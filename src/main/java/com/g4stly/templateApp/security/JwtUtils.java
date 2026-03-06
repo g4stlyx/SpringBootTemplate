@@ -66,7 +66,7 @@ public class JwtUtils {
                 .signWith(getSigningKey())
                 .compact();
     }
-    
+
     public String generateRefreshToken(String username) {
         return Jwts.builder()
                 .subject(username)
@@ -76,49 +76,49 @@ public class JwtUtils {
                 .signWith(getSigningKey())
                 .compact();
     }
-    
+
     public Long getAccessTokenExpiration() {
         return jwtConfig.getExpirationInSeconds();
     }
-    
+
     public Long getRefreshTokenExpiration() {
         return jwtConfig.getRefreshExpirationInSeconds();
     }
-    
+
     public Long getRefreshTokenExpirationDays() {
         // Convert milliseconds to days
         return jwtConfig.getRefreshExpiration() / (1000 * 60 * 60 * 24);
     }
-    
+
     public boolean validateToken(String token) {
         try {
             Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .requireIssuer(jwtConfig.getIssuer())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-            
+                    .verifyWith(getSigningKey())
+                    .requireIssuer(jwtConfig.getIssuer())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
             // Explicit expiration check
             Date expiration = claims.getExpiration();
             if (expiration != null && expiration.before(new Date())) {
                 return false;
             }
-            
+
             return true;
         } catch (Exception e) {
             return false;
         }
     }
-    
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
-    
+
     public Integer extractUserId(String token) {
         return extractAllClaims(token).get("userId", Integer.class);
     }
-    
+
     public Long extractUserIdAsLong(String token) {
         Object userId = extractAllClaims(token).get("userId");
         if (userId instanceof Integer) {
@@ -128,7 +128,7 @@ public class JwtUtils {
         }
         return null;
     }
-    
+
     /**
      * Extract the auth-level role claim ("user" or "admin") from the token.
      * Use this for Spring Security authority and routing decisions.
@@ -144,23 +144,24 @@ public class JwtUtils {
     public String extractUserType(String token) {
         return extractAllClaims(token).get("userType", String.class);
     }
-    
+
     public Integer extractAdminLevel(String token) {
         return extractAllClaims(token).get("adminLevel", Integer.class);
     }
-    
+
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
-    
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
-    
+
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
+                .requireIssuer(jwtConfig.getIssuer())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

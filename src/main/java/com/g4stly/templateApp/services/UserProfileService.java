@@ -36,7 +36,8 @@ public class UserProfileService {
 
     /**
      * Returns the profile of the currently authenticated user.
-     * Ownership is enforced in the controller — userId always comes from the JWT details.
+     * Ownership is enforced in the controller — userId always comes from the JWT
+     * details.
      */
     public UserProfileDTO getProfile(Long userId) {
         User user = findActiveUserById(userId);
@@ -56,16 +57,20 @@ public class UserProfileService {
 
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.getEmail()) ||
-                adminRepository.existsByEmail(request.getEmail())) {
+                    adminRepository.existsByEmail(request.getEmail())) {
                 throw new BadRequestException("Email is already in use");
             }
             user.setEmail(request.getEmail());
         }
 
-        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
-        if (request.getLastName() != null)  user.setLastName(request.getLastName());
-        if (request.getPhone() != null)     user.setPhone(request.getPhone());
-        if (request.getBio() != null)       user.setBio(request.getBio());
+        if (request.getFirstName() != null)
+            user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null)
+            user.setLastName(request.getLastName());
+        if (request.getPhone() != null)
+            user.setPhone(request.getPhone());
+        if (request.getBio() != null)
+            user.setBio(request.getBio());
 
         user = userRepository.save(user);
         log.info("Profile updated for userId={}", userId);
@@ -106,7 +111,7 @@ public class UserProfileService {
      * Security checks:
      * 1. Password confirmation to prevent CSRF/accidental closure.
      * 2. All active refresh tokens are immediately revoked so existing
-     *    sessions cannot continue after deactivation.
+     * sessions cannot continue after deactivation.
      *
      * The account enters a 30-day grace period (reactivatable on login).
      * After 30 days AccountCleanupScheduledService will anonymise PII permanently.
@@ -134,12 +139,12 @@ public class UserProfileService {
      * Initiates an email change request.
      *
      * Security:
-     *  1. Current password is required to authorise the change.
-     *  2. Uniqueness is checked cross-table (users + admins).
-     *  3. The new email is NOT applied immediately — a VerificationToken with
-     *     role "email_change" is created and sent to the new address.
-     *  4. Only after the user clicks the link in that email is the change applied
-     *     (via {@code AuthService#verifyEmailChange}).
+     * 1. Current password is required to authorise the change.
+     * 2. Uniqueness is checked cross-table (users + admins).
+     * 3. The new email is NOT applied immediately — a VerificationToken with
+     * role "email_change" is created and sent to the new address.
+     * 4. Only after the user clicks the link in that email is the change applied
+     * (via {@code AuthService#verifyEmailChange}).
      */
     @Transactional
     public void requestEmailChange(Long userId, ChangeEmailRequest request) {
@@ -178,6 +183,14 @@ public class UserProfileService {
     // ==================== PROFILE PICTURE ====================
 
     /**
+     * Returns the current profile picture URL for a user.
+     * Used by the delete endpoint to verify ownership before removing from storage.
+     */
+    public String getProfilePictureUrl(Long userId) {
+        return findActiveUserById(userId).getProfilePicture();
+    }
+
+    /**
      * Called by UserImageController after a successful R2 upload.
      */
     @Transactional
@@ -208,7 +221,8 @@ public class UserProfileService {
                 .phone(user.getPhone())
                 .bio(user.getBio())
                 .userType(user.getUserType() != null
-                        ? user.getUserType().name().toLowerCase(Locale.ROOT) : null)
+                        ? user.getUserType().name().toLowerCase(Locale.ROOT)
+                        : null)
                 .isActive(user.getIsActive())
                 .emailVerified(user.getEmailVerified())
                 .createdAt(user.getCreatedAt())

@@ -28,16 +28,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest extends BaseControllerTest {
 
-    @Autowired MockMvc mockMvc;
-    @Autowired ObjectMapper objectMapper;
-    @Autowired AuthController authController;
+    @Autowired
+    MockMvc mockMvc;
+    @Autowired
+    ObjectMapper objectMapper;
+    @Autowired
+    AuthController authController;
 
-    @MockitoBean AuthService authService;
-    @MockitoBean CaptchaService captchaService;
+    @MockitoBean
+    AuthService authService;
+    @MockitoBean
+    CaptchaService captchaService;
 
     @AfterEach
     void resetCaptchaFlag() {
-        // BaseControllerTest sets recaptcha.enabled=false, but individual tests may flip the field
+        // BaseControllerTest sets recaptcha.enabled=false, but individual tests may
+        // flip the field
         ReflectionTestUtils.setField(authController, "captchaEnabled", false);
     }
 
@@ -50,14 +56,13 @@ class AuthControllerTest extends BaseControllerTest {
         req.setUsername("alice");
         req.setEmail("alice@test.com");
         req.setPassword("Password1!");
-        req.setUserType("waiter");
 
         AuthResponse response = AuthResponse.builder().success(true).message("Check your email").build();
         when(authService.register(any(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
@@ -69,14 +74,13 @@ class AuthControllerTest extends BaseControllerTest {
         req.setUsername("alice");
         req.setEmail("alice@test.com");
         req.setPassword("Password1!");
-        req.setUserType("waiter");
 
         AuthResponse response = AuthResponse.builder().success(false).message("Username already taken").build();
         when(authService.register(any(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false));
     }
@@ -91,8 +95,8 @@ class AuthControllerTest extends BaseControllerTest {
         when(authService.login(any(), any())).thenReturn(resp);
 
         mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginJson("admin", "pass", "admin", null)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson("admin", "pass", "admin", null)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
@@ -108,8 +112,8 @@ class AuthControllerTest extends BaseControllerTest {
         when(authService.login(any(), any())).thenReturn(resp);
 
         mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginJson("admin", "pass", "admin", null)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson("admin", "pass", "admin", null)))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.requiresTwoFactor").value(true));
     }
@@ -122,8 +126,8 @@ class AuthControllerTest extends BaseControllerTest {
         when(authService.login(any(), any())).thenReturn(resp);
 
         mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginJson("admin", "wrongpass", "user", null)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson("admin", "wrongpass", "user", null)))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -135,8 +139,8 @@ class AuthControllerTest extends BaseControllerTest {
         ReflectionTestUtils.setField(authController, "captchaEnabled", true);
 
         mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginJson("admin", "pass", "admin", null)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson("admin", "pass", "admin", null)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.captchaRequired").value(true));
     }
@@ -148,8 +152,8 @@ class AuthControllerTest extends BaseControllerTest {
         when(captchaService.verifyCaptcha(any(), any())).thenReturn(false);
 
         mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginJson("admin", "pass", "admin", "bad-captcha")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson("admin", "pass", "admin", "bad-captcha")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.captchaRequired").value(true));
     }
@@ -162,8 +166,8 @@ class AuthControllerTest extends BaseControllerTest {
         when(authService.login(any(), any())).thenReturn(resp);
 
         mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginJson("alice", "pass", "user", null)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson("alice", "pass", "user", null)))
                 .andExpect(status().isOk());
     }
 
@@ -180,7 +184,7 @@ class AuthControllerTest extends BaseControllerTest {
     @DisplayName("GET /me - non-Bearer token → 401")
     void me_nonBearerHeader_returns401() throws Exception {
         mockMvc.perform(get("/api/v1/auth/me")
-                        .header("Authorization", "Token something"))
+                .header("Authorization", "Token something"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -190,7 +194,7 @@ class AuthControllerTest extends BaseControllerTest {
         when(authService.getCurrentUserSession(any())).thenReturn(null);
 
         mockMvc.perform(get("/api/v1/auth/me")
-                        .header("Authorization", "Bearer fake.jwt.token"))
+                .header("Authorization", "Bearer fake.jwt.token"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -201,7 +205,7 @@ class AuthControllerTest extends BaseControllerTest {
         when(authService.getCurrentUserSession(any())).thenReturn(session);
 
         mockMvc.perform(get("/api/v1/auth/me")
-                        .header("Authorization", "Bearer fake.jwt.token"))
+                .header("Authorization", "Bearer fake.jwt.token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.role").value("ADMIN"));
     }

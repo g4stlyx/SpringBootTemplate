@@ -27,18 +27,30 @@ import static org.mockito.Mockito.*;
 @DisplayName("AuthService Unit Tests")
 class AuthServiceTest {
 
-    @Mock private UserRepository userRepository;
-    @Mock private AdminRepository adminRepository;
-    @Mock private PasswordService passwordService;
-    @Mock private JwtUtils jwtUtils;
-    @Mock private EmailService emailService;
-    @Mock private VerificationTokenRepository verificationTokenRepository;
-    @Mock private PasswordResetTokenRepository passwordResetTokenRepository;
-    @Mock private ObjectMapper objectMapper;
-    @Mock private RateLimitService rateLimitService;
-    @Mock private UserActivityLogger userActivityLogger;
-    @Mock private RefreshTokenService refreshTokenService;
-    @Mock private HttpServletRequest httpRequest;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private AdminRepository adminRepository;
+    @Mock
+    private PasswordService passwordService;
+    @Mock
+    private JwtUtils jwtUtils;
+    @Mock
+    private EmailService emailService;
+    @Mock
+    private VerificationTokenRepository verificationTokenRepository;
+    @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+    @Mock
+    private ObjectMapper objectMapper;
+    @Mock
+    private RateLimitService rateLimitService;
+    @Mock
+    private UserActivityLogger userActivityLogger;
+    @Mock
+    private RefreshTokenService refreshTokenService;
+    @Mock
+    private HttpServletRequest httpRequest;
 
     @InjectMocks
     private AuthService authService;
@@ -47,14 +59,13 @@ class AuthServiceTest {
     // Helpers
     // =====================================================================
 
-    private RegisterRequest buildRegisterRequest(String userType) {
+    private RegisterRequest buildRegisterRequest() {
         RegisterRequest req = new RegisterRequest();
         req.setUsername("testuser");
         req.setEmail("test@example.com");
         req.setPassword("Password1!");
         req.setFirstName("John");
         req.setLastName("Doe");
-        req.setUserType(userType);
         return req;
     }
 
@@ -110,18 +121,27 @@ class AuthServiceTest {
     class Register {
 
         @Test
-        @DisplayName("Admin role returns success=false")
-        void adminRole_rejected() {
-            RegisterRequest req = buildRegisterRequest("admin");
+        @DisplayName("Valid user registration sets WAITER type by default")
+        void defaultUserType_isWaiter() {
+            RegisterRequest req = buildRegisterRequest();
+            when(userRepository.existsByUsername(any())).thenReturn(false);
+            when(adminRepository.existsByUsername(any())).thenReturn(false);
+            when(userRepository.existsByEmail(any())).thenReturn(false);
+            when(adminRepository.existsByEmail(any())).thenReturn(false);
+            when(passwordService.generateSalt()).thenReturn("randomsalt");
+            when(passwordService.hashPassword(any(), any())).thenReturn("hashed");
+
+            User saved = buildUser(1L, true, false, null, 0);
+            when(userRepository.save(any(User.class))).thenReturn(saved);
+
             AuthResponse resp = authService.register(req, httpRequest);
-            assertThat(resp.isSuccess()).isFalse();
-            assertThat(resp.getMessage()).containsIgnoringCase("invalid user type");
+            assertThat(resp.isSuccess()).isTrue();
         }
 
         @Test
         @DisplayName("Duplicate username returns success=false")
         void duplicateUsername_rejected() {
-            RegisterRequest req = buildRegisterRequest("user");
+            RegisterRequest req = buildRegisterRequest();
             when(userRepository.existsByUsername("testuser")).thenReturn(true);
 
             AuthResponse resp = authService.register(req, httpRequest);
@@ -133,7 +153,7 @@ class AuthServiceTest {
         @Test
         @DisplayName("Duplicate email returns success=false")
         void duplicateEmail_rejected() {
-            RegisterRequest req = buildRegisterRequest("user");
+            RegisterRequest req = buildRegisterRequest();
             when(userRepository.existsByUsername("testuser")).thenReturn(false);
             when(adminRepository.existsByUsername("testuser")).thenReturn(false);
             when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
@@ -147,7 +167,7 @@ class AuthServiceTest {
         @Test
         @DisplayName("Valid user registration: success=true, no tokens, email sent")
         void validUserRegistration() {
-            RegisterRequest req = buildRegisterRequest("waiter");
+            RegisterRequest req = buildRegisterRequest();
             when(userRepository.existsByUsername(any())).thenReturn(false);
             when(adminRepository.existsByUsername(any())).thenReturn(false);
             when(userRepository.existsByEmail(any())).thenReturn(false);
@@ -296,12 +316,13 @@ class AuthServiceTest {
         @DisplayName("Admin not found returns success=false")
         void notFound_returnsFalse() {
             when(adminRepository.findByUsernameOrEmail("adminUser", "adminUser")).thenReturn(Optional.empty());
+            when(passwordService.verifyPassword(anyString(), anyString(), anyString())).thenReturn(false);
 
             LoginRequest req = buildLoginRequest("adminUser", "pass", "admin");
             AuthResponse resp = authService.login(req, httpRequest);
 
             assertThat(resp.isSuccess()).isFalse();
-            assertThat(resp.getMessage()).containsIgnoringCase("invalid admin credentials");
+            assertThat(resp.getMessage()).containsIgnoringCase("invalid credentials");
         }
 
         @Test

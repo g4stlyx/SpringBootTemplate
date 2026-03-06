@@ -28,6 +28,17 @@ import java.util.Optional;
 @Slf4j
 public class AuthService {
 
+    /**
+     * Dummy credentials used in constant-time login checks to prevent timing-based
+     * username enumeration. When no account is found, we still run verifyPassword()
+     * with these values so the response time is indistinguishable from a wrong
+     * password.
+     * DUMMY_HASH is a valid Argon2id hash of "__dummy__" that will always fail real
+     * verification.
+     */
+    private static final String DUMMY_SALT = "dGVtcGxhdGVBcHBEdW1teVNhbHQ=";
+    private static final String DUMMY_HASH = "$argon2id$v=19$m=65536,t=3,p=4$dGVtcGxhdGVBcHBEdW1teVNhbHQ=$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
     @Autowired
     private UserRepository userRepository;
 
@@ -61,18 +72,19 @@ public class AuthService {
     // ==================== Registration ====================
 
     /**
-     * Register a new user (regular users self-register; admins are created by other admins via admin API).
+     * Register a new user (regular users self-register; admins are created by other
+     * admins via admin API).
      */
     @Transactional
     public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
         try {
             if (userRepository.existsByUsername(request.getUsername()) ||
-                adminRepository.existsByUsername(request.getUsername())) {
+                    adminRepository.existsByUsername(request.getUsername())) {
                 return errorResponse("Username already exists");
             }
 
             if (userRepository.existsByEmail(request.getEmail()) ||
-                adminRepository.existsByEmail(request.getEmail())) {
+                    adminRepository.existsByEmail(request.getEmail())) {
                 return errorResponse("Email already exists");
             }
 
@@ -88,14 +100,7 @@ public class AuthService {
             user.setLastName(request.getLastName());
             user.setPhone(request.getPhone());
             user.setBio(request.getBio());
-            user.setUserType(UserType.WAITER);  // default
-            if (request.getUserType() != null && !request.getUserType().isBlank()) {
-                try {
-                    user.setUserType(UserType.valueOf(request.getUserType().toUpperCase(Locale.ROOT)));
-                } catch (IllegalArgumentException e) {
-                    return errorResponse("Invalid user type: " + request.getUserType());
-                }
-            }
+            user.setUserType(UserType.WAITER); // fixed default — userType is not accepted from the client
             user.setIsActive(true);
             user.setEmailVerified(false);
 
@@ -105,27 +110,28 @@ public class AuthService {
             verificationTokenRepository.save(verificationToken);
 
             emailService.sendVerificationEmail(user.getEmail(), verificationToken.getToken(),
-                user.getFirstName() != null ? user.getFirstName() : user.getUsername());
+                    user.getFirstName() != null ? user.getFirstName() : user.getUsername());
 
             userActivityLogger.logRegister(user.getId(), "user", true, null, httpRequest);
 
             return AuthResponse.builder()
-                .success(true)
-                .message("Registered successfully. Please check your email to verify your account before logging in.")
-                .user(AuthResponse.UserInfo.builder()
-                    .id(user.getId())
-                    .username(user.getUsername())
-                    .email(user.getEmail())
-                    .firstName(user.getFirstName())
-                    .lastName(user.getLastName())
-                    .profilePicture(user.getProfilePicture())
-                    .isActive(user.getIsActive())
-                    .emailVerified(user.getEmailVerified())
-                    .role("user")
-                    .userType(user.getUserType().name().toLowerCase(Locale.ROOT))
-                    .lastLoginAt(user.getLastLoginAt())
-                    .build())
-                .build();
+                    .success(true)
+                    .message(
+                            "Registered successfully. Please check your email to verify your account before logging in.")
+                    .user(AuthResponse.UserInfo.builder()
+                            .id(user.getId())
+                            .username(user.getUsername())
+                            .email(user.getEmail())
+                            .firstName(user.getFirstName())
+                            .lastName(user.getLastName())
+                            .profilePicture(user.getProfilePicture())
+                            .isActive(user.getIsActive())
+                            .emailVerified(user.getEmailVerified())
+                            .role("user")
+                            .userType(user.getUserType().name().toLowerCase(Locale.ROOT))
+                            .lastLoginAt(user.getLastLoginAt())
+                            .build())
+                    .build();
 
         } catch (Exception e) {
             log.error("Registration failed for user: {}", request.getUsername(), e);
@@ -147,29 +153,37 @@ public class AuthService {
 
             if ("user".equals(requestedRole)) {
                 Optional<User> userOpt = userRepository.findByUsernameOrEmail(
-                    request.getUsername(), request.getUsername());
-                return userOpt.isPresent()
-                    ? authenticateUser(userOpt.get(), request.getPassword(), httpRequest)
-                    : errorResponse("Invalid user credentials");
+                        request.getUsername(), request.getUsername());
+                if (userOpt.isPresent()) {
+                    return authenticateUser(userOpt.get(), request.getPassword(), httpRequest);
+                }
+                // User not found — perform dummy verify to prevent timing-based enumeration
+                passwordService.verifyPassword(request.getPassword(), DUMMY_SALT, DUMMY_HASH);
+                return errorResponse("Invalid credentials");
 
             } else if ("admin".equals(requestedRole)) {
                 Optional<Admin> adminOpt = adminRepository.findByUsernameOrEmail(
-                    request.getUsername(), request.getUsername());
-                return adminOpt.isPresent()
-                    ? authenticateAdmin(adminOpt.get(), request.getPassword(), httpRequest)
-                    : errorResponse("Invalid admin credentials");
+                        request.getUsername(), request.getUsername());
+                if (adminOpt.isPresent()) {
+                    return authenticateAdmin(adminOpt.get(), request.getPassword(), httpRequest);
+                }
+                // Admin not found — perform dummy verify to prevent timing-based enumeration
+                passwordService.verifyPassword(request.getPassword(), DUMMY_SALT, DUMMY_HASH);
+                return errorResponse("Invalid credentials");
 
             } else {
                 Optional<User> userOpt = userRepository.findByUsernameOrEmail(
-                    request.getUsername(), request.getUsername());
+                        request.getUsername(), request.getUsername());
                 if (userOpt.isPresent()) {
                     return authenticateUser(userOpt.get(), request.getPassword(), httpRequest);
                 }
                 Optional<Admin> adminOpt = adminRepository.findByUsernameOrEmail(
-                    request.getUsername(), request.getUsername());
+                        request.getUsername(), request.getUsername());
                 if (adminOpt.isPresent()) {
                     return authenticateAdmin(adminOpt.get(), request.getPassword(), httpRequest);
                 }
+                // Neither found — dummy verify to prevent timing enumeration
+                passwordService.verifyPassword(request.getPassword(), DUMMY_SALT, DUMMY_HASH);
                 return errorResponse("Invalid credentials");
             }
 
@@ -240,29 +254,30 @@ public class AuthService {
         log.info("Returning refresh token: {}...", refreshTokenEntity.getToken().substring(0, 8));
 
         return AuthResponse.builder()
-            .success(true)
-            .message(reactivated ? "Account reactivated. Login successful." : "Login successful")
-            .accessToken(accessToken)
-            .refreshToken(refreshTokenEntity.getToken())
-            .expiresIn(jwtUtils.getAccessTokenExpiration())
-            .user(AuthResponse.UserInfo.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .profilePicture(user.getProfilePicture())
-                .isActive(user.getIsActive())
-                .emailVerified(user.getEmailVerified())
-                .role("user")
-                .userType(user.getUserType().name().toLowerCase(Locale.ROOT))
-                .lastLoginAt(user.getLastLoginAt())
-                .build())
-            .build();
+                .success(true)
+                .message(reactivated ? "Account reactivated. Login successful." : "Login successful")
+                .accessToken(accessToken)
+                .refreshToken(refreshTokenEntity.getToken())
+                .expiresIn(jwtUtils.getAccessTokenExpiration())
+                .user(AuthResponse.UserInfo.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .profilePicture(user.getProfilePicture())
+                        .isActive(user.getIsActive())
+                        .emailVerified(user.getEmailVerified())
+                        .role("user")
+                        .userType(user.getUserType().name().toLowerCase(Locale.ROOT))
+                        .lastLoginAt(user.getLastLoginAt())
+                        .build())
+                .build();
     }
 
     private AuthResponse authenticateAdmin(Admin admin, String password, HttpServletRequest httpRequest) {
-        if (!admin.getIsActive()) return errorResponse("Admin account is deactivated");
+        if (!admin.getIsActive())
+            return errorResponse("Admin account is deactivated");
 
         if (admin.getLockedUntil() != null && admin.getLockedUntil().isAfter(LocalDateTime.now())) {
             return errorResponse("Admin account is temporarily locked. Please try again later.");
@@ -286,7 +301,7 @@ public class AuthService {
             log.info("2FA required for admin: {}", admin.getUsername());
 
             String challengeToken = java.util.UUID.randomUUID().toString().replace("-", "") +
-                                    java.util.UUID.randomUUID().toString().replace("-", "");
+                    java.util.UUID.randomUUID().toString().replace("-", "");
             admin.setTwoFactorChallengeToken(challengeToken);
             admin.setTwoFactorChallengeExpiresAt(LocalDateTime.now().plusMinutes(5));
             admin.setTwoFactorChallengeAttempts(0);
@@ -295,15 +310,15 @@ public class AuthService {
             log.info("Generated 2FA challenge token for admin: {} (expires in 5 minutes)", admin.getUsername());
 
             return AuthResponse.builder()
-                .success(false)
-                .requiresTwoFactor(true)
-                .twoFactorChallengeToken(challengeToken)
-                .message("Two-factor authentication required")
-                .user(AuthResponse.UserInfo.builder()
-                    .username(admin.getUsername())
-                    .role("admin")
-                    .build())
-                .build();
+                    .success(false)
+                    .requiresTwoFactor(true)
+                    .twoFactorChallengeToken(challengeToken)
+                    .message("Two-factor authentication required")
+                    .user(AuthResponse.UserInfo.builder()
+                            .username(admin.getUsername())
+                            .role("admin")
+                            .build())
+                    .build();
         }
 
         admin.setLastLoginAt(LocalDateTime.now());
@@ -315,25 +330,25 @@ public class AuthService {
         log.info("Returning refresh token: {}...", refreshTokenEntity.getToken().substring(0, 8));
 
         return AuthResponse.builder()
-            .success(true)
-            .message("Admin login successful")
-            .accessToken(accessToken)
-            .refreshToken(refreshTokenEntity.getToken())
-            .expiresIn(jwtUtils.getAccessTokenExpiration())
-            .user(AuthResponse.UserInfo.builder()
-                .id(admin.getId())
-                .username(admin.getUsername())
-                .email(admin.getEmail())
-                .firstName(admin.getFirstName())
-                .lastName(admin.getLastName())
-                .profilePicture(admin.getProfilePicture())
-                .isActive(admin.getIsActive())
-                .emailVerified(true)
-                .role("admin")
-                .level(admin.getLevel())
-                .lastLoginAt(admin.getLastLoginAt())
-                .build())
-            .build();
+                .success(true)
+                .message("Admin login successful")
+                .accessToken(accessToken)
+                .refreshToken(refreshTokenEntity.getToken())
+                .expiresIn(jwtUtils.getAccessTokenExpiration())
+                .user(AuthResponse.UserInfo.builder()
+                        .id(admin.getId())
+                        .username(admin.getUsername())
+                        .email(admin.getEmail())
+                        .firstName(admin.getFirstName())
+                        .lastName(admin.getLastName())
+                        .profilePicture(admin.getProfilePicture())
+                        .isActive(admin.getIsActive())
+                        .emailVerified(true)
+                        .role("admin")
+                        .level(admin.getLevel())
+                        .lastLoginAt(admin.getLastLoginAt())
+                        .build())
+                .build();
     }
 
     // ==================== Password Verification ====================
@@ -344,24 +359,27 @@ public class AuthService {
 
             if ("user".equals(requestedRole)) {
                 return userRepository.findByUsernameOrEmail(request.getUsername(), request.getUsername())
-                    .map(u -> passwordService.verifyPassword(request.getPassword(), u.getSalt(), u.getPasswordHash()))
-                    .orElse(false);
+                        .map(u -> passwordService.verifyPassword(request.getPassword(), u.getSalt(),
+                                u.getPasswordHash()))
+                        .orElse(false);
 
             } else if ("admin".equals(requestedRole)) {
                 return adminRepository.findByUsernameOrEmail(request.getUsername(), request.getUsername())
-                    .map(a -> passwordService.verifyPassword(request.getPassword(), a.getSalt(), a.getPasswordHash()))
-                    .orElse(false);
+                        .map(a -> passwordService.verifyPassword(request.getPassword(), a.getSalt(),
+                                a.getPasswordHash()))
+                        .orElse(false);
 
             } else {
                 Optional<User> userOpt = userRepository.findByUsernameOrEmail(
-                    request.getUsername(), request.getUsername());
+                        request.getUsername(), request.getUsername());
                 if (userOpt.isPresent()) {
                     return passwordService.verifyPassword(request.getPassword(),
-                        userOpt.get().getSalt(), userOpt.get().getPasswordHash());
+                            userOpt.get().getSalt(), userOpt.get().getPasswordHash());
                 }
                 return adminRepository.findByUsernameOrEmail(request.getUsername(), request.getUsername())
-                    .map(a -> passwordService.verifyPassword(request.getPassword(), a.getSalt(), a.getPasswordHash()))
-                    .orElse(false);
+                        .map(a -> passwordService.verifyPassword(request.getPassword(), a.getSalt(),
+                                a.getPasswordHash()))
+                        .orElse(false);
             }
 
         } catch (Exception e) {
@@ -379,20 +397,20 @@ public class AuthService {
             String requestedRole = request.getRole() != null ? request.getRole().toLowerCase() : null;
 
             if ("user".equals(requestedRole)) {
-                userRepository.findByEmail(request.getEmail()).ifPresent(u ->
-                    createPasswordResetToken(u.getId(), "user", request.getEmail(), clientIp));
+                userRepository.findByEmail(request.getEmail())
+                        .ifPresent(u -> createPasswordResetToken(u.getId(), "user", request.getEmail(), clientIp));
 
             } else if ("admin".equals(requestedRole)) {
-                adminRepository.findByEmail(request.getEmail()).ifPresent(a ->
-                    createPasswordResetToken(a.getId(), "admin", request.getEmail(), clientIp));
+                adminRepository.findByEmail(request.getEmail())
+                        .ifPresent(a -> createPasswordResetToken(a.getId(), "admin", request.getEmail(), clientIp));
 
             } else {
                 Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
                 if (userOpt.isPresent()) {
                     createPasswordResetToken(userOpt.get().getId(), "user", request.getEmail(), clientIp);
                 } else {
-                    adminRepository.findByEmail(request.getEmail()).ifPresent(a ->
-                        createPasswordResetToken(a.getId(), "admin", request.getEmail(), clientIp));
+                    adminRepository.findByEmail(request.getEmail())
+                            .ifPresent(a -> createPasswordResetToken(a.getId(), "admin", request.getEmail(), clientIp));
                 }
             }
 
@@ -422,7 +440,8 @@ public class AuthService {
         try {
             Optional<PasswordResetToken> tokenOpt = passwordResetTokenRepository.findByToken(request.getToken());
 
-            if (tokenOpt.isEmpty()) return false;
+            if (tokenOpt.isEmpty())
+                return false;
 
             PasswordResetToken resetToken = tokenOpt.get();
 
@@ -446,6 +465,9 @@ public class AuthService {
                     u.setLoginAttempts(0);
                     u.setLockedUntil(null);
                     userRepository.save(u);
+                    // Invalidate all sessions so a password-reset attacker cannot keep hijacked
+                    // sessions alive
+                    refreshTokenService.revokeAllUserTokens(u.getId(), "user");
                     userActivityLogger.logPasswordResetComplete(u.getId(), "user", true, httpRequest);
                 });
 
@@ -456,6 +478,8 @@ public class AuthService {
                     a.setLoginAttempts(0);
                     a.setLockedUntil(null);
                     adminRepository.save(a);
+                    // Invalidate all sessions for admin too
+                    refreshTokenService.revokeAllUserTokens(a.getId(), "admin");
                 });
             }
 
@@ -475,7 +499,8 @@ public class AuthService {
         try {
             Optional<VerificationToken> tokenOpt = verificationTokenRepository.findByToken(token);
 
-            if (tokenOpt.isEmpty()) return false;
+            if (tokenOpt.isEmpty())
+                return false;
 
             VerificationToken verificationToken = tokenOpt.get();
 
@@ -527,7 +552,7 @@ public class AuthService {
                 verificationTokenRepository.save(verificationToken);
 
                 emailService.sendVerificationEmail(user.getEmail(), verificationToken.getToken(),
-                    user.getFirstName() != null ? user.getFirstName() : user.getUsername());
+                        user.getFirstName() != null ? user.getFirstName() : user.getUsername());
 
                 log.info("Verification email resent to: {}", email);
                 return true;
@@ -546,37 +571,39 @@ public class AuthService {
 
     public UserSessionDTO getCurrentUserSession(String token) {
         try {
-            if (!jwtUtils.validateToken(token)) return null;
+            if (!jwtUtils.validateToken(token))
+                return null;
 
             Long userId = jwtUtils.extractUserIdAsLong(token);
             String role = jwtUtils.extractRole(token);
 
-            if (userId == null || role == null) return null;
+            if (userId == null || role == null)
+                return null;
 
             switch (role.toLowerCase(Locale.ROOT)) {
                 case "user":
                     return userRepository.findById(userId)
-                        .map(u -> UserSessionDTO.builder()
-                            .id(u.getId())
-                            .firstName(u.getFirstName())
-                            .lastName(u.getLastName())
-                            .profilePicture(u.getProfilePicture())
-                            .role("USER")
-                            .userType(u.getUserType().name().toLowerCase(Locale.ROOT))
-                            .build())
-                        .orElse(null);
+                            .map(u -> UserSessionDTO.builder()
+                                    .id(u.getId())
+                                    .firstName(u.getFirstName())
+                                    .lastName(u.getLastName())
+                                    .profilePicture(u.getProfilePicture())
+                                    .role("USER")
+                                    .userType(u.getUserType().name().toLowerCase(Locale.ROOT))
+                                    .build())
+                            .orElse(null);
 
                 case "admin":
                     return adminRepository.findById(userId)
-                        .map(a -> UserSessionDTO.builder()
-                            .id(a.getId())
-                            .firstName(a.getFirstName())
-                            .lastName(a.getLastName())
-                            .profilePicture(a.getProfilePicture())
-                            .role("ADMIN")
-                            .adminLevel(a.getLevel())
-                            .build())
-                        .orElse(null);
+                            .map(a -> UserSessionDTO.builder()
+                                    .id(a.getId())
+                                    .firstName(a.getFirstName())
+                                    .lastName(a.getLastName())
+                                    .profilePicture(a.getProfilePicture())
+                                    .role("ADMIN")
+                                    .adminLevel(a.getLevel())
+                                    .build())
+                            .orElse(null);
 
                 default:
                     return null;
@@ -590,7 +617,8 @@ public class AuthService {
     // ==================== Email Change Verification ====================
 
     /**
-     * Completes an in-progress email change by verifying the one-time token that was
+     * Completes an in-progress email change by verifying the one-time token that
+     * was
      * sent to the user's new email address.
      *
      * On success:
@@ -602,7 +630,8 @@ public class AuthService {
     @Transactional
     public Map<String, Object> verifyEmailChange(String token) {
         VerificationToken vt = verificationTokenRepository.findByToken(token)
-                .orElseThrow(() -> new com.g4stly.templateApp.exception.BadRequestException("Invalid or expired email change token"));
+                .orElseThrow(() -> new com.g4stly.templateApp.exception.BadRequestException(
+                        "Invalid or expired email change token"));
 
         if (!"email_change".equals(vt.getRole())) {
             throw new com.g4stly.templateApp.exception.BadRequestException("Invalid token type");
@@ -610,7 +639,8 @@ public class AuthService {
 
         if (vt.isExpired()) {
             verificationTokenRepository.delete(vt);
-            throw new com.g4stly.templateApp.exception.BadRequestException("Email change token has expired. Please request a new one.");
+            throw new com.g4stly.templateApp.exception.BadRequestException(
+                    "Email change token has expired. Please request a new one.");
         }
 
         User user = userRepository.findById(vt.getUserId())
@@ -619,7 +649,8 @@ public class AuthService {
 
         if (user.getPendingEmail() == null || user.getPendingEmail().isBlank()) {
             verificationTokenRepository.delete(vt);
-            throw new com.g4stly.templateApp.exception.BadRequestException("No pending email change found for this account");
+            throw new com.g4stly.templateApp.exception.BadRequestException(
+                    "No pending email change found for this account");
         }
 
         String newEmail = user.getPendingEmail();
@@ -664,12 +695,12 @@ public class AuthService {
     private String resolveDisplayName(String email, String role) {
         if ("user".equals(role)) {
             return userRepository.findByEmail(email)
-                .map(u -> u.getFirstName() != null ? u.getFirstName() : u.getUsername())
-                .orElse("User");
+                    .map(u -> u.getFirstName() != null ? u.getFirstName() : u.getUsername())
+                    .orElse("User");
         } else if ("admin".equals(role)) {
             return adminRepository.findByEmail(email)
-                .map(a -> a.getFirstName() != null ? a.getFirstName() : a.getUsername())
-                .orElse("Admin");
+                    .map(a -> a.getFirstName() != null ? a.getFirstName() : a.getUsername())
+                    .orElse("Admin");
         }
         return "User";
     }

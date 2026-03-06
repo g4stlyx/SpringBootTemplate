@@ -22,8 +22,7 @@ public class RegisterRequest {
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
-             message = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$", message = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)")
     private String password;
 
     @Size(max = 100, message = "First name must not exceed 100 characters")
@@ -38,8 +37,4 @@ public class RegisterRequest {
     @Size(max = 1000, message = "Bio must not exceed 1000 characters")
     private String bio;
 
-    //TODO: specific to the app
-    // User type: "waiter" or another one needed in app (admins cannot register via API)
-    @Pattern(regexp = "^(chef|waiter)$", message = "User type must be either 'chef' or 'waiter'")
-    private String userType;
 }
