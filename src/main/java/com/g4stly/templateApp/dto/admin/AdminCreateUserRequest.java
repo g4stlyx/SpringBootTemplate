@@ -43,14 +43,15 @@ public class AdminCreateUserRequest {
     @Size(max = 1000, message = "Bio must not exceed 1000 characters")
     private String bio;
 
-    /** The application-level role; defaults to WAITER if omitted. */
+    /** The application-level role; defaults to APP_USER if omitted. */
     private UserType userType;
 
     /** Whether the account should start as active; defaults to true. */
     private Boolean isActive;
 
     /**
-     * Whether to skip email verification and immediately mark the account as verified.
+     * Whether to skip email verification and immediately mark the account as
+     * verified.
      * Defaults to false (sends a verification email).
      */
     private Boolean skipEmailVerification;

@@ -30,9 +30,9 @@ import java.util.Map;
  * Base class for integration tests.
  *
  * Uses a real Spring context with:
- *  - H2 in-memory DB (MODE=MySQL) via application-integration.properties
- *  - EmailService mocked to prevent SMTP calls
- *  - TestRestTemplate for real HTTP calls through the filter chain
+ * - H2 in-memory DB (MODE=MySQL) via application-integration.properties
+ * - EmailService mocked to prevent SMTP calls
+ * - TestRestTemplate for real HTTP calls through the filter chain
  *
  * No @Transactional — refresh tokens stored in DB must survive between
  * multiple HTTP calls within the same test.
@@ -42,8 +42,8 @@ import java.util.Map;
 @ActiveProfiles("integration")
 public abstract class BaseIntegrationTest {
 
-    protected static final ParameterizedTypeReference<Map<String, Object>> MAP_TYPE_REF =
-            new ParameterizedTypeReference<>() {};
+    protected static final ParameterizedTypeReference<Map<String, Object>> MAP_TYPE_REF = new ParameterizedTypeReference<>() {
+    };
 
     // ---- Mocked external dependencies ----
     @MockitoBean
@@ -74,7 +74,8 @@ public abstract class BaseIntegrationTest {
 
     // ---- Cleanup between tests ----
     // H2 enforces FK constraints, so we disable referential integrity while
-    // truncating to avoid failures when logs/child records reference admins/clients.
+    // truncating to avoid failures when logs/child records reference
+    // admins/clients.
 
     @BeforeEach
     void cleanDatabase() {
@@ -119,7 +120,7 @@ public abstract class BaseIntegrationTest {
         user.setSalt(salt);
         user.setEmailVerified(true);
         user.setIsActive(true);
-        user.setUserType(UserType.WAITER);
+        user.setUserType(UserType.APP_USER);
 
         return userRepository.save(user);
     }
@@ -130,8 +131,7 @@ public abstract class BaseIntegrationTest {
         Map<String, String> body = Map.of(
                 "username", username,
                 "password", password,
-                "role", role
-        );
+                "role", role);
         return restTemplate.exchange(
                 "/api/v1/auth/login", HttpMethod.POST, new HttpEntity<>(body), MAP_TYPE_REF);
     }

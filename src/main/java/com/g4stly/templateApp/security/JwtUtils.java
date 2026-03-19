@@ -27,7 +27,8 @@ public class JwtUtils {
 
     /**
      * Generate an access token for a regular user.
-     * Sets {@code role="user"} and the app-level {@code userType} (e.g. "waiter").
+     * Sets {@code role="user"} and the app-level {@code userType} (e.g.
+     * "app_user").
      */
     public String generateUserToken(String username, Long userId, String userType) {
         Map<String, Object> claimsMap = new HashMap<>();
@@ -138,7 +139,8 @@ public class JwtUtils {
     }
 
     /**
-     * Extract the app-level user type claim (e.g. "waiter", "chef") from the token.
+     * Extract the app-level user type claim (e.g. "app_user", "chef") from the
+     * token.
      * Returns null for admin tokens (admins have no app-level type).
      */
     public String extractUserType(String token) {

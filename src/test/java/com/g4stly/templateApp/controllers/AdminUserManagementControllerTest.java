@@ -27,195 +27,199 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class AdminUserManagementControllerTest extends BaseControllerTest {
 
-    @Autowired MockMvc mockMvc;
-    @Autowired ObjectMapper objectMapper;
+        @Autowired
+        MockMvc mockMvc;
+        @Autowired
+        ObjectMapper objectMapper;
 
-    @MockitoBean AdminUserManagementService adminUserManagementService;
-    @MockitoBean AdminLevelAuthorizationService adminLevelAuthorizationService;
+        @MockitoBean
+        AdminUserManagementService adminUserManagementService;
+        @MockitoBean
+        AdminLevelAuthorizationService adminLevelAuthorizationService;
 
-    @BeforeEach
-    void setUp() {
-        when(adminLevelAuthorizationService.isLevel0Or1()).thenReturn(true);
-    }
+        @BeforeEach
+        void setUp() {
+                when(adminLevelAuthorizationService.isLevel0Or1()).thenReturn(true);
+        }
 
-    private AdminUserDTO sampleDTO() {
-        AdminUserDTO dto = new AdminUserDTO();
-        dto.setId(10L);
-        dto.setUsername("johndoe");
-        dto.setEmail("john@example.com");
-        dto.setFirstName("John");
-        dto.setLastName("Doe");
-        dto.setIsActive(true);
-        dto.setEmailVerified(true);
-        dto.setAdminDeactivated(false);
-        dto.setUserType("waiter");
-        return dto;
-    }
+        private AdminUserDTO sampleDTO() {
+                AdminUserDTO dto = new AdminUserDTO();
+                dto.setId(10L);
+                dto.setUsername("johndoe");
+                dto.setEmail("john@example.com");
+                dto.setFirstName("John");
+                dto.setLastName("Doe");
+                dto.setIsActive(true);
+                dto.setEmailVerified(true);
+                dto.setAdminDeactivated(false);
+                dto.setUserType("app_user");
+                return dto;
+        }
 
-    // ─── GET /api/v1/admin/users ──────────────────────────────────────────────
+        // ─── GET /api/v1/admin/users ──────────────────────────────────────────────
 
-    @Test
-    @DisplayName("GET /users → 200 with paginated list")
-    void getUsers_returns200() throws Exception {
-        AdminUserListResponse response = new AdminUserListResponse();
-        response.setUsers(List.of(sampleDTO()));
-        response.setCurrentPage(0);
-        response.setTotalPages(1);
-        response.setTotalItems(1L);
-        response.setPageSize(20);
+        @Test
+        @DisplayName("GET /users → 200 with paginated list")
+        void getUsers_returns200() throws Exception {
+                AdminUserListResponse response = new AdminUserListResponse();
+                response.setUsers(List.of(sampleDTO()));
+                response.setCurrentPage(0);
+                response.setTotalPages(1);
+                response.setTotalItems(1L);
+                response.setPageSize(20);
 
-        when(adminUserManagementService.getUsers(
-                any(), anyInt(), anyInt(), any(), any(),
-                any(), any(), any(), any(), any()))
-                .thenReturn(response);
+                when(adminUserManagementService.getUsers(
+                                any(), anyInt(), anyInt(), any(), any(),
+                                any(), any(), any(), any(), any()))
+                                .thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/admin/users")
-                        .principal(makeAdminAuth(1L))
-                        .with(authentication(makeAdminAuth(1L))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalItems").value(1))
-                .andExpect(jsonPath("$.users[0].username").value("johndoe"));
-    }
+                mockMvc.perform(get("/api/v1/admin/users")
+                                .principal(makeAdminAuth(1L))
+                                .with(authentication(makeAdminAuth(1L))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.totalItems").value(1))
+                                .andExpect(jsonPath("$.users[0].username").value("johndoe"));
+        }
 
-    // ─── GET /api/v1/admin/users/{userId} ─────────────────────────────────────
+        // ─── GET /api/v1/admin/users/{userId} ─────────────────────────────────────
 
-    @Test
-    @DisplayName("GET /users/{id} → 200 with DTO")
-    void getUser_returns200() throws Exception {
-        when(adminUserManagementService.getUser(eq(1L), eq(10L), any()))
-                .thenReturn(sampleDTO());
+        @Test
+        @DisplayName("GET /users/{id} → 200 with DTO")
+        void getUser_returns200() throws Exception {
+                when(adminUserManagementService.getUser(eq(1L), eq(10L), any()))
+                                .thenReturn(sampleDTO());
 
-        mockMvc.perform(get("/api/v1/admin/users/10")
-                        .principal(makeAdminAuth(1L))
-                        .with(authentication(makeAdminAuth(1L))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("johndoe"));
-    }
+                mockMvc.perform(get("/api/v1/admin/users/10")
+                                .principal(makeAdminAuth(1L))
+                                .with(authentication(makeAdminAuth(1L))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.username").value("johndoe"));
+        }
 
-    // ─── POST /api/v1/admin/users ─────────────────────────────────────────────
+        // ─── POST /api/v1/admin/users ─────────────────────────────────────────────
 
-    @Test
-    @DisplayName("POST /users → 201 Created")
-    void createUser_returns201() throws Exception {
-        AdminCreateUserRequest req = new AdminCreateUserRequest();
-        req.setUsername("johndoe");
-        req.setEmail("john@example.com");
-        req.setPassword("Password1!");
-        req.setUserType(UserType.WAITER);
+        @Test
+        @DisplayName("POST /users → 201 Created")
+        void createUser_returns201() throws Exception {
+                AdminCreateUserRequest req = new AdminCreateUserRequest();
+                req.setUsername("johndoe");
+                req.setEmail("john@example.com");
+                req.setPassword("Password1!");
+                req.setUserType(UserType.APP_USER);
 
-        when(adminUserManagementService.createUser(any(), any(), any()))
-                .thenReturn(sampleDTO());
+                when(adminUserManagementService.createUser(any(), any(), any()))
+                                .thenReturn(sampleDTO());
 
-        mockMvc.perform(post("/api/v1/admin/users")
-                        .principal(makeAdminAuth(1L))
-                        .with(authentication(makeAdminAuth(1L)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(10));
-    }
+                mockMvc.perform(post("/api/v1/admin/users")
+                                .principal(makeAdminAuth(1L))
+                                .with(authentication(makeAdminAuth(1L)))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.id").value(10));
+        }
 
-    // ─── PUT /api/v1/admin/users/{userId} ─────────────────────────────────────
+        // ─── PUT /api/v1/admin/users/{userId} ─────────────────────────────────────
 
-    @Test
-    @DisplayName("PUT /users/{id} → 200 OK")
-    void updateUser_returns200() throws Exception {
-        AdminUpdateUserRequest req = new AdminUpdateUserRequest();
-        req.setFirstName("Updated");
+        @Test
+        @DisplayName("PUT /users/{id} → 200 OK")
+        void updateUser_returns200() throws Exception {
+                AdminUpdateUserRequest req = new AdminUpdateUserRequest();
+                req.setFirstName("Updated");
 
-        when(adminUserManagementService.updateUser(any(), eq(10L), any(), any()))
-                .thenReturn(sampleDTO());
+                when(adminUserManagementService.updateUser(any(), eq(10L), any(), any()))
+                                .thenReturn(sampleDTO());
 
-        mockMvc.perform(put("/api/v1/admin/users/10")
-                        .principal(makeAdminAuth(1L))
-                        .with(authentication(makeAdminAuth(1L)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(10));
-    }
+                mockMvc.perform(put("/api/v1/admin/users/10")
+                                .principal(makeAdminAuth(1L))
+                                .with(authentication(makeAdminAuth(1L)))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value(10));
+        }
 
-    // ─── POST /api/v1/admin/users/{userId}/deactivate ─────────────────────────
+        // ─── POST /api/v1/admin/users/{userId}/deactivate ─────────────────────────
 
-    @Test
-    @DisplayName("POST /users/{id}/deactivate → 200 OK")
-    void deactivateUser_returns200() throws Exception {
-        AdminUserDTO dto = sampleDTO();
-        dto.setIsActive(false);
-        dto.setAdminDeactivated(true);
+        @Test
+        @DisplayName("POST /users/{id}/deactivate → 200 OK")
+        void deactivateUser_returns200() throws Exception {
+                AdminUserDTO dto = sampleDTO();
+                dto.setIsActive(false);
+                dto.setAdminDeactivated(true);
 
-        when(adminUserManagementService.deactivateUser(any(), eq(10L), any()))
-                .thenReturn(dto);
+                when(adminUserManagementService.deactivateUser(any(), eq(10L), any()))
+                                .thenReturn(dto);
 
-        mockMvc.perform(post("/api/v1/admin/users/10/deactivate")
-                        .principal(makeAdminAuth(1L))
-                        .with(authentication(makeAdminAuth(1L))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.isActive").value(false))
-                .andExpect(jsonPath("$.adminDeactivated").value(true));
-    }
+                mockMvc.perform(post("/api/v1/admin/users/10/deactivate")
+                                .principal(makeAdminAuth(1L))
+                                .with(authentication(makeAdminAuth(1L))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.isActive").value(false))
+                                .andExpect(jsonPath("$.adminDeactivated").value(true));
+        }
 
-    // ─── POST /api/v1/admin/users/{userId}/reactivate ─────────────────────────
+        // ─── POST /api/v1/admin/users/{userId}/reactivate ─────────────────────────
 
-    @Test
-    @DisplayName("POST /users/{id}/reactivate → 200 OK")
-    void reactivateUser_returns200() throws Exception {
-        when(adminUserManagementService.reactivateUser(any(), eq(10L), any()))
-                .thenReturn(sampleDTO());
+        @Test
+        @DisplayName("POST /users/{id}/reactivate → 200 OK")
+        void reactivateUser_returns200() throws Exception {
+                when(adminUserManagementService.reactivateUser(any(), eq(10L), any()))
+                                .thenReturn(sampleDTO());
 
-        mockMvc.perform(post("/api/v1/admin/users/10/reactivate")
-                        .principal(makeAdminAuth(1L))
-                        .with(authentication(makeAdminAuth(1L))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.isActive").value(true));
-    }
+                mockMvc.perform(post("/api/v1/admin/users/10/reactivate")
+                                .principal(makeAdminAuth(1L))
+                                .with(authentication(makeAdminAuth(1L))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.isActive").value(true));
+        }
 
-    // ─── DELETE /api/v1/admin/users/{userId} ──────────────────────────────────
+        // ─── DELETE /api/v1/admin/users/{userId} ──────────────────────────────────
 
-    @Test
-    @DisplayName("DELETE /users/{id} → 200 with success=true and message")
-    void hardDeleteUser_returns200WithSuccessBody() throws Exception {
-        doNothing().when(adminUserManagementService).hardDeleteUser(any(), eq(10L), any());
+        @Test
+        @DisplayName("DELETE /users/{id} → 200 with success=true and message")
+        void hardDeleteUser_returns200WithSuccessBody() throws Exception {
+                doNothing().when(adminUserManagementService).hardDeleteUser(any(), eq(10L), any());
 
-        mockMvc.perform(delete("/api/v1/admin/users/10")
-                        .principal(makeAdminAuth(1L))
-                        .with(authentication(makeAdminAuth(1L))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("User permanently deleted"));
-    }
+                mockMvc.perform(delete("/api/v1/admin/users/10")
+                                .principal(makeAdminAuth(1L))
+                                .with(authentication(makeAdminAuth(1L))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.success").value(true))
+                                .andExpect(jsonPath("$.message").value("User permanently deleted"));
+        }
 
-    // ─── POST /api/v1/admin/users/{userId}/reset-password ─────────────────────
+        // ─── POST /api/v1/admin/users/{userId}/reset-password ─────────────────────
 
-    @Test
-    @DisplayName("POST /users/{id}/reset-password → 200 with success=true")
-    void resetPassword_returns200WithSuccessBody() throws Exception {
-        ResetUserPasswordRequest req = new ResetUserPasswordRequest();
-        req.setNewPassword("NewPassword1!");
+        @Test
+        @DisplayName("POST /users/{id}/reset-password → 200 with success=true")
+        void resetPassword_returns200WithSuccessBody() throws Exception {
+                ResetUserPasswordRequest req = new ResetUserPasswordRequest();
+                req.setNewPassword("NewPassword1!");
 
-        doNothing().when(adminUserManagementService).resetUserPassword(any(), eq(10L), any());
+                doNothing().when(adminUserManagementService).resetUserPassword(any(), eq(10L), any());
 
-        mockMvc.perform(post("/api/v1/admin/users/10/reset-password")
-                        .principal(makeAdminAuth(1L))
-                        .with(authentication(makeAdminAuth(1L)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
-    }
+                mockMvc.perform(post("/api/v1/admin/users/10/reset-password")
+                                .principal(makeAdminAuth(1L))
+                                .with(authentication(makeAdminAuth(1L)))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(req)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.success").value(true));
+        }
 
-    // ─── POST /api/v1/admin/users/{userId}/unlock ─────────────────────────────
+        // ─── POST /api/v1/admin/users/{userId}/unlock ─────────────────────────────
 
-    @Test
-    @DisplayName("POST /users/{id}/unlock → 200 OK")
-    void unlockUser_returns200() throws Exception {
-        when(adminUserManagementService.unlockUser(any(), eq(10L), any()))
-                .thenReturn(sampleDTO());
+        @Test
+        @DisplayName("POST /users/{id}/unlock → 200 OK")
+        void unlockUser_returns200() throws Exception {
+                when(adminUserManagementService.unlockUser(any(), eq(10L), any()))
+                                .thenReturn(sampleDTO());
 
-        mockMvc.perform(post("/api/v1/admin/users/10/unlock")
-                        .principal(makeAdminAuth(1L))
-                        .with(authentication(makeAdminAuth(1L))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(10));
-    }
+                mockMvc.perform(post("/api/v1/admin/users/10/unlock")
+                                .principal(makeAdminAuth(1L))
+                                .with(authentication(makeAdminAuth(1L))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value(10));
+        }
 }

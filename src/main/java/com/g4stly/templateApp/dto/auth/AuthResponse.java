@@ -22,7 +22,7 @@ public class AuthResponse {
     private boolean success;
     private boolean requiresTwoFactor; // Indicates 2FA is required for admin login
     private String twoFactorChallengeToken; // Challenge token to validate 2FA submission
-    
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -36,8 +36,8 @@ public class AuthResponse {
         private String profilePicture;
         private boolean isActive;
         private boolean emailVerified;
-        private String role;     // "user" or "admin" — auth-level role
-        private String userType; // App-level type, e.g. "waiter", "chef" — null for admins
+        private String role; // "user" or "admin" — auth-level role
+        private String userType; // App-level type, e.g. "app_user", "chef" — null for admins
         private Integer level; // For admins only
         private LocalDateTime lastLoginAt;
     }

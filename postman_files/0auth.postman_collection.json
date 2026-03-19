@@ -547,7 +547,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"user1@example.com\",\n    \"role\": \"waiter\"\n}"
+							"raw": "{\n    \"email\": \"user1@example.com\",\n    \"role\": \"app_user\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/v1/auth/resend-verification",
@@ -583,7 +583,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"user1@example.com\",\n    \"role\": \"waiter\"\n}"
+							"raw": "{\n    \"email\": \"user1@example.com\",\n    \"role\": \"app_user\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/v1/auth/forgot-password",

@@ -32,7 +32,7 @@ public class AdminUpdateUserRequest {
     @Size(max = 1000, message = "Bio must not exceed 1000 characters")
     private String bio;
 
-    /** Change the user's application-level type (e.g. WAITER → MANAGER). */
+    /** Change the user's application-level type (e.g. APP_USER → MANAGER). */
     private UserType userType;
 
     /** Manually flip the emailVerified flag (e.g. trusted import). */

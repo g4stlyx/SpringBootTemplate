@@ -15,12 +15,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "users", indexes = {
-    @Index(name = "idx_user_email", columnList = "email"),
-    @Index(name = "idx_user_username", columnList = "username"),
-    @Index(name = "idx_user_is_active", columnList = "is_active"),
-    @Index(name = "idx_user_email_verified", columnList = "email_verified"),
-    @Index(name = "idx_user_user_type", columnList = "user_type"),
-    @Index(name = "idx_user_active_verified", columnList = "is_active, email_verified")
+        @Index(name = "idx_user_email", columnList = "email"),
+        @Index(name = "idx_user_username", columnList = "username"),
+        @Index(name = "idx_user_is_active", columnList = "is_active"),
+        @Index(name = "idx_user_email_verified", columnList = "email_verified"),
+        @Index(name = "idx_user_user_type", columnList = "user_type"),
+        @Index(name = "idx_user_active_verified", columnList = "is_active, email_verified")
 })
 public class User {
 
@@ -58,13 +58,13 @@ public class User {
     private String bio;
 
     /**
-     * The application-level type of this user (e.g. WAITER).
+     * The application-level type of this user (e.g. APP_USER).
      * All users in this table share the same Spring Security role (ROLE_USER).
      * This field differentiates their function within the application.
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "user_type", nullable = false, length = 50)
-    private UserType userType = UserType.WAITER;
+    private UserType userType = UserType.APP_USER;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
@@ -90,7 +90,8 @@ public class User {
     /**
      * Set when a user self-deactivates their account.
      * Null means the account has never been self-deactivated.
-     * Non-null means the account may be in the 30-day grace period (still re-activatable
+     * Non-null means the account may be in the 30-day grace period (still
+     * re-activatable
      * on login) or may have been anonymised by AccountCleanupScheduledService.
      */
     @Column(name = "deactivated_at")
@@ -99,16 +100,16 @@ public class User {
     /**
      * True when an admin has deactivated this account.
      * Admin-deactivated accounts:
-     *  - Cannot be reactivated via the grace-period login flow.
-     *  - Are excluded from the nightly PII-anonymisation cleanup job.
-     *  - Can only be reactivated by an admin via the admin management API.
+     * - Cannot be reactivated via the grace-period login flow.
+     * - Are excluded from the nightly PII-anonymisation cleanup job.
+     * - Can only be reactivated by an admin via the admin management API.
      */
     @Column(name = "admin_deactivated", nullable = false)
     private Boolean adminDeactivated = false;
 
     /**
      * Holds the new, unverified email address while the user's email-change request
-     * is pending verification.  Null when no change is in progress.
+     * is pending verification. Null when no change is in progress.
      */
     @Column(name = "pending_email", length = 255)
     private String pendingEmail;

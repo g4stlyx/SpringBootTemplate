@@ -31,12 +31,12 @@ import java.util.stream.Collectors;
  * Business logic for the admin user-management API.
  *
  * Key design decisions:
- *  - Admin-deactivated accounts are flagged with adminDeactivated=true so they
- *    cannot be reactivated by the user's own login flow and are excluded from
- *    the nightly PII-anonymisation cleanup job.
- *  - Hard-delete permanently removes the user row and all associated tokens.
- *  - Soft-deactivate (admin) sets isActive=false + adminDeactivated=true.
- *  - Reactivation is an admin-only explicit action that clears both flags.
+ * - Admin-deactivated accounts are flagged with adminDeactivated=true so they
+ * cannot be reactivated by the user's own login flow and are excluded from
+ * the nightly PII-anonymisation cleanup job.
+ * - Hard-delete permanently removes the user row and all associated tokens.
+ * - Soft-deactivate (admin) sets isActive=false + adminDeactivated=true.
+ * - Reactivation is an admin-only explicit action that clears both flags.
  */
 @Service
 @RequiredArgsConstructor
@@ -45,8 +45,7 @@ public class AdminUserManagementService {
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
             "id", "username", "email", "firstName", "lastName",
-            "isActive", "emailVerified", "userType", "createdAt", "updatedAt", "lastLoginAt"
-    );
+            "isActive", "emailVerified", "userType", "createdAt", "updatedAt", "lastLoginAt");
 
     private final UserRepository userRepository;
     private final AdminRepository adminRepository;
@@ -61,10 +60,10 @@ public class AdminUserManagementService {
     /**
      * Returns a paginated, filterable list of all users.
      *
-     * @param search       Optional free-text search against username and email.
-     * @param isActive     Optional filter on the account active flag.
+     * @param search        Optional free-text search against username and email.
+     * @param isActive      Optional filter on the account active flag.
      * @param emailVerified Optional filter on the email-verified flag.
-     * @param userType     Optional filter on application-level type.
+     * @param userType      Optional filter on application-level type.
      */
     public AdminUserListResponse getUsers(
             Long adminId,
@@ -155,7 +154,7 @@ public class AdminUserManagementService {
         user.setLastName(request.getLastName());
         user.setPhone(request.getPhone());
         user.setBio(request.getBio());
-        user.setUserType(request.getUserType() != null ? request.getUserType() : UserType.WAITER);
+        user.setUserType(request.getUserType() != null ? request.getUserType() : UserType.APP_USER);
         user.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
         user.setAdminDeactivated(false);
 
@@ -187,8 +186,8 @@ public class AdminUserManagementService {
 
     @Transactional
     public AdminUserDTO updateUser(Long adminId, Long targetUserId,
-                                   AdminUpdateUserRequest request,
-                                   HttpServletRequest httpRequest) {
+            AdminUpdateUserRequest request,
+            HttpServletRequest httpRequest) {
         User user = findUserById(targetUserId);
         Map<String, Object> changes = new HashMap<>();
 
@@ -241,9 +240,9 @@ public class AdminUserManagementService {
      *
      * Sets {@code adminDeactivated=true} in addition to {@code isActive=false}.
      * This prevents:
-     *  1. The user from reactivating themselves via the grace-period login flow.
-     *  2. The nightly cleanup job from anonymising this record (the admin may want
-     *     to reactivate or review the account later).
+     * 1. The user from reactivating themselves via the grace-period login flow.
+     * 2. The nightly cleanup job from anonymising this record (the admin may want
+     * to reactivate or review the account later).
      *
      * All existing refresh tokens are revoked immediately.
      */
@@ -323,7 +322,7 @@ public class AdminUserManagementService {
 
     @Transactional
     public void resetUserPassword(Long adminId, Long targetUserId,
-                                  ResetUserPasswordRequest request) {
+            ResetUserPasswordRequest request) {
         User user = findUserById(targetUserId);
 
         String newSalt = passwordService.generateSalt();
@@ -387,7 +386,8 @@ public class AdminUserManagementService {
                 .phone(user.getPhone())
                 .bio(user.getBio())
                 .userType(user.getUserType() != null
-                        ? user.getUserType().name().toLowerCase(Locale.ROOT) : null)
+                        ? user.getUserType().name().toLowerCase(Locale.ROOT)
+                        : null)
                 .isActive(user.getIsActive())
                 .emailVerified(user.getEmailVerified())
                 .adminDeactivated(user.getAdminDeactivated())
@@ -401,7 +401,8 @@ public class AdminUserManagementService {
     }
 
     private String validateSortField(String sortBy, String defaultField) {
-        if (sortBy == null || sortBy.isBlank()) return defaultField;
+        if (sortBy == null || sortBy.isBlank())
+            return defaultField;
         if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
             log.warn("Invalid sort field attempted: '{}'. Using default: '{}'", sortBy, defaultField);
             return defaultField;

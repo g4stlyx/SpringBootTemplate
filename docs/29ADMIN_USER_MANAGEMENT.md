@@ -33,7 +33,7 @@ Returns a paginated, searchable, filterable list of all user accounts.
 | `search`        | —           | Free-text match on `username` and `email`         |
 | `isActive`      | —           | `true` / `false`                                  |
 | `emailVerified` | —           | `true` / `false`                                  |
-| `userType`      | —           | Enum value (e.g. `WAITER`) — case-insensitive     |
+| `userType`      | —           | Enum value (e.g. `APP_USER`) — case-insensitive     |
 
 **Allowed `sortBy` values:** `id`, `username`, `email`, `firstName`, `lastName`, `isActive`, `emailVerified`, `userType`, `createdAt`, `updatedAt`, `lastLoginAt`
 
@@ -76,7 +76,7 @@ Create a new user account.
   "lastName": "Doe",
   "phone": "+905001234567",
   "bio": "Staff member",
-  "userType": "WAITER",
+  "userType": "APP_USER",
   "isActive": true,
   "skipEmailVerification": false
 }
@@ -87,7 +87,7 @@ Create a new user account.
 | `username`              | Yes      | 3–50 chars, alphanumeric + underscore                         |
 | `email`                 | Yes      | Valid email, unique across users and admins                   |
 | `password`              | Yes      | Min 8 chars                                                   |
-| `userType`              | Yes      | Enum value (e.g. `WAITER`)                                    |
+| `userType`              | Yes      | Enum value (e.g. `APP_USER`)                                    |
 | `skipEmailVerification` | No       | `false` by default — set `true` to pre-verify the account     |
 
 **Success Response `201 Created`:** `AdminUserDTO`
@@ -109,7 +109,7 @@ Partial update for a user account. All fields are optional — only provided (no
   "lastName": "Smith",
   "phone": "+905009876543",
   "bio": "Updated bio",
-  "userType": "WAITER",
+  "userType": "APP_USER",
   "emailVerified": true
 }
 ```
@@ -215,7 +215,7 @@ Unlocks a user account that has been locked due to repeated failed login attempt
   "profilePicture": "https://cdn.example.com/photo.jpg",
   "phone": "+905001234567",
   "bio": "Staff member",
-  "userType": "waiter",
+  "userType": "app_user",
   "isActive": true,
   "emailVerified": true,
   "adminDeactivated": false,
@@ -228,7 +228,7 @@ Unlocks a user account that has been locked due to repeated failed login attempt
 }
 ```
 
-> `userType` is always returned as **lowercase** string (e.g. `"waiter"` not `"WAITER"`).
+> `userType` is always returned as **lowercase** string (e.g. `"app_user"` not `"APP_USER"`).
 
 ---
 

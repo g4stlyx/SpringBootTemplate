@@ -18,7 +18,7 @@ public class UserSessionDTO {
     private String firstName;
     private String lastName;
     private String profilePicture;
-    private String role;      // "USER" or "ADMIN"
-    private String userType;  // App-level type, e.g. "WAITER", "CHEF" — null for admins
+    private String role; // "USER" or "ADMIN"
+    private String userType; // App-level type, e.g. "APP_USER", "CHEF" — null for admins
     private Integer adminLevel; // Only for admins
 }

@@ -33,14 +33,22 @@ import static org.mockito.Mockito.*;
 @DisplayName("AdminUserManagementService Unit Tests")
 class AdminUserManagementServiceTest {
 
-    @Mock private UserRepository userRepository;
-    @Mock private AdminRepository adminRepository;
-    @Mock private PasswordService passwordService;
-    @Mock private RefreshTokenService refreshTokenService;
-    @Mock private VerificationTokenRepository verificationTokenRepository;
-    @Mock private EmailService emailService;
-    @Mock private AdminActivityLogger activityLogger;
-    @Mock private HttpServletRequest httpRequest;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private AdminRepository adminRepository;
+    @Mock
+    private PasswordService passwordService;
+    @Mock
+    private RefreshTokenService refreshTokenService;
+    @Mock
+    private VerificationTokenRepository verificationTokenRepository;
+    @Mock
+    private EmailService emailService;
+    @Mock
+    private AdminActivityLogger activityLogger;
+    @Mock
+    private HttpServletRequest httpRequest;
 
     @InjectMocks
     private AdminUserManagementService service;
@@ -60,7 +68,7 @@ class AdminUserManagementServiceTest {
         activeUser.setEmailVerified(true);
         activeUser.setPasswordHash("hash");
         activeUser.setSalt("salt");
-        activeUser.setUserType(UserType.WAITER);
+        activeUser.setUserType(UserType.APP_USER);
         activeUser.setLoginAttempts(0);
         activeUser.setCreatedAt(LocalDateTime.now());
         activeUser.setUpdatedAt(LocalDateTime.now());
@@ -207,7 +215,7 @@ class AdminUserManagementServiceTest {
     void updateUser_success_appliesFields() {
         AdminUpdateUserRequest req = new AdminUpdateUserRequest();
         req.setFirstName("Jane");
-        req.setUserType(UserType.WAITER);
+        req.setUserType(UserType.APP_USER);
 
         when(userRepository.findById(10L)).thenReturn(Optional.of(activeUser));
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -333,8 +341,8 @@ class AdminUserManagementServiceTest {
 
         service.resetUserPassword(1L, 10L, req);
 
-        verify(userRepository).save(argThat(u ->
-                "newSalt".equals(u.getSalt()) && "newHash".equals(u.getPasswordHash())));
+        verify(userRepository)
+                .save(argThat(u -> "newSalt".equals(u.getSalt()) && "newHash".equals(u.getPasswordHash())));
     }
 
     // ─── unlockUser ──────────────────────────────────────────────────────────
@@ -363,7 +371,7 @@ class AdminUserManagementServiceTest {
         req.setPassword("Password1!");
         req.setFirstName("John");
         req.setLastName("Doe");
-        req.setUserType(UserType.WAITER);
+        req.setUserType(UserType.APP_USER);
         return req;
     }
 }

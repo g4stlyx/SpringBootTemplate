@@ -100,7 +100,7 @@ public class AuthService {
             user.setLastName(request.getLastName());
             user.setPhone(request.getPhone());
             user.setBio(request.getBio());
-            user.setUserType(UserType.WAITER); // fixed default — userType is not accepted from the client
+            user.setUserType(UserType.APP_USER); // fixed default — userType is not accepted from the client
             user.setIsActive(true);
             user.setEmailVerified(false);
 

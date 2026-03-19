@@ -113,7 +113,7 @@ public class RefreshTokenController {
                 // Fetch user's app-level type from database
                 String userType = userRepository.findById(oldRefreshToken.getUserId())
                         .map(u -> u.getUserType().name().toLowerCase(Locale.ROOT))
-                        .orElse("waiter");
+                        .orElse("app_user");
                 accessToken = jwtUtils.generateUserToken(username, oldRefreshToken.getUserId(), userType);
                 log.debug("Generated user access token with userType: {}", userType);
             }

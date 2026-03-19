@@ -27,7 +27,7 @@
     * [x] refresh token cookie changed to `SameSite=Strict`
     * [x] `JwtUtils.extractAllClaims()` now enforces issuer verification
     * [x] password reset now revokes all existing refresh tokens
-    * [x] `userType` removed from registration DTO — always defaults to `WAITER`
+    * [x] `userType` removed from registration DTO — always defaults to `APP_USER`
         * //TODO: of course this is an example, would change depending on the project.
     * [⚠️] in-memory rate limit store (`RateLimitService`): acceptable for single-instance template; Redis may be used here instead for distributed/persistent rate limiting.
 ---

@@ -21,7 +21,7 @@ import java.util.List;
  *
  * Creates the following users with password "12345678":
  * - Admin (Level 0 Super Admin): username "g4stly", email "g4stly@g4stly.tr"
- * - User (Waiter):               username "waiter",  email "waiter@g4stly.tr"
+ * - User (app_user): username "app_user", email "app_user@g4stly.tr"
  */
 @Component
 @RequiredArgsConstructor
@@ -119,15 +119,15 @@ public class DataInitializer implements CommandLineRunner {
         user.setPasswordHash(passwordHash);
         user.setFirstName("Demo");
         user.setLastName("User");
-        user.setUserType(UserType.WAITER);
+        user.setUserType(UserType.APP_USER);
         user.setIsActive(true);
         user.setEmailVerified(true);
         user.setLoginAttempts(0);
-        user.setBio("Demo waiter account for testing purposes.");
+        user.setBio("Demo app_user account for testing purposes.");
 
         userRepository.save(user);
 
-        log.info("✓ Created User (Waiter):");
+        log.info("✓ Created User (app user):");
         log.info("  → Username: {}", username);
         log.info("  → Email: {}", email);
         log.info("  → Password: {}", DEFAULT_PASSWORD);

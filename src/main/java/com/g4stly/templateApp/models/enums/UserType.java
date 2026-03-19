@@ -8,6 +8,6 @@ package com.g4stly.templateApp.models.enums;
  * Add new types here as the application evolves.
  */
 public enum UserType {
-    WAITER,  // Waiter staff
-    CHEF     // Kitchen staff — add more types here as the application evolves.
+    APP_USER, // standard user
+    CHEF // Kitchen staff — add more types here as the application evolves.
 }

@@ -20,7 +20,8 @@ import java.util.Map;
  * access to their own profile but no user-management authority.
  *
  * All userId values come from the path; the requesting admin's ID is always
- * sourced from authentication.getDetails() to enforce ownership at the JWT level.
+ * sourced from authentication.getDetails() to enforce ownership at the JWT
+ * level.
  */
 @RestController
 @RequestMapping("/api/v1/admin/users")
@@ -39,11 +40,11 @@ public class AdminUserManagementController {
      * Returns a paginated, searchable list of all users with optional filters.
      *
      * Query params:
-     *  - page, size, sortBy, sortDirection (pagination / sorting)
-     *  - search       — free-text match on username and email
-     *  - isActive     — true / false
-     *  - emailVerified — true / false
-     *  - userType     — e.g. WAITER
+     * - page, size, sortBy, sortDirection (pagination / sorting)
+     * - search — free-text match on username and email
+     * - isActive — true / false
+     * - emailVerified — true / false
+     * - userType — e.g. APP_USER
      */
     @GetMapping
     public ResponseEntity<AdminUserListResponse> getUsers(
@@ -150,7 +151,7 @@ public class AdminUserManagementController {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // DELETE /api/v1/admin/users/{userId}   — HARD DELETE (irreversible)
+    // DELETE /api/v1/admin/users/{userId} — HARD DELETE (irreversible)
     // ──────────────────────────────────────────────────────────────────────────
 
     /**

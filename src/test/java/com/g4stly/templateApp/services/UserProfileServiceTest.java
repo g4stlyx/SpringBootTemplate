@@ -32,12 +32,18 @@ import static org.mockito.Mockito.*;
 @DisplayName("UserProfileService Unit Tests")
 class UserProfileServiceTest {
 
-    @Mock private UserRepository userRepository;
-    @Mock private AdminRepository adminRepository;
-    @Mock private PasswordService passwordService;
-    @Mock private RefreshTokenService refreshTokenService;
-    @Mock private VerificationTokenRepository verificationTokenRepository;
-    @Mock private EmailService emailService;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private AdminRepository adminRepository;
+    @Mock
+    private PasswordService passwordService;
+    @Mock
+    private RefreshTokenService refreshTokenService;
+    @Mock
+    private VerificationTokenRepository verificationTokenRepository;
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private UserProfileService userProfileService;
@@ -57,7 +63,7 @@ class UserProfileServiceTest {
         activeUser.setPasswordHash("hash");
         activeUser.setSalt("salt");
         activeUser.setAdminDeactivated(false);
-        activeUser.setUserType(UserType.WAITER);
+        activeUser.setUserType(UserType.APP_USER);
         activeUser.setLoginAttempts(0);
         activeUser.setCreatedAt(LocalDateTime.now());
         activeUser.setUpdatedAt(LocalDateTime.now());
@@ -193,8 +199,8 @@ class UserProfileServiceTest {
 
         userProfileService.changePassword(1L, req);
 
-        verify(userRepository).save(argThat(u ->
-                "newSalt".equals(u.getSalt()) && "newHash".equals(u.getPasswordHash())));
+        verify(userRepository)
+                .save(argThat(u -> "newSalt".equals(u.getSalt()) && "newHash".equals(u.getPasswordHash())));
     }
 
     // ─── deactivateAccount ───────────────────────────────────────────────────
@@ -228,8 +234,7 @@ class UserProfileServiceTest {
 
         userProfileService.deactivateAccount(1L, req);
 
-        verify(userRepository).save(argThat(u ->
-                !u.getIsActive() && u.getDeactivatedAt() != null));
+        verify(userRepository).save(argThat(u -> !u.getIsActive() && u.getDeactivatedAt() != null));
         verify(refreshTokenService).revokeAllUserTokens(1L, "user");
     }
 
@@ -306,10 +311,9 @@ class UserProfileServiceTest {
 
         userProfileService.requestEmailChange(1L, req);
 
-        verify(userRepository).save(argThat(u ->
-                "new@example.com".equals(u.getPendingEmail())));
-        verify(verificationTokenRepository).save(argThat(t ->
-                "email_change".equals(t.getRole()) && t.getUserId().equals(1L)));
+        verify(userRepository).save(argThat(u -> "new@example.com".equals(u.getPendingEmail())));
+        verify(verificationTokenRepository)
+                .save(argThat(t -> "email_change".equals(t.getRole()) && t.getUserId().equals(1L)));
         verify(emailService).sendEmailChangeVerificationEmail(
                 eq("new@example.com"), anyString(), anyString());
     }

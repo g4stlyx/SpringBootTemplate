@@ -39,7 +39,7 @@
               "status": "OK",
               "code": 200,
               "header": [{"key": "Content-Type", "value": "application/json"}],
-              "body": "{\n  \"id\": 1,\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"profilePicture\": \"https://cdn.example.com/USER/1/profile.jpg\",\n  \"phone\": \"+905551234567\",\n  \"bio\": \"My short bio\",\n  \"userType\": \"waiter\",\n  \"isActive\": true,\n  \"emailVerified\": true,\n  \"createdAt\": \"2025-01-01T10:00:00\",\n  \"updatedAt\": \"2025-06-01T12:00:00\",\n  \"lastLoginAt\": \"2025-06-15T09:30:00\"\n}"
+              "body": "{\n  \"id\": 1,\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"profilePicture\": \"https://cdn.example.com/USER/1/profile.jpg\",\n  \"phone\": \"+905551234567\",\n  \"bio\": \"My short bio\",\n  \"userType\": \"app_user\",\n  \"isActive\": true,\n  \"emailVerified\": true,\n  \"createdAt\": \"2025-01-01T10:00:00\",\n  \"updatedAt\": \"2025-06-01T12:00:00\",\n  \"lastLoginAt\": \"2025-06-15T09:30:00\"\n}"
             }
           ]
         },
@@ -69,7 +69,7 @@
               "status": "OK",
               "code": 200,
               "header": [{"key": "Content-Type", "value": "application/json"}],
-              "body": "{\n  \"id\": 1,\n  \"username\": \"johndoe\",\n  \"email\": \"newemail@example.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+905559876543\",\n  \"bio\": \"Updated bio\",\n  \"userType\": \"waiter\",\n  \"isActive\": true,\n  \"emailVerified\": true,\n  \"createdAt\": \"2025-01-01T10:00:00\",\n  \"updatedAt\": \"2025-06-15T14:00:00\",\n  \"lastLoginAt\": \"2025-06-15T09:30:00\"\n}"
+              "body": "{\n  \"id\": 1,\n  \"username\": \"johndoe\",\n  \"email\": \"newemail@example.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+905559876543\",\n  \"bio\": \"Updated bio\",\n  \"userType\": \"app_user\",\n  \"isActive\": true,\n  \"emailVerified\": true,\n  \"createdAt\": \"2025-01-01T10:00:00\",\n  \"updatedAt\": \"2025-06-15T14:00:00\",\n  \"lastLoginAt\": \"2025-06-15T09:30:00\"\n}"
             },
             {
               "name": "400 Bad Request — Email Taken",

@@ -71,11 +71,11 @@
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
             "url": {
-              "raw": "{{base_url}}/api/v1/admin/users?userType=WAITER&page=0&size=20",
+              "raw": "{{base_url}}/api/v1/admin/users?userType=APP_USER&page=0&size=20",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "admin", "users"],
               "query": [
-                { "key": "userType", "value": "WAITER" },
+                { "key": "userType", "value": "APP_USER" },
                 { "key": "page", "value": "0" },
                 { "key": "size", "value": "20" }
               ]
@@ -146,7 +146,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Password1!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+905001234567\",\n  \"bio\": \"Staff member\",\n  \"userType\": \"WAITER\",\n  \"isActive\": true,\n  \"skipEmailVerification\": false\n}"
+              "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Password1!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+905001234567\",\n  \"bio\": \"Staff member\",\n  \"userType\": \"APP_USER\",\n  \"isActive\": true,\n  \"skipEmailVerification\": false\n}"
             },
             "description": "Creates user, sends verification email.\nExpected: 201 Created"
           }
@@ -166,7 +166,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"preactivated\",\n  \"email\": \"preactivated@example.com\",\n  \"password\": \"Password1!\",\n  \"userType\": \"WAITER\",\n  \"skipEmailVerification\": true\n}"
+              "raw": "{\n  \"username\": \"preactivated\",\n  \"email\": \"preactivated@example.com\",\n  \"password\": \"Password1!\",\n  \"userType\": \"APP_USER\",\n  \"skipEmailVerification\": true\n}"
             },
             "description": "Creates user with emailVerified=true, no verification email sent.\nExpected: 201 Created"
           }
@@ -186,7 +186,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"existinguser\",\n  \"email\": \"unique@example.com\",\n  \"password\": \"Password1!\",\n  \"userType\": \"WAITER\"\n}"
+              "raw": "{\n  \"username\": \"existinguser\",\n  \"email\": \"unique@example.com\",\n  \"password\": \"Password1!\",\n  \"userType\": \"APP_USER\"\n}"
             },
             "description": "Expected: 400 Bad Request — Username already exists"
           }

@@ -88,7 +88,7 @@ class AuthServiceTest {
         u.setEmailVerified(emailVerified);
         u.setLockedUntil(lockedUntil);
         u.setLoginAttempts(attempts);
-        u.setUserType(UserType.WAITER);
+        u.setUserType(UserType.APP_USER);
         return u;
     }
 
@@ -121,8 +121,8 @@ class AuthServiceTest {
     class Register {
 
         @Test
-        @DisplayName("Valid user registration sets WAITER type by default")
-        void defaultUserType_isWaiter() {
+        @DisplayName("Valid user registration sets APP_USER type by default")
+        void defaultUserType_isAppUser() {
             RegisterRequest req = buildRegisterRequest();
             when(userRepository.existsByUsername(any())).thenReturn(false);
             when(adminRepository.existsByUsername(any())).thenReturn(false);
@@ -287,7 +287,7 @@ class AuthServiceTest {
             when(userRepository.findByUsernameOrEmail("testUser", "testUser")).thenReturn(Optional.of(user));
             when(passwordService.verifyPassword("correct", "salt", "hash")).thenReturn(true);
             when(userRepository.save(any())).thenReturn(user);
-            when(jwtUtils.generateUserToken(eq("testUser"), eq(1L), eq("waiter"))).thenReturn("jwt-access-token");
+            when(jwtUtils.generateUserToken(eq("testUser"), eq(1L), eq("app_user"))).thenReturn("jwt-access-token");
             when(jwtUtils.getAccessTokenExpiration()).thenReturn(900L);
 
             RefreshToken rt = buildRefreshToken();
