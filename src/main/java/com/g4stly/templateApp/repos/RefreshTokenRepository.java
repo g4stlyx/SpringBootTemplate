@@ -22,20 +22,20 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     List<RefreshToken> findByUserIdAndRoleAndIsRevokedFalse(Long userId, String role);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     void deleteByToken(String token);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     void deleteByExpiryDateBefore(LocalDateTime date);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE RefreshToken rt SET rt.isRevoked = true WHERE rt.userId = :userId AND rt.role = :role AND rt.isRevoked = false")
     int revokeAllUserTokens(@Param("userId") Long userId, @Param("role") String role);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("DELETE FROM RefreshToken rt WHERE rt.isRevoked = true OR rt.expiryDate < :date")
     int cleanupRevokedAndExpired(@Param("date") LocalDateTime date);
@@ -52,11 +52,11 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     List<RefreshToken> findByIpAddress(String ipAddress);
 
     @Query("SELECT rt FROM RefreshToken rt WHERE " +
-           "(:role IS NULL OR rt.role = :role) AND " +
-           "(:userId IS NULL OR rt.userId = :userId) AND " +
-           "(:isRevoked IS NULL OR rt.isRevoked = :isRevoked) AND " +
-           "(:ipAddress IS NULL OR rt.ipAddress = :ipAddress) " +
-           "ORDER BY rt.createdAt DESC")
+            "(:role IS NULL OR rt.role = :role) AND " +
+            "(:userId IS NULL OR rt.userId = :userId) AND " +
+            "(:isRevoked IS NULL OR rt.isRevoked = :isRevoked) AND " +
+            "(:ipAddress IS NULL OR rt.ipAddress = :ipAddress) " +
+            "ORDER BY rt.createdAt DESC")
     List<RefreshToken> findWithFilters(
             @Param("role") String role,
             @Param("userId") Long userId,
