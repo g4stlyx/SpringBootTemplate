@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.g4stly.templateApp.dto.auth.AuthResponse;
 import com.g4stly.templateApp.dto.auth.ForgotPasswordRequest;
@@ -174,15 +175,15 @@ public class AuthController {
      * Verify email address using verification token
      */
     @GetMapping("/verify-email")
-    public ResponseEntity<Map<String, Object>> verifyEmail(@RequestParam String token) {
+    public ModelAndView verifyEmail(@RequestParam String token) {
 
         log.info("Email verification attempt with token");
 
         boolean success = authService.verifyEmail(token);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", success);
-        response.put("message", success ? "Email verified successfully. You can now login to your account."
+        ModelAndView mav = new ModelAndView("verify-email-result");
+        mav.addObject("success", success);
+        mav.addObject("message", success ? "Email verified successfully. You can now login to your account."
                 : "Invalid or expired verification token.");
 
         if (success) {
@@ -191,7 +192,7 @@ public class AuthController {
             log.warn("Email verification failed - invalid or expired token");
         }
 
-        return ResponseEntity.ok(response);
+        return mav;
     }
 
     /**
@@ -258,8 +259,22 @@ public class AuthController {
      * No authentication is required; the token itself is the proof of ownership.
      */
     @GetMapping("/verify-email-change")
-    public ResponseEntity<java.util.Map<String, Object>> verifyEmailChange(
-            @RequestParam String token) {
-        return ResponseEntity.ok(authService.verifyEmailChange(token));
+    public ModelAndView verifyEmailChange(@RequestParam String token) {
+        java.util.Map<String, Object> result = authService.verifyEmailChange(token);
+        
+        ModelAndView mav = new ModelAndView("verify-email-result");
+        mav.addObject("success", result.get("success"));
+        mav.addObject("message", result.get("message"));
+        return mav;
+    }
+
+    /**
+     * Display password reset form
+     */
+    @GetMapping("/reset-password")
+    public ModelAndView showResetPasswordPage(@RequestParam String token) {
+        ModelAndView mav = new ModelAndView("reset-password-page");
+        mav.addObject("token", token);
+        return mav;
     }
 }

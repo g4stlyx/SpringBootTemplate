@@ -23,8 +23,8 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
-    @Value("${app.frontend.url}")
-    private String frontendUrl;
+    @Value("${app.api.url}")
+    private String apiUrl;
     
     @Value("${app.admin.email:admin@g4stly.tr}")
     private String adminEmail;
@@ -40,7 +40,7 @@ public class EmailService {
             helper.setSubject("Email Verification");
 
             // Use the built-in verification page
-            String verificationUrl = frontendUrl + "/verify?token=" + token;
+            String verificationUrl = apiUrl + "/api/v1/auth/verify-email?token=" + token;
 
             // Create a Thymeleaf context
             Context context = new Context();
@@ -71,7 +71,7 @@ public class EmailService {
             helper.setSubject("Password Reset Request");
 
             // Use the built-in reset password page
-            String resetUrl = frontendUrl + "/reset-password?token=" + token;
+            String resetUrl = apiUrl + "/api/v1/auth/reset-password?token=" + token;
 
             // Create a Thymeleaf context
             Context context = new Context();
@@ -140,7 +140,7 @@ public class EmailService {
             helper.setTo(newEmail);
             helper.setSubject("E-posta Adresinizi Doğrulayın");
 
-            String verificationUrl = frontendUrl + "/verify-email-change?token=" + token;
+            String verificationUrl = apiUrl + "/api/v1/auth/verify-email-change?token=" + token;
 
             Context context = new Context();
             context.setVariable("name", name);
